@@ -10,7 +10,9 @@ brew install postgres
 ./install.sh
 ```
 
-7. Start server located in /JH_RestAPI directory::
+3. Start server located in /JH_RestAPI directory::
 ```
 ./start.sh
 ```
+
+4. [To see API DPC](/apidoc.md)
