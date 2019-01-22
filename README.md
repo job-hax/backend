@@ -15,4 +15,4 @@ brew install postgres
 ./start.sh
 ```
 
-4. [To see API DPC](/apidoc.md)
+4. [To see API DOC](/apidoc.md)
