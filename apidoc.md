@@ -16,6 +16,11 @@
 ```
 You need to generate an access token and add it as a Bearer header in your requests. See the Postman Collection for how to
 generate an access token.
+
+***
+For testing purposes Google's playground system can be used for gathering dummy access tokens to use on this API. 
+***
+
 ```
 
 3. Postman Collection
