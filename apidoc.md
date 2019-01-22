@@ -18,7 +18,9 @@ You need to generate an access token and add it as a Bearer header in your reque
 generate an access token.
 
 ***
-For testing purposes Google's playground system can be used for gathering dummy access tokens to use on this API. 
+For testing purposes Google's playground system can be used for gathering dummy access tokens to use on this API.
+
+[OAuth 2.0 Playground](https://developers.google.com/oauthplayground/) 
 ***
 
 ```
