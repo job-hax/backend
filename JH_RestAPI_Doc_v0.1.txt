@@ -261,3 +261,24 @@ Sample response:
         }
     ]
 }
+
+
+
+Endpoint : api/users/get_user_google_mails
+Desc : To get all the emails that read from user's inbox
+Type : GET
+Parameters : Authorization token
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": [
+        {
+            "subject": "You applied for Android Developer at Genuent,
+            "body": "<html><body>HTML content</body></html>",
+            "date": "2018-11-14 06:08:19+00:00"
+        }
+    ]
+}

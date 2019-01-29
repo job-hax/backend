@@ -10,5 +10,6 @@ urlpatterns = [
     path('refresh_token', views.refresh_token, name='refresh_token'),
     path('sync_user_emails', views.sync_user_emails, name='sync_user_emails'),
     path('update_gmail_token', views.update_gmail_token, name='update_gmail_token'),
+    path('get_user_google_mails', views.get_user_google_mails, name='get_user_google_mails'),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

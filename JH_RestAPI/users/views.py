@@ -8,6 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.models import User
 from .models import Profile
+from jobapps.models import GoogleMail
+from jobapps.serializers import GoogleMailSerializer
 from utils.gmail_lookup import fetchJobApplications
 from background_task import background
 from social_django.models import UserSocialAuth
@@ -91,4 +93,11 @@ def update_gmail_token(request):
         print(e)
         success = False   
         code = 3         
-    return JsonResponse(create_response(None, success, code), safe=False)        
+    return JsonResponse(create_response(None, success, code), safe=False)    
+
+@csrf_exempt
+@api_view(["GET"])
+def get_user_google_mails(request):
+    mails = GoogleMail.objects.all()
+    slist = GoogleMailSerializer(instance=mails, many=True).data
+    return JsonResponse(create_response(slist), safe=False)    
