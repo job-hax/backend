@@ -20,6 +20,27 @@ Sample response:
     }
 }
 
+Endpoint : /api/users/refresh_token
+Desc : To update JobHax access_token if expired.
+Type : POST
+Parameters : client_id - <jobhax-client-id>
+			 client_secret - <jobhax-client-secret>
+			 refresh_token - <refresh-token-gathered-from-/api/users/auth_social_user>
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": {
+        "access_token": "RYQidDFQ6w6BQHLkR4CKrKCbUOfcmG",
+        "expires_in": 113600,
+        "token_type": "Bearer",
+        "scope": "read write",
+        "refresh_token": "lHc5JiB9SohPjImcSB8aIRF9QNdK77"
+    }
+}
+
 Endpoint : /api/users/update_gmail_token
 Desc : To update user GMAIL token. (In such case; user token refreshed or mail_read permission granted after login)
 Type : POST

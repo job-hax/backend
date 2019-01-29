@@ -32,6 +32,23 @@ def auth_social_user(request):
         code = 0 
     return JsonResponse(create_response(jsonres, success, code), safe=False)
 
+@require_POST
+@csrf_exempt
+def refresh_token(request):
+    post_data = {'client_id': request.POST['client_id']}
+    post_data['client_secret'] = request.POST['client_secret']
+    post_data['grant_type'] = 'refresh_token'
+    post_data['refresh_token'] = request.POST['refresh_token']
+    response = requests.post('http://localhost:8000/auth/token', data=post_data)
+    jsonres = json.loads(response.text)
+    if 'error' in jsonres:
+        success = False
+        code = 1
+    else:
+        success = True   
+        code = 0 
+    return JsonResponse(create_response(jsonres, success, code), safe=False)    
+
 @csrf_exempt
 @api_view(["GET"])
 def sync_user_emails(request):
