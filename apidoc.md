@@ -18,6 +18,11 @@ You need to generate an access token and add it as a Bearer header in your reque
 generate an access token.
 
 For testing purposes Google's playground system can be used for gathering dummy access tokens to use on this API.
+
+You will need to grant following permissions:
+- https://www.googleapis.com/auth/userinfo.email
+- https://www.googleapis.com/auth/userinfo.profile
+- https://www.googleapis.com/auth/gmail.readonly
 ```
 [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/) 
 
