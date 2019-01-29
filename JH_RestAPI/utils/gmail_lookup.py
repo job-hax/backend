@@ -167,7 +167,7 @@ def fetchJobApplications(user):
         #retrieves user email's with custom query parameter
         linkedInMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:jobs-listings@linkedin.com AND subject:You applied for' + time_string)# AND after:2018/01/01')
         hiredMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:reply@hired.com AND subject:Interview Request' + time_string)
-        #vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
+        vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
         indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
     except Exception as e:
         print('Users google token probably expired. Should have new token from google')
@@ -177,7 +177,7 @@ def fetchJobApplications(user):
         return          
 
     if linkedInMessages is False or hiredMessages is False \
-        or indeedMessages is False:
+        or indeedMessages is False or vetteryMessages is False:
         profile.is_gmail_read_ok = False
         profile.save()
         print('403 error got from Google. Check permissions...')
@@ -193,9 +193,9 @@ def fetchJobApplications(user):
     if indeedMessages is not None:        
         for message in indeedMessages:
             get_email_detail(GMAIL, 'me', message['id'], user, 'Indeed')
-    #if vetteryMessages is not None:           
-        #for message in vetteryMessages:
-        #    GetMessage(GMAIL, 'me', message['id'], user, 'Vettery')
+    if vetteryMessages is not None:           
+        for message in vetteryMessages:
+            get_email_detail(GMAIL, 'me', message['id'], user, 'Vettery')
 
     #updates user last update time after all this
     now = datetime.utcnow().timestamp()
