@@ -9,6 +9,8 @@ from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.models import User
 from utils.gmail_lookup import fetchJobApplications
 from background_task import background
+from social_django.models import UserSocialAuth
+
 
 # Create your views here.
 @require_POST
@@ -39,10 +41,33 @@ def sync_user_emails(request):
     #https://stackoverflow.com/questions/41205607/how-to-activate-the-process-queue-in-django-background-tasks
     #scheduleFetcher.now(request.user.id)
     scheduleFetcher(request.user.id)
-    return JsonResponse(create_response(None), safe=False)
+    return JsonResponse(create_response(None), safe=False)    
 
 @background(schedule=1)
 def scheduleFetcher(user_id):
     user = User.objects.get(pk=user_id)
     if user.social_auth.filter(provider='google-oauth2'):
         fetchJobApplications(user)    
+
+@require_POST
+@csrf_exempt
+@api_view(["POST"])
+def update_gmail_token(request):
+    token = request.POST['token']
+    try:
+        user_profile = UserSocialAuth.objects.get(user=request.user)
+        print(user_profile)
+        if user_profile is not None:
+            user_profile.extra_data['access_token'] = token
+            user_profile.save()
+            success = True
+            code = 0
+            scheduleFetcher(request.user.id)
+        else:
+            success = False
+            code = 2
+    except Exception as e: 
+        print(e)
+        success = False   
+        code = 3         
+    return JsonResponse(create_response(None, success, code), safe=False)        

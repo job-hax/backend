@@ -133,12 +133,15 @@ def get_emails_with_custom_query(service, user_id, query=''):
 
     return messages
   except errors.HttpError as error:
+    if error.resp.status == 403:
+        return False
     print('An error occurred: %s' % error)
 
 def fetchJobApplications(user):
     time_string = ''
     #checks user last update time and add it as a query parameter
     profile = Profile.objects.get(user=user)
+
     if profile.gmail_last_update_time != 0:
         time_string = ' AND after:' + str(profile.gmail_last_update_time)
         print('its not the first time query will be added : ' + time_string)
@@ -164,19 +167,31 @@ def fetchJobApplications(user):
     #vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
     indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
 
+    if linkedInMessages is False or hiredMessages is False \
+        or indeedMessages is False:
+        profile.is_gmail_read_ok = False
+        profile.save()
+        print('403 error got from Google. Check permissions...')
+        return
+
     #retvieves specific email's detail one by one
-    for message in linkedInMessages:
-        get_email_detail(GMAIL, 'me', message['id'], user, 'LinkedIn')
-    for message in hiredMessages:
-        get_email_detail(GMAIL, 'me', message['id'], user, 'Hired.com')
-    for message in indeedMessages:
-        get_email_detail(GMAIL, 'me', message['id'], user, 'Indeed')
-    #for message in vetteryMessages:
-    #    GetMessage(GMAIL, 'me', message['id'], user, 'Vettery')
+    if linkedInMessages is not None:
+        for message in linkedInMessages:
+            get_email_detail(GMAIL, 'me', message['id'], user, 'LinkedIn')
+    if hiredMessages is not None:
+        for message in hiredMessages:
+            get_email_detail(GMAIL, 'me', message['id'], user, 'Hired.com')
+    if indeedMessages is not None:        
+        for message in indeedMessages:
+            get_email_detail(GMAIL, 'me', message['id'], user, 'Indeed')
+    #if vetteryMessages is not None:           
+        #for message in vetteryMessages:
+        #    GetMessage(GMAIL, 'me', message['id'], user, 'Vettery')
 
     #updates user last update time after all this
     now = datetime.utcnow().timestamp()
     profile.gmail_last_update_time = now
+    profile.is_gmail_read_ok = True
     profile.save()      
     #except Exception as error:
     #    print('An error occurred: %s' % error)
