@@ -7,6 +7,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.models import User
+from .models import Profile
 from utils.gmail_lookup import fetchJobApplications
 from background_task import background
 from social_django.models import UserSocialAuth
@@ -52,6 +53,9 @@ def refresh_token(request):
 @csrf_exempt
 @api_view(["GET"])
 def sync_user_emails(request):
+    profile = Profile.objects.get(user=request.user)
+    if not profile.is_gmail_read_ok:
+        return JsonResponse(create_response(None, False, 4), safe=False)    
     #it'll be used for background tasking in production
     #refs. https://medium.com/@robinttt333/running-background-tasks-in-django-f4c1d3f6f06e
     #https://django-background-tasks.readthedocs.io/en/latest/
