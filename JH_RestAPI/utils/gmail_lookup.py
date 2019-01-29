@@ -16,6 +16,7 @@ from .social_auth_credentials import Credentials
 from social_django.utils import load_strategy
 
 from jobapps.models import JobApplication
+from jobapps.models import GoogleMail
 from jobapps.models import ApplicationStatus
 from jobapps.models import JobPostDetail
 import base64
@@ -53,6 +54,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 jobTitle = subject[subject.index('Indeed Application: ') + 20 : ]
         elif header['name'] == 'Date':
             date = header['value']
+            original_date = header['value']
             date = convertTime(str(date))
     try:
         for part in message['payload']['parts']:
@@ -87,6 +89,10 @@ def get_email_detail(service, user_id, msg_id, user, source):
     except Exception as e:
         print(e)
 
+    if subject is not None and body is not None and original_date is not None:
+        mail = GoogleMail(user=user, subject=subject, body=body, date=date)
+        mail.save()
+
     if user.is_authenticated:
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
       print(image_url)
@@ -101,6 +107,10 @@ def get_email_detail(service, user_id, msg_id, user, source):
         if(source == 'LinkedIn'):
             japp_details = JobPostDetail(job_post = japp, posterInformation = posterInformationJSON, decoratedJobPosting = decoratedJobPostingJSON, topCardV2 = topCardV2JSON)
             japp_details.save()
+        if mail is not None:
+            mail.job_post = japp
+            mail.save()
+
   except errors.HttpError as error:
     if error.resp.status == 403 or error.resp.status == 401:
         return False
