@@ -36,7 +36,6 @@ def get_email_detail(service, user_id, msg_id, user, source):
     A Message.
   """
   try:
-    custom_image_url = '/static/images/errorcvlogobright.png'
     message = service.users().messages().get(userId=user_id, id=msg_id, format='full').execute()
     jobTitle = ''
     company = ''
@@ -68,21 +67,21 @@ def get_email_detail(service, user_id, msg_id, user, source):
                         image_url = body[s : e].replace('&amp;', '&')
                         image_exists=requests.get(image_url)
                         if(image_exists.status_code == 404):
-                            image_url = custom_image_url 
+                            image_url = None 
                     else:
-                        image_url = custom_image_url
+                        image_url = None
                     if len(image_url) > 300:
-                        image_url = custom_image_url
+                        image_url = None
                 elif(source == 'Vettery'):
                     jobTitle = body[body.index('Role: ') + 6 : body.index('Salary')]
                     jobTitle = removeHtmlTags(jobTitle)
                     company = body[body.index('interview with ') + 15 : body.index('. Interested?')]
-                    image_url = custom_image_url
+                    image_url = None
                 elif(source == 'Indeed'):
                     company = body[body.index('Get job updates from <b>') + 24 : body.index('</b>.<br><i>By selecting')]
-                    image_url = custom_image_url
+                    image_url = None
                 elif(source == 'Hired.com'):
-                    image_url = custom_image_url    
+                    image_url = None    
     except Exception as e:
         print(e)
 
