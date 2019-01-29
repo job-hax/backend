@@ -78,7 +78,9 @@ def get_email_detail(service, user_id, msg_id, user, source):
                     company = body[body.index('interview with ') + 15 : body.index('. Interested?')]
                     image_url = None
                 elif(source == 'Indeed'):
-                    company = body[body.index('Get job updates from <b>') + 24 : body.index('</b>.<br><i>By selecting')]
+                    c_start_index = body.index('updates from') + 16
+                    c_end_index = body[c_start_index : (c_start_index + 100)].index('</b>')
+                    company = body[c_start_index : c_start_index + c_end_index]
                     image_url = None
                 elif(source == 'Hired.com'):
                     image_url = None    
@@ -100,6 +102,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
             japp_details = JobPostDetail(job_post = japp, posterInformation = posterInformationJSON, decoratedJobPosting = decoratedJobPostingJSON, topCardV2 = topCardV2JSON)
             japp_details.save()
   except errors.HttpError as error:
+    if error.resp.status == 403 or error.resp.status == 401:
+        return False
     print('An error occurred: %s' % error)
 
 
@@ -132,7 +136,7 @@ def get_emails_with_custom_query(service, user_id, query=''):
 
     return messages
   except errors.HttpError as error:
-    if error.resp.status == 403:
+    if error.resp.status == 403 or error.resp.status == 401:
         return False
     print('An error occurred: %s' % error)
 
@@ -157,14 +161,20 @@ def fetchJobApplications(user):
     #strategy = load_strategy()
     #usa.refresh_token(strategy)
     #print(usa.extra_data['access_token'])
-    creds= Credentials(usa)
-    GMAIL = build('gmail', 'v1', credentials=creds)
-
-    #retrieves user email's with custom query parameter
-    linkedInMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:jobs-listings@linkedin.com AND subject:You applied for' + time_string)# AND after:2018/01/01')
-    hiredMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:reply@hired.com AND subject:Interview Request' + time_string)
-    #vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
-    indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
+    try:
+        creds= Credentials(usa)
+        GMAIL = build('gmail', 'v1', credentials=creds)
+        #retrieves user email's with custom query parameter
+        linkedInMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:jobs-listings@linkedin.com AND subject:You applied for' + time_string)# AND after:2018/01/01')
+        hiredMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:reply@hired.com AND subject:Interview Request' + time_string)
+        #vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
+        indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
+    except Exception as e:
+        print('Users google token probably expired. Should have new token from google')
+        print(e)
+        profile.is_gmail_read_ok = False
+        profile.save()
+        return          
 
     if linkedInMessages is False or hiredMessages is False \
         or indeedMessages is False:
