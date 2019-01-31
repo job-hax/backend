@@ -18,6 +18,72 @@ from social_django.models import UserSocialAuth
 # Create your views here.
 @require_POST
 @csrf_exempt
+def register(request):
+    # Get form values
+    first_name = request.POST['first_name']
+    last_name = request.POST['last_name']
+    username = request.POST['username']
+    email = request.POST['email']
+    password = request.POST['password']
+    password2 = request.POST['password2']
+
+    success = True
+    code = 0
+
+    # Check if passwords match
+    if password == password2:
+        # Check username
+        if User.objects.filter(username=username).exists():
+            success = False
+            code = 8
+        else:
+            if User.objects.filter(email=email).exists():
+                success = False
+                code = 9
+            else:
+                # Looks good
+                user = User.objects.create_user(username=username, password=password,email=email, first_name=first_name, last_name=last_name)
+                user.save()
+    else:
+        success = False
+        code = 7
+    return JsonResponse(create_response(None, success, code), safe=False)    
+
+@require_POST
+@csrf_exempt
+def login(request):
+    post_data = {'client_id': request.POST['client_id']}
+    post_data['client_secret'] = request.POST['client_secret']
+    post_data['grant_type'] = 'password'
+    post_data['username'] = request.POST['username']
+    post_data['password'] = request.POST['password']
+    response = requests.post('http://localhost:8000/auth/token', data=post_data)
+    jsonres = json.loads(response.text)
+    if 'error' in jsonres:
+        success = False
+        code = 6
+    else:
+        success = True   
+        code = 0 
+    return JsonResponse(create_response(jsonres, success, code), safe=False)
+
+@require_POST
+@csrf_exempt
+def logout(request):
+    post_data = {'client_id': request.POST['client_id']}
+    headers = {'Authorization': request.META.get('HTTP_AUTHORIZATION')}
+    response = requests.post('http://localhost:8000/auth/invalidate-sessions', data=post_data, headers=headers)
+    if response.status_code is 204 or response.status_code is 200:
+        success = True
+        code = 0
+    else:
+        success = False   
+        code = 5 
+    return JsonResponse(create_response(None, success, code), safe=False)
+
+
+@require_POST
+@csrf_exempt
 def auth_social_user(request):
     post_data = {'client_id': request.POST['client_id']}
     post_data['client_secret'] = request.POST['client_secret']

@@ -6,6 +6,9 @@ from django.urls import reverse
 from users import views
 
 urlpatterns = [
+    path('register', views.register, name='register'),
+    path('login', views.login, name='login'),
+    path('logout', views.logout, name='logout'),
     path('auth_social_user', views.auth_social_user, name='auth_social_user'),
     path('refresh_token', views.refresh_token, name='refresh_token'),
     path('sync_user_emails', views.sync_user_emails, name='sync_user_emails'),

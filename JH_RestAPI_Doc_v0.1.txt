@@ -20,6 +20,77 @@ Sample response:
     }
 }
 
+
+
+Endpoint : /api/users/register
+Desc : To register user manually.
+Type : POST
+Parameters : first_name - <first_name>
+			 last_name - <last_name>
+			 username - <username>
+			 email - <email>
+			 password - <password>
+			 password - <password2>
+
+Sample response:
+{
+    "success": false,
+    "error_code": 0,
+    "error_message": "",
+    "data": null
+}
+
+
+
+
+
+
+Endpoint : /api/users/login
+Desc : To generate access token
+Type : POST
+Parameters : client_id - <jobhax-client-id>
+			 client_secret - <jobhax-client-secret>
+			 username - <username>
+			 password - <password>
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": {
+        "access_token": "uoIWl9mk6Uobs4M9r4H8NdBjIDyZK7",
+        "expires_in": 36000,
+        "token_type": "Bearer",
+        "scope": "read write",
+        "refresh_token": "4b0XdB9DGtTbHnYI15SkXL9WOUYZ21"
+    }
+}
+
+
+
+
+
+
+Endpoint : /api/users/logout
+Desc : To logout user
+Type : POST
+Parameters : Authorization - Bearer <access_token>
+             client_id - <jobhax-client-id>
+
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": null
+}
+
+
+
+
+
+
+
 Endpoint : /api/users/refresh_token
 Desc : To update JobHax access_token if expired.
 Type : POST
