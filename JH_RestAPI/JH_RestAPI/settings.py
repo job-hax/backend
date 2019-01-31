@@ -69,6 +69,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated', )
 }
 
+OAUTH2_PROVIDER = {
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 113600,
+}
+
 AUTHENTICATION_BACKENDS = (
  'social_core.backends.open_id.OpenIdAuth',
  'social_core.backends.google.GoogleOpenId',

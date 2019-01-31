@@ -16,6 +16,7 @@ from .social_auth_credentials import Credentials
 from social_django.utils import load_strategy
 
 from jobapps.models import JobApplication
+from jobapps.models import GoogleMail
 from jobapps.models import ApplicationStatus
 from jobapps.models import JobPostDetail
 import base64
@@ -36,7 +37,6 @@ def get_email_detail(service, user_id, msg_id, user, source):
     A Message.
   """
   try:
-    custom_image_url = '/static/images/errorcvlogobright.png'
     message = service.users().messages().get(userId=user_id, id=msg_id, format='full').execute()
     jobTitle = ''
     company = ''
@@ -54,6 +54,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 jobTitle = subject[subject.index('Indeed Application: ') + 20 : ]
         elif header['name'] == 'Date':
             date = header['value']
+            original_date = header['value']
             date = convertTime(str(date))
     try:
         for part in message['payload']['parts']:
@@ -68,23 +69,29 @@ def get_email_detail(service, user_id, msg_id, user, source):
                         image_url = body[s : e].replace('&amp;', '&')
                         image_exists=requests.get(image_url)
                         if(image_exists.status_code == 404):
-                            image_url = custom_image_url 
+                            image_url = None 
                     else:
-                        image_url = custom_image_url
+                        image_url = None
                     if len(image_url) > 300:
-                        image_url = custom_image_url
+                        image_url = None
                 elif(source == 'Vettery'):
                     jobTitle = body[body.index('Role: ') + 6 : body.index('Salary')]
                     jobTitle = removeHtmlTags(jobTitle)
                     company = body[body.index('interview with ') + 15 : body.index('. Interested?')]
-                    image_url = custom_image_url
+                    image_url = None
                 elif(source == 'Indeed'):
-                    company = body[body.index('Get job updates from <b>') + 24 : body.index('</b>.<br><i>By selecting')]
-                    image_url = custom_image_url
+                    c_start_index = body.index('updates from') + 16
+                    c_end_index = body[c_start_index : (c_start_index + 100)].index('</b>')
+                    company = body[c_start_index : c_start_index + c_end_index]
+                    image_url = None
                 elif(source == 'Hired.com'):
-                    image_url = custom_image_url    
+                    image_url = None    
     except Exception as e:
         print(e)
+
+    if subject is not None and body is not None and original_date is not None:
+        mail = GoogleMail(user=user, subject=subject, body=body, date=date)
+        mail.save()
 
     if user.is_authenticated:
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
@@ -100,7 +107,13 @@ def get_email_detail(service, user_id, msg_id, user, source):
         if(source == 'LinkedIn'):
             japp_details = JobPostDetail(job_post = japp, posterInformation = posterInformationJSON, decoratedJobPosting = decoratedJobPostingJSON, topCardV2 = topCardV2JSON)
             japp_details.save()
+        if mail is not None:
+            mail.job_post = japp
+            mail.save()
+
   except errors.HttpError as error:
+    if error.resp.status == 403 or error.resp.status == 401:
+        return False
     print('An error occurred: %s' % error)
 
 
@@ -133,12 +146,15 @@ def get_emails_with_custom_query(service, user_id, query=''):
 
     return messages
   except errors.HttpError as error:
+    if error.resp.status == 403 or error.resp.status == 401:
+        return False
     print('An error occurred: %s' % error)
 
 def fetchJobApplications(user):
     time_string = ''
     #checks user last update time and add it as a query parameter
     profile = Profile.objects.get(user=user)
+
     if profile.gmail_last_update_time != 0:
         time_string = ' AND after:' + str(profile.gmail_last_update_time)
         print('its not the first time query will be added : ' + time_string)
@@ -155,28 +171,46 @@ def fetchJobApplications(user):
     #strategy = load_strategy()
     #usa.refresh_token(strategy)
     #print(usa.extra_data['access_token'])
-    creds= Credentials(usa)
-    GMAIL = build('gmail', 'v1', credentials=creds)
+    try:
+        creds= Credentials(usa)
+        GMAIL = build('gmail', 'v1', credentials=creds)
+        #retrieves user email's with custom query parameter
+        linkedInMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:jobs-listings@linkedin.com AND subject:You applied for' + time_string)# AND after:2018/01/01')
+        hiredMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:reply@hired.com AND subject:Interview Request' + time_string)
+        vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
+        indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
+    except Exception as e:
+        print('Users google token probably expired. Should have new token from google')
+        print(e)
+        profile.is_gmail_read_ok = False
+        profile.save()
+        return          
 
-    #retrieves user email's with custom query parameter
-    linkedInMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:jobs-listings@linkedin.com AND subject:You applied for' + time_string)# AND after:2018/01/01')
-    hiredMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:reply@hired.com AND subject:Interview Request' + time_string)
-    #vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
-    indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
+    if linkedInMessages is False or hiredMessages is False \
+        or indeedMessages is False or vetteryMessages is False:
+        profile.is_gmail_read_ok = False
+        profile.save()
+        print('403 error got from Google. Check permissions...')
+        return
 
     #retvieves specific email's detail one by one
-    for message in linkedInMessages:
-        get_email_detail(GMAIL, 'me', message['id'], user, 'LinkedIn')
-    for message in hiredMessages:
-        get_email_detail(GMAIL, 'me', message['id'], user, 'Hired.com')
-    for message in indeedMessages:
-        get_email_detail(GMAIL, 'me', message['id'], user, 'Indeed')
-    #for message in vetteryMessages:
-    #    GetMessage(GMAIL, 'me', message['id'], user, 'Vettery')
+    if linkedInMessages is not None:
+        for message in linkedInMessages:
+            get_email_detail(GMAIL, 'me', message['id'], user, 'LinkedIn')
+    if hiredMessages is not None:
+        for message in hiredMessages:
+            get_email_detail(GMAIL, 'me', message['id'], user, 'Hired.com')
+    if indeedMessages is not None:        
+        for message in indeedMessages:
+            get_email_detail(GMAIL, 'me', message['id'], user, 'Indeed')
+    if vetteryMessages is not None:           
+        for message in vetteryMessages:
+            get_email_detail(GMAIL, 'me', message['id'], user, 'Vettery')
 
     #updates user last update time after all this
     now = datetime.utcnow().timestamp()
     profile.gmail_last_update_time = now
+    profile.is_gmail_read_ok = True
     profile.save()      
     #except Exception as error:
     #    print('An error occurred: %s' % error)

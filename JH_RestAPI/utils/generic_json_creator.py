@@ -12,6 +12,24 @@ def create_response(data, success=True, error_code=0):
     return response
 
 def get_error_message(error_code):
+    if error_code == 0:
+        return ''
     if error_code == 1:
         return 'Invalid credentials'
-    return ''    
+    elif error_code == 2:
+        return 'User profile not found.'   
+    elif error_code == 3:
+        return 'Error occured while updating the google token.'   
+    elif error_code == 4:
+        return 'Google token has expired. Please refresh Google token.' 
+    elif error_code == 5:
+        return 'Couldnt logout user...'
+    elif error_code == 6:
+        return 'Could not login... Please check your credentials...'
+    elif error_code == 7:
+        return 'Passwords do not match'
+    elif error_code == 8:
+        return 'That username is taken'
+    elif error_code == 9:
+        return 'That email is being used'   
+    return 'Unknown error'    
