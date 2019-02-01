@@ -9,6 +9,7 @@ urlpatterns = [
     path('get_statuses', views.get_statuses, name='get_statuses'),
     path('get_jobapps', views.get_jobapps, name='get_jobapps'),
     path('update_jobapp', views.update_jobapp, name='update_jobapp'),
+    path('add_jobapp', views.add_jobapp, name='add_jobapp'),
     path('delete_jobapp', views.delete_jobapp, name='delete_jobapp'),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

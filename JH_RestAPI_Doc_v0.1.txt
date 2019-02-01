@@ -352,6 +352,27 @@ Sample response:
     "data": null
 }
 
+
+Endpoint : /api/jobapps/add_jobapp
+Desc : To add new Job Application.
+Type : POST
+Headers 	:	Authorization - Bearer <access_token>
+POST body	:   job_title - <job_title>
+				company - <company>
+				application_date - <YYYY-MM-DD>
+				source - <source>
+				status_id - <status-id>
+				
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": null
+}
+
+
+
 Endpoint : /api/jobapps/delete_jobapp
 Desc : To delete Job Application.
 Type : POST

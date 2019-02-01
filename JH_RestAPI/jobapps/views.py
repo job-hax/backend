@@ -86,3 +86,17 @@ def delete_jobapp(request):
             user_job_app.isDeleted = True    
             user_job_app.save()
     return JsonResponse(create_response(None, success, code), safe=False)        
+
+@csrf_exempt
+@api_view(["POST"])
+def add_jobapp(request):
+    job_title = request.POST['job_title']
+    company = request.POST['company']
+    applicationdate = request.POST['application_date']
+    status = int(request.POST['status_id'])
+    source = request.POST['source']
+
+    japp = JobApplication(jobTitle=job_title, company=company, applyDate=applicationdate, msgId='', source =source, user = request.user, companyLogo = None)
+    japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
+    japp.save()
+    return JsonResponse(create_response(None), safe=False) 
