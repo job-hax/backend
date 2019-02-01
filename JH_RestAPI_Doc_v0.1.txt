@@ -336,6 +336,23 @@ Sample response:
 }
 
 
+Endpoint : /api/jobapps/update_jobapp
+Desc : To update Job Application's status or rejection status. 'status_id' and 'rejected' parameters are optional but at least one of them should be sent.
+Type : POST
+Headers 	:	Authorization - Bearer <access_token>
+POST body	:   jobapp_id - <job-app-id>
+				status_id - <status-id>
+				rejected - <boolean>
+				
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": null
+}
+
+
 
 Endpoint : api/users/get_user_google_mails
 Desc : To get all the emails that read from user's inbox
