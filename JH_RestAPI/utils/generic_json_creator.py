@@ -31,5 +31,9 @@ def get_error_message(error_code):
     elif error_code == 8:
         return 'That username is taken'
     elif error_code == 9:
-        return 'That email is being used'   
+        return 'That email is being used'
+    elif error_code == 10:
+        return 'Invalid parameters...'   
+    elif error_code == 11:
+        return 'Record not found...'      
     return 'Unknown error'    
