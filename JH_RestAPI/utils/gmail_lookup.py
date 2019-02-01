@@ -107,6 +107,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
         mail = GoogleMail(user=user, subject=subject, body=body, date=date, msgId=msg_id)
         if len(inserted_before) == 0:
             mail.save()
+    else:
+        mail = None        
 
     if user.is_authenticated:
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
