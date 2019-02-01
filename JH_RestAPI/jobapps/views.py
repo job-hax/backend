@@ -17,9 +17,9 @@ from .serializers import ApplicationStatusSerializer
 def get_jobapps(request):
     status_id = request.GET.get('status_id')
     if status_id is not None:
-        user_job_apps = JobApplication.objects.filter(applicationStatus_id=status_id,user_id=request.user.id).order_by('-applyDate')
+        user_job_apps = JobApplication.objects.filter(applicationStatus_id=status_id,user_id=request.user.id, isDeleted=False).order_by('-applyDate')
     else:
-        user_job_apps = JobApplication.objects.filter(user_id=request.user.id).order_by('-applyDate')    
+        user_job_apps = JobApplication.objects.filter(user_id=request.user.id, isDeleted=False).order_by('-applyDate')    
     joblist = JobApplicationSerializer(instance=user_job_apps, many=True).data
     return JsonResponse(create_response(joblist), safe=False)
 
@@ -66,3 +66,23 @@ def update_jobapp(request):
                         user_job_app.isRejected = rejected
             user_job_app.save()        
     return JsonResponse(create_response(None, success, code), safe=False)
+
+@csrf_exempt
+@api_view(["POST"])
+def delete_jobapp(request):
+    jobapp_id = request.POST.get('jobapp_id')    
+    success = True
+    code = 0
+    if jobapp_id is None:
+        success = False
+        code = 10
+    else:
+        user_job_app = JobApplication.objects.filter(pk=jobapp_id)
+        if len(user_job_app) == 0:
+            success = False
+            code = 11
+        else:
+            user_job_app = user_job_app[0]
+            user_job_app.isDeleted = True    
+            user_job_app.save()
+    return JsonResponse(create_response(None, success, code), safe=False)        

@@ -352,6 +352,20 @@ Sample response:
     "data": null
 }
 
+Endpoint : /api/jobapps/delete_jobapp
+Desc : To delete Job Application.
+Type : POST
+Headers 	:	Authorization - Bearer <access_token>
+POST body	:   jobapp_id - <job-app-id>
+				
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": null
+}
+
 
 
 Endpoint : api/users/get_user_google_mails
