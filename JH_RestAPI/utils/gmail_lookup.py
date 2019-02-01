@@ -113,7 +113,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
     if user.is_authenticated:
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
       print(image_url)
-      if not inserted_before and jobTitle != '' and company != '':
+      if len(inserted_before) == 0 and jobTitle != '' and company != '':
         if ApplicationStatus.objects.count() == 0:
             status = ApplicationStatus(value='Applied')
             status.save()  
