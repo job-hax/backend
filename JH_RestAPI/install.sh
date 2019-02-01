@@ -10,6 +10,8 @@ psql postgres -c "ALTER USER jobhaxdbuser CREATEDB;"
 pip3 install -r requirements.txt
 
 # Migrate application data changes to postgres:
+python3 manage.py makemigrations users
+python3 manage.py makemigrations jobapps
 python3 manage.py makemigrations
 python3 manage.py migrate
 

@@ -1,7 +1,7 @@
 Endpoint : /api/users/auth_social_user
 Desc : To generate access token
 Type : POST
-Parameters : client_id - <jobhax-client-id>
+POST Body  : client_id - <jobhax-client-id>
 			 client_secret - <jobhax-client-secret>
 			 provider - <google-oauth2 or linkedin-oauth2>
 			 token - <access-token-gathered-from-provider>
@@ -25,7 +25,7 @@ Sample response:
 Endpoint : /api/users/register
 Desc : To register user manually.
 Type : POST
-Parameters : first_name - <first_name>
+POST Body  : first_name - <first_name>
 			 last_name - <last_name>
 			 username - <username>
 			 email - <email>
@@ -48,7 +48,7 @@ Sample response:
 Endpoint : /api/users/login
 Desc : To generate access token
 Type : POST
-Parameters : client_id - <jobhax-client-id>
+POST Body  : client_id - <jobhax-client-id>
 			 client_secret - <jobhax-client-secret>
 			 username - <username>
 			 password - <password>
@@ -75,8 +75,8 @@ Sample response:
 Endpoint : /api/users/logout
 Desc : To logout user
 Type : POST
-Parameters : Authorization - Bearer <access_token>
-             client_id - <jobhax-client-id>
+Headers    :   Authorization - Bearer <access_token>
+POST Body  :   client_id - <jobhax-client-id>
 
 {
     "success": true,
@@ -94,7 +94,7 @@ Parameters : Authorization - Bearer <access_token>
 Endpoint : /api/users/refresh_token
 Desc : To update JobHax access_token if expired.
 Type : POST
-Parameters : client_id - <jobhax-client-id>
+POST Body  : client_id - <jobhax-client-id>
 			 client_secret - <jobhax-client-secret>
 			 refresh_token - <refresh-token-gathered-from-/api/users/auth_social_user>
 
@@ -115,8 +115,9 @@ Sample response:
 Endpoint : /api/users/update_gmail_token
 Desc : To update user GMAIL token. (In such case; user token refreshed or mail_read permission granted after login)
 Type : POST
-Parameters : Authorization token
-             token - <access-token-gathered-from-google>
+Headers    : Authorization - Bearer <access_token>
+POST Body  : token - <access-token-gathered-from-google>
+             
 
 Sample response:
 {
@@ -131,7 +132,7 @@ Sample response:
 Endpoint : /api/users/sync_user_emails
 Desc : To sync user job application emails to JobHax DB.
 Type : GET
-Parameters : Authorization token
+Headers    : Authorization - Bearer <access_token>
 
 Sample response:
 {
@@ -147,7 +148,8 @@ Sample response:
 Endpoint : api/jobapps/get_jobapps
 Desc : To get user's all job applications from JobHax DB.
 Type : GET
-Parameters : Authorization token
+Headers    : Authorization - Bearer <access_token>
+GET params : status_id - <status_id> (optional)
 
 Sample response:
 {
@@ -159,7 +161,7 @@ Sample response:
             "id": 31,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "🤖 Lead Android Engineer",
             "company": "OpenPhone ",
@@ -173,7 +175,7 @@ Sample response:
             "id": 21,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Android Intern (Summer 2019)",
             "company": "Mozilla",
@@ -187,7 +189,7 @@ Sample response:
             "id": 22,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Android Developer",
             "company": "Genuent",
@@ -201,7 +203,7 @@ Sample response:
             "id": 23,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Android Developer",
             "company": "American Technology Consulting - ATC",
@@ -215,7 +217,7 @@ Sample response:
             "id": 27,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Android Engineer",
             "company": "Earnin ",
@@ -229,7 +231,7 @@ Sample response:
             "id": 28,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Android",
             "company": "Houseparty ",
@@ -243,7 +245,7 @@ Sample response:
             "id": 29,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Android Engineer",
             "company": "Twenty ",
@@ -257,7 +259,7 @@ Sample response:
             "id": 24,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Software Engineer Intern",
             "company": "LinkedIn",
@@ -271,7 +273,7 @@ Sample response:
             "id": 30,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Android Engineer",
             "company": "Amazon ",
@@ -285,7 +287,7 @@ Sample response:
             "id": 25,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Android Application Developer (5007)",
             "company": "ERG, Inc.",
@@ -299,7 +301,7 @@ Sample response:
             "id": 26,
             "applicationStatus": {
                 "id": 1,
-                "value": "N/A"
+                "value": "Applied"
             },
             "jobTitle": "Senior Android Developer",
             "company": "Vitamin T",
@@ -318,7 +320,7 @@ Sample response:
 Endpoint : api/jobapps/get_statuses
 Desc : To get all the job application statuses from JobHax DB.
 Type : GET
-Parameters : Authorization token
+Headers    : Authorization - Bearer <access_token>
 
 Sample response:
 {
@@ -328,7 +330,7 @@ Sample response:
     "data": [
         {
             "id": 1,
-            "value": "N/A"
+            "value": "Applied"
         }
     ]
 }
@@ -338,7 +340,7 @@ Sample response:
 Endpoint : api/users/get_user_google_mails
 Desc : To get all the emails that read from user's inbox
 Type : GET
-Parameters : Authorization token
+Headers    : Authorization - Bearer <access_token>
 
 Sample response:
 {

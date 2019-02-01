@@ -25,4 +25,4 @@ class JobApplicationSerializer(serializers.ModelSerializer):
         return JobApplication.objects.create(**validated_data)
   class Meta:
     model = JobApplication
-    fields = ('__all__')
+    fields = ('id', 'applicationStatus', 'jobTitle', 'company', 'companyLogo', 'applyDate', 'source', 'isRejected')

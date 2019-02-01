@@ -48,8 +48,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 jobTitle = subject[subject.index('for ') + 4 : subject.index(' at ')]
                 company = subject[subject.index('at ') + 3:]
             elif(source == 'Hired.com'):
-                jobTitle = subject[subject.index('st: ') + 4 : subject.index(' at ')]
-                company = subject[subject.index('at ') + 3 : subject.index('(')]
+                jobTitle = subject[subject.index('Request: ') + 9 : subject.index(' at ')]
+                company = subject[subject.index('at ') + 3 : subject.index('($')]
             elif(source == 'Indeed'):
                 jobTitle = subject[subject.index('Indeed Application: ') + 20 : ]
         elif header['name'] == 'Date':
@@ -57,51 +57,68 @@ def get_email_detail(service, user_id, msg_id, user, source):
             original_date = header['value']
             date = convertTime(str(date))
     try:
-        for part in message['payload']['parts']:
-            if(part['mimeType'] == 'text/html'):
-                #get mail's body as a string
-                body = str(base64.urlsafe_b64decode(part['body']['data'].encode('ASCII')))
-                if(source == 'LinkedIn'):
-                    posterInformationJSON, decoratedJobPostingJSON, topCardV2JSON = parse_job_detail(body)
-                    s = find_nth(body, 'https://media.licdn.com', 2)
-                    if(s != -1):
-                        e = find_nth(body, '" alt="' + company + '"', 1)
-                        image_url = body[s : e].replace('&amp;', '&')
-                        image_exists=requests.get(image_url)
-                        if(image_exists.status_code == 404):
-                            image_url = None 
-                    else:
-                        image_url = None
-                    if len(image_url) > 300:
-                        image_url = None
-                elif(source == 'Vettery'):
-                    jobTitle = body[body.index('Role: ') + 6 : body.index('Salary')]
-                    jobTitle = removeHtmlTags(jobTitle)
-                    company = body[body.index('interview with ') + 15 : body.index('. Interested?')]
+        if 'parts' not in message['payload']:
+            if message['payload']['mimeType'] == 'text/html' and int(message['payload']['body']['size']) > 0:
+                body = str(base64.urlsafe_b64decode(message['payload']['body']['data'].encode('ASCII')))
+            else:
+                body = None
+        else:    
+            for part in message['payload']['parts']:
+                if(part['mimeType'] == 'text/html'):
+                    #get mail's body as a string
+                    body = str(base64.urlsafe_b64decode(part['body']['data'].encode('ASCII')))
+                    break
+                else:
+                    body = None  
+        if body is not None:            
+            if(source == 'LinkedIn'):
+                posterInformationJSON, decoratedJobPostingJSON, topCardV2JSON = parse_job_detail(body)
+                s = find_nth(body, 'https://media.licdn.com', 2)
+                if(s != -1):
+                    e = find_nth(body, '" alt="' + company + '"', 1)
+                    image_url = body[s : e].replace('&amp;', '&')
+                    image_exists=requests.get(image_url)
+                    if(image_exists.status_code == 404):
+                        image_url = None 
+                else:
                     image_url = None
-                elif(source == 'Indeed'):
-                    c_start_index = body.index('updates from') + 16
-                    c_end_index = body[c_start_index : (c_start_index + 100)].index('</b>')
-                    company = body[c_start_index : c_start_index + c_end_index]
+                if len(image_url) > 300:
                     image_url = None
-                elif(source == 'Hired.com'):
-                    image_url = None    
+            elif(source == 'Vettery'):
+                jobTitle = body[body.index('Role: ') + 6 : body.index('Salary')]
+                jobTitle = removeHtmlTags(jobTitle)
+                company = body[body.index('interview with ') + 15 : body.index('. Interested?')]
+                image_url = None
+            elif(source == 'Indeed'):
+                c_start_index = body.index('updates from') + 16
+                c_end_index = body[c_start_index : (c_start_index + 100)].index('</b>')
+                company = body[c_start_index : c_start_index + c_end_index]
+                image_url = None
+            elif(source == 'Hired.com'):
+                image_url = None                
     except Exception as e:
+        print('exception')
         print(e)
+        body = None
 
     if subject is not None and body is not None and original_date is not None:
-        mail = GoogleMail(user=user, subject=subject, body=body, date=date)
-        mail.save()
+        inserted_before = GoogleMail.objects.all().filter(msgId=msg_id)
+        print(inserted_before)
+        mail = GoogleMail(user=user, subject=subject, body=body, date=date, msgId=msg_id)
+        if len(inserted_before) == 0:
+            mail.save()
+    else:
+        mail = None        
 
     if user.is_authenticated:
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
       print(image_url)
-      if not inserted_before and jobTitle != '' and company != '':
+      if len(inserted_before) == 0 and jobTitle != '' and company != '':
         if ApplicationStatus.objects.count() == 0:
-            status = ApplicationStatus(value='N/A')
+            status = ApplicationStatus(value='Applied')
             status.save()  
         else:
-            status = ApplicationStatus.objects.get(value='N/A')
+            status = ApplicationStatus.objects.get(value='Applied')
         japp = JobApplication(jobTitle=jobTitle, company=company, applyDate=date, msgId=msg_id, source = source, user = user, companyLogo = image_url, applicationStatus = status)
         japp.save()
         if(source == 'LinkedIn'):
