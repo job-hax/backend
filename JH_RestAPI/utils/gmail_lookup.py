@@ -57,37 +57,49 @@ def get_email_detail(service, user_id, msg_id, user, source):
             original_date = header['value']
             date = convertTime(str(date))
     try:
-        for part in message['payload']['parts']:
-            if(part['mimeType'] == 'text/html'):
-                #get mail's body as a string
-                body = str(base64.urlsafe_b64decode(part['body']['data'].encode('ASCII')))
-                if(source == 'LinkedIn'):
-                    posterInformationJSON, decoratedJobPostingJSON, topCardV2JSON = parse_job_detail(body)
-                    s = find_nth(body, 'https://media.licdn.com', 2)
-                    if(s != -1):
-                        e = find_nth(body, '" alt="' + company + '"', 1)
-                        image_url = body[s : e].replace('&amp;', '&')
-                        image_exists=requests.get(image_url)
-                        if(image_exists.status_code == 404):
-                            image_url = None 
-                    else:
-                        image_url = None
-                    if len(image_url) > 300:
-                        image_url = None
-                elif(source == 'Vettery'):
-                    jobTitle = body[body.index('Role: ') + 6 : body.index('Salary')]
-                    jobTitle = removeHtmlTags(jobTitle)
-                    company = body[body.index('interview with ') + 15 : body.index('. Interested?')]
+        if 'parts' not in message['payload']:
+            if message['payload']['mimeType'] == 'text/html' and int(message['payload']['body']['size']) > 0:
+                body = str(base64.urlsafe_b64decode(message['payload']['body']['data'].encode('ASCII')))
+            else:
+                body = None
+        else:    
+            for part in message['payload']['parts']:
+                if(part['mimeType'] == 'text/html'):
+                    #get mail's body as a string
+                    body = str(base64.urlsafe_b64decode(part['body']['data'].encode('ASCII')))
+                    break
+                else:
+                    body = None  
+        if body is not None:            
+            if(source == 'LinkedIn'):
+                posterInformationJSON, decoratedJobPostingJSON, topCardV2JSON = parse_job_detail(body)
+                s = find_nth(body, 'https://media.licdn.com', 2)
+                if(s != -1):
+                    e = find_nth(body, '" alt="' + company + '"', 1)
+                    image_url = body[s : e].replace('&amp;', '&')
+                    image_exists=requests.get(image_url)
+                    if(image_exists.status_code == 404):
+                        image_url = None 
+                else:
                     image_url = None
-                elif(source == 'Indeed'):
-                    c_start_index = body.index('updates from') + 16
-                    c_end_index = body[c_start_index : (c_start_index + 100)].index('</b>')
-                    company = body[c_start_index : c_start_index + c_end_index]
+                if len(image_url) > 300:
                     image_url = None
-                elif(source == 'Hired.com'):
-                    image_url = None    
+            elif(source == 'Vettery'):
+                jobTitle = body[body.index('Role: ') + 6 : body.index('Salary')]
+                jobTitle = removeHtmlTags(jobTitle)
+                company = body[body.index('interview with ') + 15 : body.index('. Interested?')]
+                image_url = None
+            elif(source == 'Indeed'):
+                c_start_index = body.index('updates from') + 16
+                c_end_index = body[c_start_index : (c_start_index + 100)].index('</b>')
+                company = body[c_start_index : c_start_index + c_end_index]
+                image_url = None
+            elif(source == 'Hired.com'):
+                image_url = None                
     except Exception as e:
+        print('exception')
         print(e)
+        body = None
 
     if subject is not None and body is not None and original_date is not None:
         mail = GoogleMail(user=user, subject=subject, body=body, date=date)
