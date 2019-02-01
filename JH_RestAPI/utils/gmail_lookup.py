@@ -48,8 +48,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 jobTitle = subject[subject.index('for ') + 4 : subject.index(' at ')]
                 company = subject[subject.index('at ') + 3:]
             elif(source == 'Hired.com'):
-                jobTitle = subject[subject.index('st: ') + 4 : subject.index(' at ')]
-                company = subject[subject.index('at ') + 3 : subject.index('(')]
+                jobTitle = subject[subject.index('Request: ') + 9 : subject.index(' at ')]
+                company = subject[subject.index('at ') + 3 : subject.index('($')]
             elif(source == 'Indeed'):
                 jobTitle = subject[subject.index('Indeed Application: ') + 20 : ]
         elif header['name'] == 'Date':
@@ -102,8 +102,11 @@ def get_email_detail(service, user_id, msg_id, user, source):
         body = None
 
     if subject is not None and body is not None and original_date is not None:
-        mail = GoogleMail(user=user, subject=subject, body=body, date=date)
-        mail.save()
+        inserted_before = GoogleMail.objects.all().filter(msgId=msg_id)
+        print(inserted_before)
+        mail = GoogleMail(user=user, subject=subject, body=body, date=date, msgId=msg_id)
+        if len(inserted_before) == 0:
+            mail.save()
 
     if user.is_authenticated:
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)

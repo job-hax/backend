@@ -26,6 +26,7 @@ class GoogleMail(models.Model):
   subject = models.CharField(max_length=200)
   body = models.TextField(null=True, blank=True)
   date = models.CharField(max_length=50)
+  msgId = models.CharField(max_length=200, null=True)
 
 class JobPostDetail(models.Model):
   job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 
