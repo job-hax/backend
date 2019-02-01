@@ -10,9 +10,15 @@ brew install postgres
 ./install.sh
 ```
 
-3. Start server located in /JH_RestAPI directory::
+3. Make sure your Postgres is running:
+```
+# Start Postgres
+pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
+```
+
+4. Start server located in /JH_RestAPI directory:
 ```
 ./start.sh
 ```
 
-4. [To see API DOC](/apidoc.md)
+5. [To see API DOC](/apidoc.md)
