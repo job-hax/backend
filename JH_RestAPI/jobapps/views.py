@@ -14,7 +14,11 @@ from .serializers import ApplicationStatusSerializer
 @csrf_exempt
 @api_view(["GET"])
 def get_jobapps(request):
-    user_job_apps = JobApplication.objects.filter(user_id=request.user.id).order_by('-applyDate')
+    status_id = request.GET.get('status_id')
+    if status_id is not None:
+        user_job_apps = JobApplication.objects.filter(applicationStatus_id=status_id,user_id=request.user.id).order_by('-applyDate')
+    else:
+        user_job_apps = JobApplication.objects.filter(user_id=request.user.id).order_by('-applyDate')    
     joblist = JobApplicationSerializer(instance=user_job_apps, many=True).data
     return JsonResponse(create_response(joblist), safe=False)
 

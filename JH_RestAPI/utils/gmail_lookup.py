@@ -98,10 +98,10 @@ def get_email_detail(service, user_id, msg_id, user, source):
       print(image_url)
       if not inserted_before and jobTitle != '' and company != '':
         if ApplicationStatus.objects.count() == 0:
-            status = ApplicationStatus(value='N/A')
+            status = ApplicationStatus(value='Applied')
             status.save()  
         else:
-            status = ApplicationStatus.objects.get(value='N/A')
+            status = ApplicationStatus.objects.get(value='Applied')
         japp = JobApplication(jobTitle=jobTitle, company=company, applyDate=date, msgId=msg_id, source = source, user = user, companyLogo = image_url, applicationStatus = status)
         japp.save()
         if(source == 'LinkedIn'):

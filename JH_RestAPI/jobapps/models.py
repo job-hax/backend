@@ -15,6 +15,7 @@ class JobApplication(models.Model):
   applyDate = models.DateTimeField(blank=True)
   msgId = models.CharField(max_length=200)
   source = models.CharField(max_length=200, default='')
+  isRejected = models.BooleanField(default=False)
   
   def __str__(self):
     return self.jobTitle + '@' + self.company
