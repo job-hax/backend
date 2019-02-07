@@ -407,3 +407,22 @@ Sample response:
         }
     ]
 }
+
+
+Endpoint : api/jobapps/get_jobapp_detail
+Desc : To get details of Job Application
+Type : GET
+Headers 	:	Authorization - Bearer <access_token>
+POST body	:   jobapp_id - <job-app-id>
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": {
+        "posterInformation": {},
+        "decoratedJobPosting": {},
+        "topCardV2": {}
+    }
+}

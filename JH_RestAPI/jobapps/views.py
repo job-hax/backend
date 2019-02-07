@@ -12,6 +12,7 @@ from .models import ApplicationStatus
 from .serializers import JobApplicationSerializer
 from .serializers import ApplicationStatusSerializer
 from .serializers import JobAppllicationDetailSerializer
+import json
 
 # Create your views here.
 @csrf_exempt
@@ -109,14 +110,16 @@ def add_jobapp(request):
 def get_jobapp_detail(request):
   id = request.GET.get('jopapp_id')
   try:
-    app = JobApplication.objects.filter(pk = id)
-    details = JobPostDetail.objects.filter(job_post = app)
-    print(details)
-    jobapp = JobAppllicationDetailSerializer(instance=details[0], many=True).data
+    details = JobPostDetail.objects.all().get(job_post__pk = id)
+    jobapp_detail = {}
+    jobapp_detail['posterInformation'] = json.loads(details.posterInformation)
+    jobapp_detail['decoratedJobPosting'] = json.loads(details.decoratedJobPosting)
+    jobapp_detail['topCardV2'] = json.loads(details.topCardV2)
     success=True
-    code=0
-  except:
+    code=0 
+  except Exception as e:
+    print(e)  
     success=False
     code=11
-    jobapp=None
-  return JsonResponse(create_response(jobapp,success,code), safe=False)
+    jobapp_detail=None
+  return JsonResponse(create_response(jobapp_detail,success,code), safe=False)
