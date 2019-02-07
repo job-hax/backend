@@ -35,4 +35,4 @@ class JobAppllicationDetailSerializer(serializers.ModelSerializer):
         return JobPostDetail.objects.create(**validated_data)
   class Meta:
     model = JobPostDetail
-    fields = ('__all__')
+    fields = ('posterInformation', 'decoratedJobPosting', 'topCardV2')
