@@ -7,6 +7,7 @@ from jobapps import views
 
 urlpatterns = [
     path('get_statuses', views.get_statuses, name='get_statuses'),
+    path('get_status_history', views.get_status_history, name='get_status_history'),
     path('get_jobapps', views.get_jobapps, name='get_jobapps'),
     path('update_jobapp', views.update_jobapp, name='update_jobapp'),
     path('add_jobapp', views.add_jobapp, name='add_jobapp'),

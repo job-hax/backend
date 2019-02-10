@@ -4,6 +4,7 @@ from .models import ApplicationStatus
 from .models import JobApplication
 from .models import GoogleMail
 from .models import JobPostDetail
+from .models import StatusHistory
 from rest_framework import serializers
 
 
@@ -29,6 +30,13 @@ class JobApplicationSerializer(serializers.ModelSerializer):
     model = JobApplication
     fields = ('id', 'applicationStatus', 'jobTitle', 'company', 'companyLogo', 'applyDate', 'source', 'isRejected')
 
+class StatusHistorySerializer(serializers.ModelSerializer):
+  applicationStatus = ApplicationStatusSerializer(read_only=True)
+  def create(self, validated_data):
+        return StatusHistory.objects.create(**validated_data)
+  class Meta:
+    model = StatusHistory
+    fields = ('applicationStatus','update_date')       
 
 class JobAppllicationDetailSerializer(serializers.ModelSerializer):
   def create(self, validated_data):
@@ -36,3 +44,5 @@ class JobAppllicationDetailSerializer(serializers.ModelSerializer):
   class Meta:
     model = JobPostDetail
     fields = ('posterInformation', 'decoratedJobPosting', 'topCardV2')
+
+ 

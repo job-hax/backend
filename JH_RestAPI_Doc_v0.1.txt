@@ -336,6 +336,31 @@ Sample response:
 }
 
 
+
+Endpoint : api/jobapps/get_status_history
+Desc : To get status change history of job application
+Type : GET
+Headers 	:	Authorization - Bearer <access_token>
+POST body	:   jobapp_id - <job-app-id>
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": [
+        {
+            "applicationStatus": {
+                "id": 1,
+                "value": "Applied"
+            },
+            "update_date": "2019-02-10T10:38:36.202351Z"
+        }
+    ]
+}
+
+
+
 Endpoint : /api/jobapps/update_jobapp
 Desc : To update Job Application's status or rejection status. 'status_id' and 'rejected' parameters are optional but at least one of them should be sent.
 Type : POST
