@@ -1,3 +1,5 @@
+USER ENDPOINTS
+
 Endpoint : /api/users/auth_social_user
 Desc : To generate access token
 Type : POST
@@ -42,9 +44,6 @@ Sample response:
 
 
 
-
-
-
 Endpoint : /api/users/login
 Desc : To generate access token
 Type : POST
@@ -69,9 +68,6 @@ Sample response:
 
 
 
-
-
-
 Endpoint : /api/users/logout
 Desc : To logout user
 Type : POST
@@ -84,10 +80,6 @@ POST Body  :   client_id - <jobhax-client-id>
     "error_message": "",
     "data": null
 }
-
-
-
-
 
 
 
@@ -111,6 +103,8 @@ Sample response:
         "refresh_token": "lHc5JiB9SohPjImcSB8aIRF9QNdK77"
     }
 }
+
+
 
 Endpoint : /api/users/update_gmail_token
 Desc : To update user GMAIL token. (In such case; user token refreshed or mail_read permission granted after login)
@@ -144,6 +138,28 @@ Sample response:
 
 
 
+Endpoint : api/users/get_user_google_mails
+Desc : To get all the emails that read from user's inbox
+Type : GET
+Headers    : Authorization - Bearer <access_token>
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": [
+        {
+            "subject": "You applied for Android Developer at Genuent,
+            "body": "<html><body>HTML content</body></html>",
+            "date": "2018-11-14 06:08:19+00:00"
+        }
+    ]
+}
+
+
+
+JOB APPLICATION ENDPOINTS
 
 Endpoint : api/jobapps/get_jobapps
 Desc : To get user's all job applications from JobHax DB.
@@ -316,7 +332,6 @@ Sample response:
 
 
 
-
 Endpoint : api/jobapps/get_statuses
 Desc : To get all the job application statuses from JobHax DB.
 Type : GET
@@ -334,6 +349,7 @@ Sample response:
         }
     ]
 }
+
 
 
 
@@ -378,6 +394,7 @@ Sample response:
 }
 
 
+
 Endpoint : /api/jobapps/add_jobapp
 Desc : To add new Job Application.
 Type : POST
@@ -414,26 +431,6 @@ Sample response:
 
 
 
-Endpoint : api/users/get_user_google_mails
-Desc : To get all the emails that read from user's inbox
-Type : GET
-Headers    : Authorization - Bearer <access_token>
-
-Sample response:
-{
-    "success": true,
-    "error_code": 0,
-    "error_message": "",
-    "data": [
-        {
-            "subject": "You applied for Android Developer at Genuent,
-            "body": "<html><body>HTML content</body></html>",
-            "date": "2018-11-14 06:08:19+00:00"
-        }
-    ]
-}
-
-
 Endpoint : api/jobapps/get_jobapp_detail
 Desc : To get details of Job Application
 Type : GET
@@ -449,5 +446,477 @@ Sample response:
         "posterInformation": {},
         "decoratedJobPosting": {},
         "topCardV2": {}
+    }
+}
+
+
+METRIC ENDPOINTS
+
+
+Endpoint : api/metrics/get_total_application_count
+Desc : To get count of user's job application
+Type : GET
+Headers : Authorization token
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": {
+        "count": 28
+    }
+}
+
+
+
+Endpoint : api/metrics/get_application_count_by_month
+Desc : To get count of user's job application by month
+Type : GET
+Headers : Authorization token
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": [
+        {
+            "source": "Hired.com",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                0,
+                0
+            ]
+        },
+        {
+            "source": "LinkedIn",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                1,
+                0,
+                3,
+                0
+            ]
+        },
+        {
+            "source": "Indeed",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                8
+            ]
+        },
+        {
+            "source": "Vettery",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "source": "Others",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ]
+        }
+    ]
+}
+
+
+
+Endpoint : api/metrics/get_application_count_by_month_with_total
+Desc : To get count of user's job application by month with total
+Type : GET
+Headers : Authorization token
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": [
+        {
+            "source": "Hired.com",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                0,
+                0
+            ]
+        },
+        {
+            "source": "LinkedIn",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                1,
+                0,
+                3,
+                0
+            ]
+        },
+        {
+            "source": "Indeed",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                8
+            ]
+        },
+        {
+            "source": "Vettery",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "source": "Others",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "source": "Total",
+            "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                3,
+                2,
+                3,
+                8
+            ]
+        }
+    ]
+}
+
+
+
+
+Endpoint : api/metrics/get_count_by_statuses
+Desc : To get count of user's job application by its statuses
+Type : GET
+Headers : Authorization token
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": [
+        {
+            "name": "Applied",
+            "value": 27
+        },
+        {
+            "name": "Interviewing",
+            "value": 1
+        }
+    ]
+}
+
+
+
+
+Endpoint : api/metrics/get_word_count
+Desc : To get unique words in job applications
+Type : GET
+Headers : Authorization token
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": [
+        {
+            "word": "ERG, Inc.",
+            "value": 1
+        },
+        {
+            "word": "BrainyPro",
+            "value": 1
+        },
+        {
+            "word": "Amazon ",
+            "value": 1
+        },
+        {
+            "word": "KgTiger",
+            "value": 1
+        },
+        {
+            "word": "Carvana",
+            "value": 1
+        },
+        {
+            "word": "Personal Capital",
+            "value": 1
+        },
+        {
+            "word": "EIT Professionals",
+            "value": 1
+        },
+        {
+            "word": "Earnin ",
+            "value": 1
+        },
+        {
+            "word": "American Technology Consulting - ATC",
+            "value": 1
+        },
+        {
+            "word": "Bank of America, National Association ",
+            "value": 1
+        },
+        {
+            "word": "HCL Americas",
+            "value": 1
+        },
+        {
+            "word": "OpenPhone ",
+            "value": 1
+        },
+        {
+            "word": "Mozilla",
+            "value": 1
+        },
+        {
+            "word": "Xor Corporation",
+            "value": 1
+        },
+        {
+            "word": "Authentic8",
+            "value": 1
+        },
+        {
+            "word": "Houseparty ",
+            "value": 1
+        },
+        {
+            "word": "LinkedIn",
+            "value": 1
+        },
+        {
+            "word": "LEIA Inc.",
+            "value": 1
+        },
+        {
+            "word": "Roku",
+            "value": 1
+        },
+        {
+            "word": "Vitamin T",
+            "value": 1
+        },
+        {
+            "word": "KRG TECH",
+            "value": 1
+        },
+        {
+            "word": "O2 Staffing",
+            "value": 1
+        },
+        {
+            "word": "Vimerse Infotech Inc.",
+            "value": 1
+        },
+        {
+            "word": "Wynd Technologies, Inc.",
+            "value": 1
+        },
+        {
+            "word": "Azumio Inc.",
+            "value": 1
+        },
+        {
+            "word": "Highfive ",
+            "value": 1
+        },
+        {
+            "word": "Twenty ",
+            "value": 1
+        },
+        {
+            "word": "Genuent",
+            "value": 1
+        }
+    ]
+}
+
+
+
+
+Endpoint : api/jobapps/get_count_by_jobtitle_and_statuses
+Desc : To get job application count by job title and status
+Type : GET
+Headers 	:	Authorization - Bearer <access_token>
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": {
+        "jobs": [
+            "Android Engineer",
+            "Android Developer",
+            "Android Application Developer",
+            "Mobile Developer (iOS and Android)",
+            "Software Engineer",
+            "Senior Android Developer",
+            "Android Intern (Summer 2019)",
+            "Mobile Software Engineer",
+            "Urgent: Android Developer",
+            "Android",
+            "🤖 Lead Android Engineer",
+            "Android Software Engineer, Mobile Services",
+            "Software Engineer Intern",
+            "Android Application Developer (5007)",
+            "Software Engineer - Android"
+        ],
+        "statuses": [
+            "Interviewing",
+            "Applied"
+        ],
+        "data": [
+            {
+                "name": "Interviewing",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            {
+                "name": "Applied",
+                "data": [
+                    6,
+                    8,
+                    2,
+                    1,
+                    0,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1
+                ]
+            }
+        ]
     }
 }
