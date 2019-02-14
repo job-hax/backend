@@ -123,6 +123,57 @@ Sample response:
 
 
 
+Endpoint : /api/users/get_linkedin_profile
+Desc : To get user's linkedinIn profile if the user logged in with their linkedIn profile.
+Type : GET
+Headers : Authorization token
+
+Sample response:
+{
+  "success": true,
+  "error_code": 0,
+  "error_message": "",
+  "data": {
+    "firstName": {
+      "localized": {
+        "en_US": "Bob"
+      },
+      "preferredLocale": {
+        "country": "US",
+        "language": "en"
+      }
+    },
+    "localizedFirstName": "Bob",
+    "headline": {
+      "localized": {
+        "en_US": "API Enthusiast at LinkedIn"
+      },
+      "preferredLocale": {
+        "country": "US",
+        "language": "en"
+      }
+    },
+    "localizedHeadline": "API Enthusiast at LinkedIn",
+    "vanityName": "bsmith",
+    "id": "yrZCpj2Z12",
+    "lastName": {
+      "localized": {
+        "en_US": "Smith"
+      },
+      "preferredLocale": {
+        "country": "US",
+        "language": "en"
+      }
+    },
+    "localizedLastName": "Smith",
+    "profilePicture": {
+      "displayImage": "urn:li:digitalmediaAsset:C4D00AAAAbBCDEFGhiJ"
+    }
+  }
+}
+
+
+
 Endpoint : /api/users/sync_user_emails
 Desc : To sync user job application emails to JobHax DB.
 Type : GET
