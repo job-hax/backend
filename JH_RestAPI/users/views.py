@@ -3,6 +3,7 @@ from django.http import JsonResponse
 import requests
 import json
 from utils.generic_json_creator import create_response
+from utils.linkedin_lookup import get_profile
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
@@ -98,7 +99,7 @@ def auth_social_user(request):
         code = 1
     else:
         success = True   
-        code = 0 
+        code = 0
     return JsonResponse(create_response(jsonres, success, code), safe=False)
 
 @require_POST
@@ -131,6 +132,15 @@ def sync_user_emails(request):
     #scheduleFetcher.now(request.user.id)
     scheduleFetcher(request.user.id)
     return JsonResponse(create_response(None), safe=False)    
+
+@csrf_exempt
+@api_view(["GET"])
+def get_linkedin_profile(request): 
+    result, text = get_profile(request.user)   
+    if result:
+        return JsonResponse(create_response(text), safe=False) 
+    else:
+        return JsonResponse(create_response(None, False, 2))    
 
 @background(schedule=1)
 def scheduleFetcher(user_id):
