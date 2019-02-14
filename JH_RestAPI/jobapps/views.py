@@ -9,9 +9,11 @@ from django.db import models
 from .models import JobApplication
 from .models import JobPostDetail
 from .models import ApplicationStatus
+from .models import StatusHistory
 from .serializers import JobApplicationSerializer
 from .serializers import ApplicationStatusSerializer
 from .serializers import JobAppllicationDetailSerializer
+from .serializers import StatusHistorySerializer
 import json
 
 # Create your views here.
@@ -32,6 +34,27 @@ def get_statuses(request):
     statuses = ApplicationStatus.objects.all()
     slist = ApplicationStatusSerializer(instance=statuses, many=True).data
     return JsonResponse(create_response(slist), safe=False)
+
+@csrf_exempt
+@api_view(["GET"])
+def get_status_history(request):
+    jobapp_id = request.GET.get('jopapp_id')
+    success = True
+    code = 0
+    slist = []  
+    if jobapp_id is None:
+        success = False
+        code = 10
+    else:    
+        statuses = StatusHistory.objects.filter(job_post__pk = jobapp_id)
+        try:
+            slist = StatusHistorySerializer(instance=statuses, many=True).data
+        except Exception as e:
+            print(e)  
+            success=False
+            code=11
+    print(slist)         
+    return JsonResponse(create_response(slist, success, code), safe=False)    
 
 @csrf_exempt
 @api_view(["POST"])
@@ -67,6 +90,8 @@ def update_jobapp(request):
                     else:
                         user_job_app.applicationStatus = new_status[0]
                         user_job_app.isRejected = rejected
+                    status_history = StatusHistory(job_post = user_job_app, applicationStatus = new_status[0])
+                    status_history.save()    
             user_job_app.save()
     return JsonResponse(create_response(None, success, code), safe=False)
 

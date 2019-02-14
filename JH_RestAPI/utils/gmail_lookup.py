@@ -18,6 +18,7 @@ from social_django.utils import load_strategy
 from jobapps.models import JobApplication
 from jobapps.models import GoogleMail
 from jobapps.models import ApplicationStatus
+from jobapps.models import StatusHistory
 from jobapps.models import JobPostDetail
 import base64
 import time
@@ -103,9 +104,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
 
     if subject is not None and body is not None and original_date is not None:
         inserted_before = GoogleMail.objects.all().filter(msgId=msg_id)
-        print(inserted_before)
         mail = GoogleMail(user=user, subject=subject, body=body, date=date, msgId=msg_id)
-        if len(inserted_before) == 0:
+        if inserted_before is None or len(inserted_before) == 0:
             mail.save()
     else:
         mail = None        
@@ -113,7 +113,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
     if user.is_authenticated:
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
       print(image_url)
-      if len(inserted_before) == 0 and jobTitle != '' and company != '':
+      if inserted_before is None or (len(inserted_before) == 0 and jobTitle != '' and company != ''):
         if ApplicationStatus.objects.count() == 0:
             status = ApplicationStatus(value='Applied')
             status.save()  
@@ -121,6 +121,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
             status = ApplicationStatus.objects.get(value='Applied')
         japp = JobApplication(jobTitle=jobTitle, company=company, applyDate=date, msgId=msg_id, source = source, user = user, companyLogo = image_url, applicationStatus = status)
         japp.save()
+        status_history = StatusHistory(job_post = japp, applicationStatus = status)
+        status_history.save()
         if(source == 'LinkedIn'):
             japp_details = JobPostDetail(job_post = japp, posterInformation = posterInformationJSON, decoratedJobPosting = decoratedJobPostingJSON, topCardV2 = topCardV2JSON)
             japp_details.save()

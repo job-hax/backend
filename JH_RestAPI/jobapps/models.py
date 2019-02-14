@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime   
     
 class ApplicationStatus(models.Model):
   value = models.CharField(max_length=20)
@@ -8,7 +9,7 @@ class ApplicationStatus(models.Model):
 
 class JobApplication(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-  applicationStatus = models.ForeignKey(ApplicationStatus, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='applicationStatus')
+  applicationStatus = models.ForeignKey(ApplicationStatus, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='%(class)s_applicationStatus')
   jobTitle = models.CharField(max_length=200)
   company = models.CharField(max_length=200)
   companyLogo = models.CharField(max_length=200, null=True, blank=True)
@@ -20,6 +21,11 @@ class JobApplication(models.Model):
   
   def __str__(self):
     return self.jobTitle + '@' + self.company
+
+class StatusHistory(models.Model):
+  job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 
+  applicationStatus = models.ForeignKey(ApplicationStatus, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='%(class)s_applicationStatus')
+  update_date = models.DateTimeField(default=datetime.now, blank=True)    
 
 class GoogleMail(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=True)    
