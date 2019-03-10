@@ -14,6 +14,7 @@ from jobapps.serializers import GoogleMailSerializer
 from utils.gmail_lookup import fetchJobApplications
 from background_task import background
 from social_django.models import UserSocialAuth
+from rest_framework.parsers import JSONParser
 
 
 # Create your views here.
@@ -21,12 +22,13 @@ from social_django.models import UserSocialAuth
 @csrf_exempt
 def register(request):
     # Get form values
-    first_name = request.POST['first_name']
-    last_name = request.POST['last_name']
-    username = request.POST['username']
-    email = request.POST['email']
-    password = request.POST['password']
-    password2 = request.POST['password2']
+    body = JSONParser().parse(request)
+    first_name = body['first_name']
+    last_name = body['last_name']
+    username = body['username']
+    email = body['email']
+    password = body['password']
+    password2 = body['password2']
 
     success = True
     code = 0
@@ -53,12 +55,13 @@ def register(request):
 @require_POST
 @csrf_exempt
 def login(request):
-    post_data = {'client_id': request.POST['client_id']}
-    post_data['client_secret'] = request.POST['client_secret']
+    body = JSONParser().parse(request)
+    post_data = {'client_id': body['client_id']}
+    post_data['client_secret'] = body['client_secret']
     post_data['grant_type'] = 'password'
-    post_data['username'] = request.POST['username']
-    post_data['password'] = request.POST['password']
-    response = requests.post('http://localhost:8000/auth/token', data=post_data)
+    post_data['username'] = body['username']
+    post_data['password'] = body['password']
+    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
@@ -71,9 +74,13 @@ def login(request):
 @require_POST
 @csrf_exempt
 def logout(request):
-    post_data = {'client_id': request.POST['client_id']}
-    headers = {'Authorization': request.META.get('HTTP_AUTHORIZATION')}
-    response = requests.post('http://localhost:8000/auth/invalidate-sessions', data=post_data, headers=headers)
+    body = JSONParser().parse(request)
+    post_data = {'token': body['token']}
+    post_data['client_id'] = body['client_id']
+    post_data['client_secret'] = body['client_secret']
+    headers = {'content-type': 'application/json'}
+    response = requests.post('http://localhost:8000/auth/revoke-token', data=json.dumps(post_data), headers=headers)
+    print(response.text)
     if response.status_code is 204 or response.status_code is 200:
         success = True
         code = 0
@@ -86,13 +93,14 @@ def logout(request):
 @require_POST
 @csrf_exempt
 def auth_social_user(request):
-    post_data = {'client_id': request.POST['client_id']}
-    post_data['client_secret'] = request.POST['client_secret']
+    body = JSONParser().parse(request)
+    post_data = {'client_id': body['client_id']}
+    post_data['client_secret'] = body['client_secret']
     post_data['grant_type'] = 'convert_token'
-    provider = request.POST['provider']
+    provider = body['provider']
     post_data['backend'] = provider
-    post_data['token'] = request.POST['token']
-    response = requests.post('http://localhost:8000/auth/convert-token', data=post_data)
+    post_data['token'] = body['token']
+    response = requests.post('http://localhost:8000/auth/convert-token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
@@ -105,11 +113,12 @@ def auth_social_user(request):
 @require_POST
 @csrf_exempt
 def refresh_token(request):
-    post_data = {'client_id': request.POST['client_id']}
-    post_data['client_secret'] = request.POST['client_secret']
+    body = JSONParser().parse(request)
+    post_data = {'client_id': body['client_id']}
+    post_data['client_secret'] = body['client_secret']
     post_data['grant_type'] = 'refresh_token'
-    post_data['refresh_token'] = request.POST['refresh_token']
-    response = requests.post('http://localhost:8000/auth/token', data=post_data)
+    post_data['refresh_token'] = body['refresh_token']
+    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
@@ -148,11 +157,11 @@ def scheduleFetcher(user_id):
     if user.social_auth.filter(provider='google-oauth2'):
         fetchJobApplications(user)    
 
-@require_POST
-@csrf_exempt
 @api_view(["POST"])
+@csrf_exempt
 def update_gmail_token(request):
-    token = request.POST['token']
+    body = request.data
+    token = body['token']
     try:
         user_profile = UserSocialAuth.objects.get(user=request.user)
         print(user_profile)
