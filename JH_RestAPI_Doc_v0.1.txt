@@ -1,8 +1,12 @@
+ALL THE POST BODIES ARE IN JSON FORMAT.
+
+
 USER ENDPOINTS
 
 Endpoint : /api/users/auth_social_user
 Desc : To generate access token
 Type : POST
+Headers    : Content-Type - application/json
 POST Body  : client_id - <jobhax-client-id>
 			 client_secret - <jobhax-client-secret>
 			 provider - <google-oauth2 or linkedin-oauth2>
@@ -27,6 +31,7 @@ Sample response:
 Endpoint : /api/users/register
 Desc : To register user manually.
 Type : POST
+Headers    : Content-Type - application/json
 POST Body  : first_name - <first_name>
 			 last_name - <last_name>
 			 username - <username>
@@ -47,6 +52,7 @@ Sample response:
 Endpoint : /api/users/login
 Desc : To generate access token
 Type : POST
+Headers    : Content-Type - application/json
 POST Body  : client_id - <jobhax-client-id>
 			 client_secret - <jobhax-client-secret>
 			 username - <username>
@@ -71,8 +77,10 @@ Sample response:
 Endpoint : /api/users/logout
 Desc : To logout user
 Type : POST
-Headers    :   Authorization - Bearer <access_token>
+Headers    :   Content-Type - application/json
 POST Body  :   client_id - <jobhax-client-id>
+			   client_secret - <jobhax-client-secret>
+               token - <token-that-will-be-revoked>
 
 {
     "success": true,
@@ -86,6 +94,7 @@ POST Body  :   client_id - <jobhax-client-id>
 Endpoint : /api/users/refresh_token
 Desc : To update JobHax access_token if expired.
 Type : POST
+Headers    : Content-Type - application/json
 POST Body  : client_id - <jobhax-client-id>
 			 client_secret - <jobhax-client-secret>
 			 refresh_token - <refresh-token-gathered-from-/api/users/auth_social_user>
@@ -109,6 +118,7 @@ Sample response:
 Endpoint : /api/users/update_gmail_token
 Desc : To update user GMAIL token. (In such case; user token refreshed or mail_read permission granted after login)
 Type : POST
+Headers    : Content-Type - application/json
 Headers    : Authorization - Bearer <access_token>
 POST Body  : token - <access-token-gathered-from-google>
              
@@ -126,7 +136,7 @@ Sample response:
 Endpoint : /api/users/get_linkedin_profile
 Desc : To get user's linkedinIn profile if the user logged in with their linkedIn profile.
 Type : GET
-Headers : Authorization token
+Headers    : Authorization - Bearer <access_token>
 
 Sample response:
 {
@@ -431,6 +441,7 @@ Sample response:
 Endpoint : /api/jobapps/update_jobapp
 Desc : To update Job Application's status or rejection status. 'status_id' and 'rejected' parameters are optional but at least one of them should be sent.
 Type : POST
+Headers     :   Content-Type - application/json
 Headers 	:	Authorization - Bearer <access_token>
 POST body	:   jobapp_id - <job-app-id>
 				status_id - <status-id>
@@ -449,6 +460,7 @@ Sample response:
 Endpoint : /api/jobapps/add_jobapp
 Desc : To add new Job Application.
 Type : POST
+Headers     :   Content-Type - application/json
 Headers 	:	Authorization - Bearer <access_token>
 POST body	:   job_title - <job_title>
 				company - <company>
@@ -469,6 +481,7 @@ Sample response:
 Endpoint : /api/jobapps/delete_jobapp
 Desc : To delete Job Application.
 Type : POST
+Headers     :   Content-Type - application/json
 Headers 	:	Authorization - Bearer <access_token>
 POST body	:   jobapp_id - <job-app-id>
 				
@@ -507,7 +520,7 @@ METRIC ENDPOINTS
 Endpoint : api/metrics/get_total_application_count
 Desc : To get count of user's job application
 Type : GET
-Headers : Authorization token
+Headers 	:	Authorization - Bearer <access_token>
 
 Sample response:
 {
@@ -524,7 +537,7 @@ Sample response:
 Endpoint : api/metrics/get_application_count_by_month
 Desc : To get count of user's job application by month
 Type : GET
-Headers : Authorization token
+Headers 	:	Authorization - Bearer <access_token>
 
 Sample response:
 {
@@ -625,7 +638,7 @@ Sample response:
 Endpoint : api/metrics/get_application_count_by_month_with_total
 Desc : To get count of user's job application by month with total
 Type : GET
-Headers : Authorization token
+Headers 	:	Authorization - Bearer <access_token>
 
 Sample response:
 {
@@ -744,7 +757,7 @@ Sample response:
 Endpoint : api/metrics/get_count_by_statuses
 Desc : To get count of user's job application by its statuses
 Type : GET
-Headers : Authorization token
+Headers 	:	Authorization - Bearer <access_token>
 
 Sample response:
 {
@@ -769,7 +782,7 @@ Sample response:
 Endpoint : api/metrics/get_word_count
 Desc : To get unique words in job applications
 Type : GET
-Headers : Authorization token
+Headers 	:	Authorization - Bearer <access_token>
 
 Sample response:
 {

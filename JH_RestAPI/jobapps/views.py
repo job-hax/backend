@@ -15,6 +15,8 @@ from .serializers import ApplicationStatusSerializer
 from .serializers import JobAppllicationDetailSerializer
 from .serializers import StatusHistorySerializer
 import json
+from rest_framework.parsers import JSONParser
+
 
 # Create your views here.
 @csrf_exempt
@@ -59,9 +61,10 @@ def get_status_history(request):
 @csrf_exempt
 @api_view(["POST"])
 def update_jobapp(request):
-    status_id = request.POST.get('status_id')
-    rejected = get_boolean_from_request(request, 'rejected', 'POST')
-    jobapp_id = request.POST.get('jobapp_id')
+    body = request.data
+    status_id = body['status_id']
+    rejected = body['rejected']
+    jobapp_id = body['jobapp_id']
     success = True
     code = 0
     if jobapp_id is None:
@@ -98,7 +101,8 @@ def update_jobapp(request):
 @csrf_exempt
 @api_view(["POST"])
 def delete_jobapp(request):
-    jobapp_id = request.POST.get('jobapp_id')
+    body = request.data
+    jobapp_id = body['jobapp_id']
     success = True
     code = 0
     if jobapp_id is None:
@@ -118,11 +122,12 @@ def delete_jobapp(request):
 @csrf_exempt
 @api_view(["POST"])
 def add_jobapp(request):
-    job_title = request.POST['job_title']
-    company = request.POST['company']
-    applicationdate = request.POST['application_date']
-    status = int(request.POST['status_id'])
-    source = request.POST['source']
+    body = request.data
+    job_title = body['job_title']
+    company = body['company']
+    applicationdate = body['application_date']
+    status = int(body['status_id'])
+    source = body['source']
 
     japp = JobApplication(jobTitle=job_title, company=company, applyDate=applicationdate, msgId='', source =source, user = request.user, companyLogo = None)
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
