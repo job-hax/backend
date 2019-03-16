@@ -15,6 +15,7 @@ from .serializers import ApplicationStatusSerializer
 from .serializers import JobAppllicationDetailSerializer
 from .serializers import StatusHistorySerializer
 import json
+from utils.logger import log
 from rest_framework.parsers import JSONParser
 
 
@@ -52,10 +53,9 @@ def get_status_history(request):
         try:
             slist = StatusHistorySerializer(instance=statuses, many=True).data
         except Exception as e:
-            print(e)  
+            log(e, 'e')  
             success=False
-            code=11
-    print(slist)         
+            code=11     
     return JsonResponse(create_response(slist, success, code), safe=False)    
 
 @csrf_exempt
@@ -148,7 +148,7 @@ def get_jobapp_detail(request):
     success=True
     code=0 
   except Exception as e:
-    print(e)  
+    log(e, 'e')  
     success=False
     code=11
     jobapp_detail=None

@@ -26,6 +26,7 @@ from .gmail_utils import convertTime
 from .gmail_utils import removeHtmlTags
 from .gmail_utils import find_nth
 from .linkedin_utils import parse_job_detail
+from utils.logger import log
 
 def get_email_detail(service, user_id, msg_id, user, source):
   """Get a Message with given ID.
@@ -98,8 +99,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
             elif(source == 'Hired.com'):
                 image_url = None                
     except Exception as e:
-        print('exception')
-        print(e)
+        log(e, 'e')
         body = None
 
     if subject is not None and body is not None and original_date is not None:
@@ -112,7 +112,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
 
     if user.is_authenticated:
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
-      print(image_url)
+      log(image_url, 'i')
       if inserted_before is None or (len(inserted_before) == 0 and jobTitle != '' and company != ''):
         if ApplicationStatus.objects.count() == 0:
             status = ApplicationStatus(value='Applied')
@@ -133,7 +133,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
   except errors.HttpError as error:
     if error.resp.status == 403 or error.resp.status == 401:
         return False
-    print('An error occurred: %s' % error)
+    log('An error occurred: %s' % error, 'e')
 
 
 
@@ -167,7 +167,7 @@ def get_emails_with_custom_query(service, user_id, query=''):
   except errors.HttpError as error:
     if error.resp.status == 403 or error.resp.status == 401:
         return False
-    print('An error occurred: %s' % error)
+    log('An error occurred: %s' % error, e)
 
 def fetchJobApplications(user):
     time_string = ''
@@ -176,20 +176,12 @@ def fetchJobApplications(user):
 
     if profile.gmail_last_update_time != 0:
         time_string = ' AND after:' + str(profile.gmail_last_update_time)
-        print('its not the first time query will be added : ' + time_string)
+        log('its not the first time query will be added : ' + time_string, 'i')
     else:
-        print('its the first time.. so we are querying all mails')
+        log('its the first time.. so we are querying all mails', 'i')
 
-    #try:
     #initiates Gmail API
-    #usa = user.social_auth.get(provider='google-oauth2')
-    #cre = Credentials(usa)
-    #GMAIL = build('gmail', 'v1', credentials=cre)
     usa = user.social_auth.get(provider='google-oauth2')
-    #print(usa.extra_data['access_token'])
-    #strategy = load_strategy()
-    #usa.refresh_token(strategy)
-    #print(usa.extra_data['access_token'])
     try:
         creds= Credentials(usa)
         GMAIL = build('gmail', 'v1', credentials=creds)
@@ -199,8 +191,8 @@ def fetchJobApplications(user):
         vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
         indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
     except Exception as e:
-        print('Users google token probably expired. Should have new token from google')
-        print(e)
+        log('Users google token probably expired. Should have new token from google', 'e')
+        log(e, 'e')
         profile.is_gmail_read_ok = False
         profile.save()
         return          
@@ -209,7 +201,7 @@ def fetchJobApplications(user):
         or indeedMessages is False or vetteryMessages is False:
         profile.is_gmail_read_ok = False
         profile.save()
-        print('403 error got from Google. Check permissions...')
+        log('403 error got from Google. Check permissions...', 'e')
         return
 
     #retvieves specific email's detail one by one
@@ -231,5 +223,3 @@ def fetchJobApplications(user):
     profile.gmail_last_update_time = now
     profile.is_gmail_read_ok = True
     profile.save()      
-    #except Exception as error:
-    #    print('An error occurred: %s' % error)
