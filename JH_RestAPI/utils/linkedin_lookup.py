@@ -11,5 +11,5 @@ def get_profile(user):
         profile.save()
         return True, r.text
     except Exception as e:
-        print(e)  
+        log(e, 'e')  
         return False, None    

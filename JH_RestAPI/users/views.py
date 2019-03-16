@@ -15,6 +15,7 @@ from utils.gmail_lookup import fetchJobApplications
 from background_task import background
 from social_django.models import UserSocialAuth
 from rest_framework.parsers import JSONParser
+from utils.logger import log
 
 
 # Create your views here.
@@ -80,7 +81,7 @@ def logout(request):
     post_data['client_secret'] = body['client_secret']
     headers = {'content-type': 'application/json'}
     response = requests.post('http://localhost:8000/auth/revoke-token', data=json.dumps(post_data), headers=headers)
-    print(response.text)
+    log(response.text, 'i')
     if response.status_code is 204 or response.status_code is 200:
         success = True
         code = 0
@@ -164,7 +165,7 @@ def update_gmail_token(request):
     token = body['token']
     try:
         user_profile = UserSocialAuth.objects.get(user=request.user)
-        print(user_profile)
+        log(user_profile, 'i')
         if user_profile is not None:
             user_profile.extra_data['access_token'] = token
             user_profile.save()
@@ -175,7 +176,7 @@ def update_gmail_token(request):
             success = False
             code = 2
     except Exception as e: 
-        print(e)
+        log(e, 'e')
         success = False   
         code = 3         
     return JsonResponse(create_response(None, success, code), safe=False)    

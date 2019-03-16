@@ -13,10 +13,8 @@ def parse_job_detail(body):
     String values which represent details of job post in JSON format.  
   """
   try:
-    #start = datetime.utcnow().timestamp()
-    #print(start)
     link = body[find_nth(body, 'https://www.linkedin.com/comm/jobs/view/', 1) : find_nth(body, '?trk', 1)]
-    print(link)
+    log(link, 'i')
     url = requests.get(link)
     htmltext = url.text
     s = find_nth(htmltext, '<code id="viewJobMetaTagModule">', 1)
@@ -24,7 +22,6 @@ def parse_job_detail(body):
     plainData = htmltext[s : e]
     plainData = plainData.replace('<!--','')
     plainData = plainData.replace('-->','')
-    #print(plainData)
     soup = bs(plainData, "html.parser")
     try:
         posterInformation = soup.find('code', id='posterInformationModule')
@@ -41,9 +38,8 @@ def parse_job_detail(body):
         topCardV2JSON = topCardV2.getText()
     except:
         topCardV2JSON = '{}' 
-    #end = datetime.utcnow().timestamp()
-    #print(end)        
+        
     return posterInformationJSON, decoratedJobPostingJSON, topCardV2JSON
   except Exception as e:
-      print(e)  
+      log(e, 'e')  
       return '{}','{}','{}'
