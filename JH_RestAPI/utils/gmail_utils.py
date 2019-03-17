@@ -1,6 +1,7 @@
 from datetime import datetime
 from dateutil import tz
 from datetime import timezone
+from utils.logger import log
 
 def removeHtmlTags(string):
     string = string.replace('\\r', '')

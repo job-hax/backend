@@ -1,5 +1,6 @@
 import requests
 from users.models import Profile
+from utils.logger import log
 
 def get_profile(user):
     try:

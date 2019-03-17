@@ -4,6 +4,7 @@ from bs4.element import Comment, NavigableString
 from .gmail_utils import find_nth
 from django.core import serializers
 from datetime import datetime
+from utils.logger import log
 
 def parse_job_detail(body):
   """Parse html body and get job posting details
