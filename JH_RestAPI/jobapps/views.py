@@ -132,7 +132,7 @@ def add_jobapp(request):
     japp = JobApplication(jobTitle=job_title, company=company, applyDate=applicationdate, msgId='', source =source, user = request.user, companyLogo = None)
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
     japp.save()
-    return JsonResponse(create_response(None), safe=False)
+    return JsonResponse(create_response(JobApplicationSerializer(instance=japp, many=False).data), safe=False)
 
 
 @csrf_exempt
