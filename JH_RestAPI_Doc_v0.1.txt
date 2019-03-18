@@ -514,6 +514,89 @@ Sample response:
 }
 
 
+Endpoint : /api/jobapps/update_jobapp_note
+Desc : To update a note of a Job Application
+Type : POST
+Headers 	:	Authorization - Bearer <access_token>
+POST body	:   jobapp_note_id - <job-app-note-id>
+				description - <description>
+				
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": null
+}
+
+
+
+Endpoint : /api/jobapps/add_jobapp_note
+Desc : To add a note to Job Application
+Type : POST
+Headers 	:	Authorization - Bearer <access_token>
+POST body	:   jobapp_id - <job-app-id>
+				description - <description>
+				
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": {
+        "id": 1,
+        "description": "test note",
+        "created_date": "2019-03-18T03:26:27.780072Z",
+        "update_date": null
+    }
+}
+
+
+
+Endpoint : /api/jobapps/delete_jobapp_note
+Desc : To delete a note from a Job Application
+Type : POST
+Headers 	:	Authorization - Bearer <access_token>
+POST body	:   jobapp_note_id - <job-app-note-id>
+				
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": null
+}
+
+
+
+Endpoint : api/jobapps/get_jobapp_notes
+Desc : To get job applications's all notes from JobHax DB.
+Type : GET
+Headers    : Authorization - Bearer <access_token>
+GET params : jopapp_id - <jopapp_id>
+
+Sample response:
+{
+    "success": true,
+    "error_code": 0,
+    "error_message": "",
+    "data": [
+        {
+            "id": 2,
+            "description": "test note update",
+            "created_date": "2019-03-18T03:40:04.770901Z",
+            "update_date": "2019-03-18T03:40:15.324041Z"
+        },
+        {
+            "id": 3,
+            "description": "test note 2",
+            "created_date": "2019-03-18T03:42:21.334071Z",
+            "update_date": null
+        }
+    ]
+}
+
+
 METRIC ENDPOINTS
 
 
@@ -908,7 +991,7 @@ Sample response:
 
 
 
-Endpoint : api/jobapps/get_count_by_jobtitle_and_statuses
+Endpoint : api/metrics/get_count_by_jobtitle_and_statuses
 Desc : To get job application count by job title and status
 Type : GET
 Headers 	:	Authorization - Bearer <access_token>

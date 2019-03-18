@@ -5,6 +5,7 @@ from .models import JobApplication
 from .models import GoogleMail
 from .models import JobPostDetail
 from .models import StatusHistory
+from .models import JobApplicationNote
 from rest_framework import serializers
 
 
@@ -29,6 +30,13 @@ class JobApplicationSerializer(serializers.ModelSerializer):
   class Meta:
     model = JobApplication
     fields = ('id', 'applicationStatus', 'jobTitle', 'company', 'companyLogo', 'applyDate', 'source', 'isRejected')
+
+class JobApplicationNoteSerializer(serializers.ModelSerializer):
+  def create(self, validated_data):
+        return JobApplicationNote.objects.create(**validated_data)
+  class Meta:
+    model = JobApplicationNote
+    fields = ('id', 'description', 'created_date', 'update_date')    
 
 class StatusHistorySerializer(serializers.ModelSerializer):
   applicationStatus = ApplicationStatusSerializer(read_only=True)

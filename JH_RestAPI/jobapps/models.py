@@ -41,3 +41,9 @@ class JobPostDetail(models.Model):
   decoratedJobPosting = models.TextField(null=True, blank=True)
   topCardV2 = models.TextField(null=True, blank=True)
 
+class JobApplicationNote(models.Model):
+  job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 
+  description = models.TextField(null=True, blank=True)
+  created_date = models.DateTimeField(default=datetime.now, blank=True) 
+  update_date = models.DateTimeField(null=True, blank=True) 
+
