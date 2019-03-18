@@ -10,13 +10,16 @@ from .models import JobApplication
 from .models import JobPostDetail
 from .models import ApplicationStatus
 from .models import StatusHistory
+from .models import JobApplicationNote
 from .serializers import JobApplicationSerializer
 from .serializers import ApplicationStatusSerializer
 from .serializers import JobAppllicationDetailSerializer
 from .serializers import StatusHistorySerializer
+from .serializers import JobApplicationNoteSerializer
 import json
 from utils.logger import log
 from rest_framework.parsers import JSONParser
+from datetime import datetime   
 
 
 # Create your views here.
@@ -56,7 +59,94 @@ def get_status_history(request):
             log(e, 'e')  
             success=False
             code=11     
-    return JsonResponse(create_response(slist, success, code), safe=False)    
+    return JsonResponse(create_response(slist, success, code), safe=False)   
+
+@csrf_exempt
+@api_view(["GET"])
+def get_jobapp_notes(request):
+    jobapp_id = request.GET.get('jopapp_id')
+    success = True
+    code = 0
+    slist = []  
+    if jobapp_id is None:
+        success = False
+        code = 10
+    else:    
+        notes = JobApplicationNote.objects.filter(job_post__pk = jobapp_id)
+        try:
+            slist = JobApplicationNoteSerializer(instance=notes, many=True).data
+        except Exception as e:
+            log(e, 'e')  
+            success=False
+            code=11     
+    return JsonResponse(create_response(slist, success, code), safe=False) 
+
+@csrf_exempt
+@api_view(["POST"])
+def update_jobapp_note(request):
+    body = request.data
+    jobapp_note_id = body['jobapp_note_id']
+    description = body['description']
+    success = True
+    code = 0
+    if jobapp_note_id is None:
+        success = False
+        code = 10
+    else:    
+        try:
+            note = JobApplicationNote.objects.get(pk = jobapp_note_id)
+            note.description = description
+            note.update_date = datetime.now()
+            note.save()
+        except Exception as e:
+            log(e, 'e')  
+            success=False
+            code=11     
+    return JsonResponse(create_response(None, success, code), safe=False)     
+
+@csrf_exempt
+@api_view(["POST"])
+def delete_jobapp_note(request):
+    body = request.data
+    jobapp_note_id = body['jobapp_note_id']
+    success = True
+    code = 0
+    if jobapp_note_id is None:
+        success = False
+        code = 10
+    else:
+        user_job_app_note = JobApplicationNote.objects.filter(pk=jobapp_note_id)
+        if len(user_job_app_note) == 0:
+            success = False
+            code = 11
+        else:
+            user_job_app_note = user_job_app_note[0]
+            user_job_app_note.delete()
+    return JsonResponse(create_response(None, success, code), safe=False)    
+
+@csrf_exempt
+@api_view(["POST"])
+def add_jobapp_note(request):
+    body = request.data
+    jobapp_id = body['jobapp_id']
+    description = body['description']
+    success = True
+    code = 0
+    data = None
+    if jobapp_id is None or description is None:
+        success = False
+        code = 10
+    else:    
+        try:
+            user_job_app = JobApplication.objects.get(pk=jobapp_id)
+            note = JobApplicationNote(job_post = user_job_app, description=description)
+            note.save()
+            data = JobApplicationNoteSerializer(instance=note, many=False).data
+        except Exception as e:
+            log(e, 'e')  
+            success=False
+            code=11     
+    return JsonResponse(create_response(data, success, code), safe=False)     
 
 @csrf_exempt
 @api_view(["POST"])
