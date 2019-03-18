@@ -170,6 +170,9 @@ def update_gmail_token(request):
             user_profile.extra_data['access_token'] = token
             user_profile.save()
             success = True
+            profile = Profile.objects.get(user=request.user)
+            profile.is_gmail_read_ok = True
+            profile.save()  
             code = 0
             scheduleFetcher(request.user.id)
         else:
