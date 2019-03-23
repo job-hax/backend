@@ -152,9 +152,9 @@ def add_jobapp_note(request):
 @api_view(["POST"])
 def update_jobapp(request):
     body = request.data
-    status_id = body['status_id']
-    rejected = body['rejected']
-    jobapp_id = body['jobapp_id']
+    status_id = body.get('status_id')
+    rejected = body.get('rejected')
+    jobapp_id = body.get('jobapp_id')
     success = True
     code = 0
     if jobapp_id is None:
