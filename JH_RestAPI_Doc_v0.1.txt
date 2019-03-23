@@ -628,91 +628,107 @@ Sample response:
     "error_code": 0,
     "error_message": "",
     "data": [
-        {
-            "source": "Hired.com",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                2,
-                2,
-                0,
-                0
-            ]
-        },
-        {
-            "source": "LinkedIn",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                2,
-                1,
-                0,
-                3,
-                0
-            ]
-        },
-        {
-            "source": "Indeed",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                8
-            ]
-        },
-        {
-            "source": "Vettery",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ]
-        },
-        {
-            "source": "Others",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ]
-        }
+        [
+            {
+                "source": "Hired.com",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    2,
+                    0,
+                    0,
+                    2,
+                    1,
+                    0
+                ]
+            },
+            {
+                "source": "LinkedIn",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    1,
+                    0,
+                    3,
+                    0,
+                    0,
+                    5,
+                    1
+                ]
+            },
+            {
+                "source": "Indeed",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    8,
+                    6,
+                    7,
+                    2
+                ]
+            },
+            {
+                "source": "Vettery",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    9,
+                    1,
+                    1
+                ]
+            },
+            {
+                "source": "Others",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            }
+        ],
+        [
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+            "January",
+            "February",
+            "March"
+        ]
     ]
 }
 
@@ -729,108 +745,124 @@ Sample response:
     "error_code": 0,
     "error_message": "",
     "data": [
-        {
-            "source": "Hired.com",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                2,
-                2,
-                0,
-                0
-            ]
-        },
-        {
-            "source": "LinkedIn",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                2,
-                1,
-                0,
-                3,
-                0
-            ]
-        },
-        {
-            "source": "Indeed",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                8
-            ]
-        },
-        {
-            "source": "Vettery",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ]
-        },
-        {
-            "source": "Others",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ]
-        },
-        {
-            "source": "Total",
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                2,
-                3,
-                2,
-                3,
-                8
-            ]
-        }
+        [
+            {
+                "source": "Hired.com",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    2,
+                    0,
+                    0,
+                    2,
+                    1,
+                    0
+                ]
+            },
+            {
+                "source": "LinkedIn",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    1,
+                    0,
+                    3,
+                    0,
+                    0,
+                    5,
+                    1
+                ]
+            },
+            {
+                "source": "Indeed",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    8,
+                    6,
+                    7,
+                    2
+                ]
+            },
+            {
+                "source": "Vettery",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    9,
+                    1,
+                    1
+                ]
+            },
+            {
+                "source": "Others",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            {
+                "source": "Total",
+                "data": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    3,
+                    2,
+                    3,
+                    8,
+                    17,
+                    14,
+                    4
+                ]
+            }
+        ],
+        [
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+            "January",
+            "February",
+            "March"
+        ]
     ]
 }
 
