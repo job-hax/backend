@@ -7,6 +7,7 @@ from .models import JobPostDetail
 from .models import StatusHistory
 from .models import JobApplicationNote
 from rest_framework import serializers
+import pytz
 
 
 class ApplicationStatusSerializer(serializers.ModelSerializer):
@@ -32,6 +33,19 @@ class JobApplicationSerializer(serializers.ModelSerializer):
     fields = ('id', 'applicationStatus', 'jobTitle', 'company', 'companyLogo', 'applyDate', 'source', 'isRejected')
 
 class JobApplicationNoteSerializer(serializers.ModelSerializer):
+  created_date = serializers.SerializerMethodField()
+  update_date = serializers.SerializerMethodField()
+
+  def get_created_date(self, obj):
+    if obj.created_date is None:
+      return None
+    return obj.created_date.astimezone(pytz.timezone('US/Pacific'))  
+
+  def get_update_date(self, obj):
+    if obj.update_date is None:
+      return None
+    return obj.update_date.astimezone(pytz.timezone('US/Pacific')) 
+
   def create(self, validated_data):
         return JobApplicationNote.objects.create(**validated_data)
   class Meta:
