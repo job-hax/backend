@@ -30,3 +30,8 @@ You will need to grant following permissions:
 ```
 https://www.getpostman.com/collections/2bb6572a9df9802168a8
 ```
+
+4. Endpoint Documentation
+```
+https://github.com/job-hax/docs/blob/master/3.backend_api.md
+```
