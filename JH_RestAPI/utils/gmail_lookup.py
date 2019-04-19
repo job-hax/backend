@@ -167,7 +167,7 @@ def get_emails_with_custom_query(service, user_id, query=''):
   except errors.HttpError as error:
     if error.resp.status == 403 or error.resp.status == 401:
         return False
-    log('An error occurred: %s' % error, e)
+    log('An error occurred: %s' % error, error)
 
 def fetchJobApplications(user):
     time_string = ''
