@@ -36,4 +36,10 @@ def get_error_message(error_code):
         return 'Invalid parameters...'   
     elif error_code == 11:
         return 'Record not found...'      
+    elif error_code == 101:
+        return 'Poll could not be found...'   
+    elif error_code == 102:
+        return 'Missing item_id parameter...'   
+    elif error_code == 103:
+        return 'Poll answer could not be found...'       
     return 'Unknown error'    

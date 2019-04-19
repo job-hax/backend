@@ -23,5 +23,6 @@ urlpatterns = [
     path('api/users/', include('users.urls')),
     path('api/jobapps/', include('jobapps.urls')),
     path('api/metrics/', include('metrics.urls')),
+    path('api/poll/', include('poll.urls')),
     re_path(r'^auth/', include('rest_framework_social_oauth2.urls')),
 ]
