@@ -41,5 +41,7 @@ def get_error_message(error_code):
     elif error_code == 102:
         return 'Missing item_id parameter...'   
     elif error_code == 103:
-        return 'Poll answer could not be found...'       
+        return 'Poll answer could not be found...'   
+    elif error_code == 104:
+        return 'Blog could not be found...'       
     return 'Unknown error'    

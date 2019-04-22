@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'jobapps.apps.JobappsConfig',
     'users.apps.UsersConfig',
     'metrics.apps.MetricsConfig',
+    'blog.apps.BlogConfig',
     'poll.apps.PollConfig',
     'django.contrib.admin',
     'django.contrib.auth',
