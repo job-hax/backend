@@ -16,7 +16,7 @@ from dateutil.relativedelta import relativedelta
 @csrf_exempt
 @api_view(["GET"])
 def get_total_application_count(request):
-  count = JobApplication.objects.filter(user_id=request.user.id).count()
+  count = JobApplication.objects.filter(user_id=request.user.id, isDeleted=False).count()
   response = {}
   response['count'] = count
   return JsonResponse(create_response(response), safe=False)
@@ -42,9 +42,9 @@ def get_application_count_by_month(request):
     dec = dec + relativedelta(months=-1)  
   for i in sources:
     if i != 'Others':
-      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,source=i,applyDate__range=[last_year, today]).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,source=i,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     else:  
-      appsByMonths = JobApplication.objects.filter(~Q(source = 'LinkedIn'),~Q(source = 'Hired.com'),~Q(source = 'Indeed'),~Q(source = 'Vettery'),user_id=request.user.id,applyDate__range=[last_year, today]).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(~Q(source = 'LinkedIn'),~Q(source = 'Hired.com'),~Q(source = 'Indeed'),~Q(source = 'Vettery'),user_id=request.user.id,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     item = {}
     item['source'] = i
     data = [0] * 12
@@ -79,11 +79,11 @@ def get_application_count_by_month_with_total(request):
     dec = dec + relativedelta(months=-1)  
   for i in sources:
     if i == 'Total':
-      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,applyDate__range=[last_year, today]).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     elif i != 'Others':
-      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,source=i,applyDate__range=[last_year, today]).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,source=i,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     else:  
-      appsByMonths = JobApplication.objects.filter(~Q(source = 'LinkedIn'),~Q(source = 'Hired.com'),~Q(source = 'Indeed'),~Q(source = 'Vettery'),user_id=request.user.id,applyDate__range=[last_year, today]).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(~Q(source = 'LinkedIn'),~Q(source = 'Hired.com'),~Q(source = 'Indeed'),~Q(source = 'Vettery'),user_id=request.user.id,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     item = {}
     item['source'] = i
     data = [0] * 12
@@ -100,7 +100,7 @@ def get_application_count_by_month_with_total(request):
 @csrf_exempt
 @api_view(["GET"])
 def get_count_by_statuses(request):
-  statuses = JobApplication.objects.filter(~Q(applicationStatus = None),user_id=request.user.id).values('applicationStatus').annotate(count=Count('pk'))
+  statuses = JobApplication.objects.filter(~Q(applicationStatus = None),user_id=request.user.id, isDeleted=False).values('applicationStatus').annotate(count=Count('pk'))
   response = []
   for i in statuses:
     item = {}
@@ -113,7 +113,7 @@ def get_count_by_statuses(request):
 @api_view(["GET"])  
 def get_word_count(request):
   response = []
-  companies = JobApplication.objects.filter(user_id=request.user.id).values('company').annotate(count=Count('pk'))
+  companies = JobApplication.objects.filter(user_id=request.user.id, isDeleted=False).values('company').annotate(count=Count('pk'))
   for i in companies:
     item = {}
     item['word'] = i['company']
@@ -125,7 +125,7 @@ def get_word_count(request):
 @api_view(["GET"])
 def get_count_by_jobtitle_and_statuses(request):
   response = {}
-  job_titles = JobApplication.objects.filter(~Q(applicationStatus = None),user_id=request.user.id).values('jobTitle').annotate(count=Count('pk'))
+  job_titles = JobApplication.objects.filter(~Q(applicationStatus = None),user_id=request.user.id, isDeleted=False).values('jobTitle').annotate(count=Count('pk'))
   jobs = []
   statuses_data = []
   status_data = []
@@ -139,7 +139,7 @@ def get_count_by_jobtitle_and_statuses(request):
     item['name'] = status.value
     data = [0] * len(job_titles)
     for i,job_title in enumerate(job_titles):
-      data[i] = JobApplication.objects.filter(user_id=request.user.id, jobTitle=job_title['jobTitle'], applicationStatus=status).count()
+      data[i] = JobApplication.objects.filter(user_id=request.user.id, jobTitle=job_title['jobTitle'], applicationStatus=status, isDeleted=False).count()
     item['data'] = data
     status_data.append(item)
   response['statuses'] = statuses_data  
