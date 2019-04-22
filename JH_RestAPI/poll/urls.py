@@ -1,9 +1,14 @@
 from django.conf.urls import url
+from django.urls import path
+from rest_framework.urlpatterns import format_suffix_patterns
 
 from poll import views
 
 urlpatterns = [
-    url(r'^vote/(?P<poll_pk>\d+)/$', views.vote, name='poll_vote'),
-    url(r'^polls/', views.polls, name='polls'),
-    url(r'^result/(?P<poll_pk>\d+)/$', views.result, name='poll_result'),
+    path('', views.polls),
+    path('<int:poll_pk>/vote/',
+        views.vote),
+    path('<int:poll_pk>/result/',
+        views.result),
 ]
+urlpatterns = format_suffix_patterns(urlpatterns)
