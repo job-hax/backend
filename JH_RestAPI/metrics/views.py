@@ -160,12 +160,12 @@ def get_top_companies(request):
     year = body['year']
   if 'status_id' in body:
     status_id =   body['status_id']
-  #  ~Q(applicationStatus__pk = 1) indicates not 'To Apply' statuses in the prod DB.
+  #  ~Q(applicationStatus__pk = 2) indicates not 'To Apply' statuses in the prod DB.
   if status_id is not None:
     status = ApplicationStatus.objects.get(pk=status_id)
     top_companies = JobApplication.objects.filter(applicationStatus=status, isDeleted=False).values(company=F('companyObject__company')).annotate(count=Count('companyObject')).order_by('-count')
   else:
-    top_companies = JobApplication.objects.filter(~Q(applicationStatus = None), ~Q(applicationStatus__pk = 1), isDeleted=False).values(company=F('companyObject__company')).annotate(count=Count('companyObject')).order_by('-count')
+    top_companies = JobApplication.objects.filter(~Q(applicationStatus = None), ~Q(applicationStatus__pk = 2), isDeleted=False).values(company=F('companyObject__company')).annotate(count=Count('companyObject')).order_by('-count')
   if year is not None:
     top_companies = top_companies.filter(applyDate__year = year)
   top_companies = top_companies[:cnt]  
@@ -185,12 +185,12 @@ def get_top_positions(request):
     year = body['year']
   if 'status_id' in body:
     status_id =   body['status_id']
-  #  ~Q(applicationStatus__pk = 1) indicates not 'To Apply' statuses in the prod DB.
+  #  ~Q(applicationStatus__pk = 2) indicates not 'To Apply' statuses in the prod DB.
   if status_id is not None:
     status = ApplicationStatus.objects.get(pk=status_id)
     top_companies = JobApplication.objects.filter(applicationStatus=status, isDeleted=False).values(company=F('position__job_title')).annotate(count=Count('position')).order_by('-count')
   else:
-    top_companies = JobApplication.objects.filter(~Q(applicationStatus = None), ~Q(applicationStatus__pk = 1), isDeleted=False).values(company=F('position__job_title')).annotate(count=Count('position')).order_by('-count')
+    top_companies = JobApplication.objects.filter(~Q(applicationStatus = None), ~Q(applicationStatus__pk = 2), isDeleted=False).values(company=F('position__job_title')).annotate(count=Count('position')).order_by('-count')
   if year is not None:
     top_companies = top_companies.filter(applyDate__year = year)
   top_companies = top_companies[:cnt]  
