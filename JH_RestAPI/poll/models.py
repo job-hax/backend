@@ -26,7 +26,7 @@ class PublishedManager(Manager):
 @python_2_unicode_compatible
 class Poll(models.Model):
     title = models.CharField(max_length=250, verbose_name=_('question'))
-    date = models.DateField(verbose_name=_('date'), default=datetime.date.today)
+    date = models.DateTimeField(verbose_name=_('date'), default=datetime.datetime.now)
     is_published = models.BooleanField(default=True, verbose_name=_('is published'))
 
     objects = models.Manager()

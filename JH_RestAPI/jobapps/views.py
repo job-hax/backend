@@ -11,6 +11,9 @@ from .models import JobPostDetail
 from .models import ApplicationStatus
 from .models import StatusHistory
 from .models import JobApplicationNote
+from position.models import JobPosition
+from company.models import Company
+from utils.clearbit_company_checker import get_company_detail
 from .serializers import JobApplicationSerializer
 from .serializers import ApplicationStatusSerializer
 from .serializers import JobAppllicationDetailSerializer
@@ -218,8 +221,30 @@ def add_jobapp(request):
     applicationdate = body['application_date']
     status = int(body['status_id'])
     source = body['source']
-
-    japp = JobApplication(jobTitle=job_title, company=company, applyDate=applicationdate, msgId='', source =source, user = request.user, companyLogo = None)
+    #jt is current dummy job title in the db
+    jt = JobPosition.objects.all().filter(job_title=job_title)
+    if jt is None or len(jt) == 0:
+        jt = JobPosition(job_title=job_title)
+        jt.save()
+    else:
+        jt = jt[0]  
+     #check if the company details already exists in the db 
+    cd = get_company_detail(company)  
+    if cd is None:
+        company_title = company
+    else:
+        company_title = cd['name'] 
+    jc = Company.objects.all().filter(cb_name=company_title)
+    if jc is None or len(jc) == 0:
+        #if company doesnt exist save it
+        if cd is None:
+            jc = Company(company=company, company_logo=None, cb_name=company, cb_company_logo=None, cb_domain=None)
+        else:    
+            jc = Company(company=company, company_logo=None, cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
+        jc.save()      
+    else:
+        jc = jc[0]       
+    japp = JobApplication(position=jt, companyObject=jc, applyDate=applicationdate, msgId='', source =source, user = request.user)
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
     japp.save()
     return JsonResponse(create_response(JobApplicationSerializer(instance=japp, many=False).data), safe=False)

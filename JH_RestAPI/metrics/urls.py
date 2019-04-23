@@ -12,5 +12,9 @@ urlpatterns = [
     path('get_count_by_statuses', views.get_count_by_statuses, name='get_count_by_statuses'),
     path('get_word_count', views.get_word_count, name='get_word_count'),
     path('get_count_by_jobtitle_and_statuses', views.get_count_by_jobtitle_and_statuses, name='get_count_by_jobtitle_and_statuses'),
+    path('get_top_companies', views.get_top_companies, name='get_top_companies'),
+    path('get_top_positions', views.get_top_positions, name='get_top_positions'),
+    path('get_statistics', views.get_statistics, name='get_statistics'),
+    path('get_monthly_application_count', views.get_monthly_application_count, name='get_monthly_application_count'),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
