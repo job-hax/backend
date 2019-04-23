@@ -109,6 +109,9 @@ def auth_social_user(request):
     else:
         success = True   
         code = 0
+        profile = Profile.objects.get(user=request.user)
+        profile.is_gmail_read_ok = True
+        profile.save() 
     return JsonResponse(create_response(jsonres, success, code), safe=False)
 
 @require_POST
