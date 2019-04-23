@@ -20,6 +20,9 @@ from jobapps.models import GoogleMail
 from jobapps.models import ApplicationStatus
 from jobapps.models import StatusHistory
 from jobapps.models import JobPostDetail
+from position.models import JobPosition
+from company.models import Company
+from utils.clearbit_company_checker import get_company_detail
 import base64
 import time
 from .gmail_utils import convertTime
@@ -114,12 +117,36 @@ def get_email_detail(service, user_id, msg_id, user, source):
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
       log(image_url, 'i')
       if inserted_before is None or (len(inserted_before) == 0 and jobTitle != '' and company != ''):
+        #jt is current dummy job title in the db
+        jt = JobPosition.objects.all().filter(job_title=jobTitle)
+        if jt is None or len(jt) == 0:
+            jt = JobPosition(job_title=jobTitle)
+            jt.save()
+        else:
+            jt = jt[0]  
+        #check if the company details already exists in the db 
+        cd = get_company_detail(company)  
+        if cd is None:
+            company_title = company
+        else:
+            company_title = cd['name'] 
+        jc = Company.objects.all().filter(cb_name=company_title)
+        if jc is None or len(jc) == 0:
+            #if company doesnt exist save it
+            if cd is None:
+                jc = Company(company=company, company_logo=image_url, cb_name=company, cb_company_logo=None, cb_domain=None)
+            else:    
+                jc = Company(company=company, company_logo=image_url, cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
+            jc.save()      
+        else:
+            jc = jc[0]   
+
         if ApplicationStatus.objects.count() == 0:
             status = ApplicationStatus(value='Applied')
             status.save()  
         else:
             status = ApplicationStatus.objects.get(value='Applied')
-        japp = JobApplication(jobTitle=jobTitle, company=company, applyDate=date, msgId=msg_id, source = source, user = user, companyLogo = image_url, applicationStatus = status)
+        japp = JobApplication(position=jt, companyObject=jc, applyDate=date, msgId=msg_id, source = source, user = user, applicationStatus = status)
         japp.save()
         status_history = StatusHistory(job_post = japp, applicationStatus = status)
         status_history.save()

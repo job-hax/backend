@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'metrics.apps.MetricsConfig',
     'blog.apps.BlogConfig',
     'poll.apps.PollConfig',
+    'company.apps.CompanyConfig',
+    'position.apps.PositionConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

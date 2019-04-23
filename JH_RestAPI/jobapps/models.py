@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime   
+from position.models import JobPosition
+from company.models import Company
     
 class ApplicationStatus(models.Model):
   value = models.CharField(max_length=20)
@@ -10,9 +12,8 @@ class ApplicationStatus(models.Model):
 class JobApplication(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
   applicationStatus = models.ForeignKey(ApplicationStatus, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='%(class)s_applicationStatus')
-  jobTitle = models.CharField(max_length=200)
-  company = models.CharField(max_length=200)
-  companyLogo = models.CharField(max_length=200, null=True, blank=True)
+  position = models.ForeignKey(JobPosition, on_delete=models.DO_NOTHING, null=True, related_name='%(class)s_position')
+  companyObject = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True, related_name='%(class)s_company')
   applyDate = models.DateTimeField(blank=True)
   msgId = models.CharField(max_length=200)
   source = models.CharField(max_length=200, default='')
@@ -20,7 +21,7 @@ class JobApplication(models.Model):
   isDeleted = models.BooleanField(default=False)
   
   def __str__(self):
-    return self.jobTitle + '@' + self.company
+    return self.position.job_title + '@' + self.companyObject.company
 
 class StatusHistory(models.Model):
   job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 
