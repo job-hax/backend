@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'poll.apps.PollConfig',
     'company.apps.CompanyConfig',
     'position.apps.PositionConfig',
+    'notifications.apps.NotificationsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
