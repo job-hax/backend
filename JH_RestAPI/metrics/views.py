@@ -152,14 +152,9 @@ def get_count_by_jobtitle_and_statuses(request):
 @csrf_exempt
 @api_view(["GET"])
 def get_top_companies(request):
-  body = request.data
-  year = None
-  status_id = None
-  cnt = body['count']
-  if 'year' in body:
-    year = body['year']
-  if 'status_id' in body:
-    status_id =   body['status_id']
+  year = request.GET.get('year')
+  cnt = int(request.GET.get('count'))
+  status_id = request.GET.get('status_id')
   #  ~Q(applicationStatus__pk = 2) indicates not 'To Apply' statuses in the prod DB.
   if status_id is not None:
     status = ApplicationStatus.objects.get(pk=status_id)
@@ -177,14 +172,9 @@ def get_top_companies(request):
 @csrf_exempt
 @api_view(["GET"])
 def get_top_positions(request):
-  body = request.data
-  year = None
-  status_id = None
-  cnt = body['count']
-  if 'year' in body:
-    year = body['year']
-  if 'status_id' in body:
-    status_id =   body['status_id']
+  year = request.GET.get('year')
+  cnt = int(request.GET.get('count'))
+  status_id = request.GET.get('status_id')
   #  ~Q(applicationStatus__pk = 2) indicates not 'To Apply' statuses in the prod DB.
   if status_id is not None:
     status = ApplicationStatus.objects.get(pk=status_id)
@@ -204,7 +194,6 @@ def get_top_positions(request):
 def get_statistics(request): 
   response = {}
   total_user = User.objects.filter(is_staff=False).count()
-  print(total_user)
   total_application = JobApplication.objects.all().count()
   response['total_user'] = total_user
   response['total_application'] = total_application
