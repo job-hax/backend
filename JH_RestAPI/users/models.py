@@ -50,3 +50,9 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+class Feedback(models.Model):
+    User = get_user_model()
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True) 
+    text = models.TextField(null=True, blank=True)   
+    star = models.IntegerField(null=True, blank=True)
