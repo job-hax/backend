@@ -13,6 +13,7 @@ class ResponseCodes(Enum):
     email_exists = 9
     invalid_parameters = 10
     record_not_found = 11
+    invalid_username = 12
     poll_couldnt_found = 101
     missing_item_id_parameter = 102
     poll_answer_couldnt_found = 103

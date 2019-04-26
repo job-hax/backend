@@ -31,14 +31,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Application definition
 
 INSTALLED_APPS = [
-    'jobapps.apps.JobappsConfig',
-    'users.apps.UsersConfig',
-    'metrics.apps.MetricsConfig',
-    'blog.apps.BlogConfig',
-    'poll.apps.PollConfig',
-    'company.apps.CompanyConfig',
-    'position.apps.PositionConfig',
-    'notifications.apps.NotificationsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,6 +43,14 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'social_django',
     'rest_framework_social_oauth2',
+    'users',
+    'jobapps',
+    'metrics',
+    'blog',
+    'poll',
+    'company',
+    'position',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +84,8 @@ OAUTH2_PROVIDER = {
     'ACCESS_TOKEN_EXPIRE_SECONDS': 113600,
 }
 
+AUTH_USER_MODEL = 'users.User'
+
 AUTHENTICATION_BACKENDS = (
  'social_core.backends.open_id.OpenIdAuth',
  'social_core.backends.google.GoogleOpenId',
@@ -91,6 +93,7 @@ AUTHENTICATION_BACKENDS = (
  'social_core.backends.linkedin.LinkedinOAuth2',
  'rest_framework_social_oauth2.backends.DjangoOAuth2',
  'django.contrib.auth.backends.ModelBackend',
+ 'JH_RestAPI.backends.ModelBackend',
 )
 
 SOCIAL_AUTH_PIPELINE = (
