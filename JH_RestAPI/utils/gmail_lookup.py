@@ -7,7 +7,7 @@ from users.models import Profile
 import string
 from datetime import datetime
 import requests
-
+import traceback
 from requests import exceptions as requests_errors
 
 from google.auth.exceptions import RefreshError
@@ -19,6 +19,7 @@ from jobapps.models import JobApplication
 from jobapps.models import GoogleMail
 from jobapps.models import ApplicationStatus
 from jobapps.models import StatusHistory
+from jobapps.models import Source
 from jobapps.models import JobPostDetail
 from position.models import JobPosition
 from company.models import Company
@@ -46,6 +47,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
     jobTitle = ''
     company = ''
     image_url = ''
+    body = None
     for header in message['payload']['headers']:
         if header['name'] == 'Subject':
             subject = str(header['value'])
@@ -61,49 +63,46 @@ def get_email_detail(service, user_id, msg_id, user, source):
             date = header['value']
             original_date = header['value']
             date = convertTime(str(date))
-    try:
-        if 'parts' not in message['payload']:
-            if message['payload']['mimeType'] == 'text/html' and int(message['payload']['body']['size']) > 0:
-                body = str(base64.urlsafe_b64decode(message['payload']['body']['data'].encode('ASCII')))
+    
+    if 'parts' not in message['payload']:
+        if message['payload']['mimeType'] == 'text/html' and int(message['payload']['body']['size']) > 0:
+            body = str(base64.urlsafe_b64decode(message['payload']['body']['data'].encode('ASCII')))
+        else:
+            body = None
+    else:    
+        for part in message['payload']['parts']:
+            if(part['mimeType'] == 'text/html'):
+                #get mail's body as a string
+                body = str(base64.urlsafe_b64decode(part['body']['data'].encode('ASCII')))
+                break
             else:
-                body = None
-        else:    
-            for part in message['payload']['parts']:
-                if(part['mimeType'] == 'text/html'):
-                    #get mail's body as a string
-                    body = str(base64.urlsafe_b64decode(part['body']['data'].encode('ASCII')))
-                    break
-                else:
-                    body = None  
-        if body is not None:            
-            if(source == 'LinkedIn'):
-                posterInformationJSON, decoratedJobPostingJSON, topCardV2JSON = parse_job_detail(body)
-                s = find_nth(body, 'https://media.licdn.com', 2)
-                if(s != -1):
-                    e = find_nth(body, '" alt="' + company + '"', 1)
-                    image_url = body[s : e].replace('&amp;', '&')
-                    image_exists=requests.get(image_url)
-                    if(image_exists.status_code == 404):
-                        image_url = None 
-                else:
-                    image_url = None
-                if len(image_url) > 300:
-                    image_url = None
-            elif(source == 'Vettery'):
-                jobTitle = body[body.index('Role: ') + 6 : body.index('Salary')]
-                jobTitle = removeHtmlTags(jobTitle)
-                company = body[body.index('interview with ') + 15 : body.index('. Interested?')]
+                body = None  
+    if body is not None:            
+        if(source == 'LinkedIn'):
+            #posterInformationJSON, decoratedJobPostingJSON, topCardV2JSON = parse_job_detail(body)
+            s = find_nth(body, 'https://media.licdn.com', 2)
+            if(s != -1):
+                e = find_nth(body, '" alt="' + company + '"', 1)
+                image_url = body[s : e].replace('&amp;', '&')
+                image_exists=requests.get(image_url)
+                if(image_exists.status_code == 404):
+                    image_url = None 
+            else:
                 image_url = None
-            elif(source == 'Indeed'):
-                c_start_index = body.index('updates from') + 16
-                c_end_index = body[c_start_index : (c_start_index + 100)].index('</b>')
-                company = body[c_start_index : c_start_index + c_end_index]
+            if len(image_url) > 300:
                 image_url = None
-            elif(source == 'Hired.com'):
-                image_url = None                
-    except Exception as e:
-        log(e, 'e')
-        body = None
+        elif(source == 'Vettery'):
+            jobTitle = body[body.index('Role: ') + 6 : body.index('Salary')]
+            jobTitle = removeHtmlTags(jobTitle)
+            company = body[body.index('interview with ') + 15 : body.index('. Interested?')]
+            image_url = None
+        elif(source == 'Indeed'):
+            c_start_index = body.index('updates from') + 16
+            c_end_index = body[c_start_index : (c_start_index + 100)].index('</b>')
+            company = body[c_start_index : c_start_index + c_end_index]
+            image_url = None
+        elif(source == 'Hired.com'):
+            image_url = None    
 
     if subject is not None and body is not None and original_date is not None:
         inserted_before = GoogleMail.objects.all().filter(msgId=msg_id)
@@ -115,7 +114,6 @@ def get_email_detail(service, user_id, msg_id, user, source):
 
     if user.is_authenticated:
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
-      log(image_url, 'i')
       if inserted_before is None or (len(inserted_before) == 0 and jobTitle != '' and company != ''):
         #jt is current dummy job title in the db
         jt = JobPosition.objects.all().filter(job_title=jobTitle)
@@ -146,13 +144,15 @@ def get_email_detail(service, user_id, msg_id, user, source):
             status.save()  
         else:
             status = ApplicationStatus.objects.get(default=True)
-        japp = JobApplication(position=jt, companyObject=jc, applyDate=date, msgId=msg_id, source = source, user = user, applicationStatus = status)
+        source = Source.objects.get(value__iexact=source)    
+        japp = JobApplication(position=jt, companyObject=jc, applyDate=date, msgId=msg_id, app_source = source, user = user, applicationStatus = status)
         japp.save()
+        log('Job Application inserted : ' + str(japp), 'i')
         status_history = StatusHistory(job_post = japp, applicationStatus = status)
         status_history.save()
-        if(source == 'LinkedIn'):
-            japp_details = JobPostDetail(job_post = japp, posterInformation = posterInformationJSON, decoratedJobPosting = decoratedJobPostingJSON, topCardV2 = topCardV2JSON)
-            japp_details.save()
+        #if(source == 'LinkedIn'):
+        #    japp_details = JobPostDetail(job_post = japp, posterInformation = posterInformationJSON, decoratedJobPosting = decoratedJobPostingJSON, topCardV2 = topCardV2JSON)
+        #    japp_details.save()
         if mail is not None:
             mail.job_post = japp
             mail.save()
@@ -161,7 +161,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
     if error.resp.status == 403 or error.resp.status == 401:
         return False
     log('An error occurred: %s' % error, 'e')
-
+  except Exception as e:
+    log(traceback.format_exception(None, e, e.__traceback__), 'e')
 
 
 def get_emails_with_custom_query(service, user_id, query=''):
@@ -213,10 +214,15 @@ def fetchJobApplications(user):
         creds= Credentials(usa)
         GMAIL = build('gmail', 'v1', credentials=creds)
         #retrieves user email's with custom query parameter
-        linkedInMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:jobs-listings@linkedin.com AND subject:You applied for' + time_string)# AND after:2018/01/01')
-        hiredMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:reply@hired.com AND subject:Interview Request' + time_string)
-        vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
-        indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
+        sources = Source.objects.filter(system=True)
+        allMails = {}
+        for s in sources:
+            mails = get_emails_with_custom_query(GMAIL, 'me', s.gmail_key + time_string)
+            allMails[s.value] = mails 
+        #linkedInMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:jobs-listings@linkedin.com AND subject:You applied for' + time_string)# AND after:2018/01/01')
+        #hiredMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:reply@hired.com AND subject:Interview Request' + time_string)
+        #vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
+        #indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
     except Exception as e:
         log('Users google token probably expired. Should have new token from google', 'e')
         log(e, 'e')
@@ -224,26 +230,18 @@ def fetchJobApplications(user):
         profile.save()
         return          
 
-    if linkedInMessages is False or hiredMessages is False \
-        or indeedMessages is False or vetteryMessages is False:
-        profile.is_gmail_read_ok = False
-        profile.save()
-        log('403 error got from Google. Check permissions...', 'e')
-        return
+    for m in allMails.values():
+        if m is False:
+            profile.is_gmail_read_ok = False
+            profile.save()
+            log('403 error got from Google. Check permissions...', 'e')
+            return
 
     #retvieves specific email's detail one by one
-    if linkedInMessages is not None:
-        for message in linkedInMessages:
-            get_email_detail(GMAIL, 'me', message['id'], user, 'LinkedIn')
-    if hiredMessages is not None:
-        for message in hiredMessages:
-            get_email_detail(GMAIL, 'me', message['id'], user, 'Hired.com')
-    if indeedMessages is not None:        
-        for message in indeedMessages:
-            get_email_detail(GMAIL, 'me', message['id'], user, 'Indeed')
-    if vetteryMessages is not None:           
-        for message in vetteryMessages:
-            get_email_detail(GMAIL, 'me', message['id'], user, 'Vettery')
+    for s, mails in allMails.items():
+        if mails is not None:
+            for mail in mails:
+                get_email_detail(GMAIL, 'me', mail['id'], user, s)  
 
     #updates user last update time after all this
     now = datetime.utcnow().timestamp()

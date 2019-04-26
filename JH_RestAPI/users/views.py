@@ -165,7 +165,6 @@ def update_gmail_token(request):
     token = body['token']
     try:
         user_profile = UserSocialAuth.objects.get(user=request.user)
-        log(user_profile, 'i')
         if user_profile is not None:
             user_profile.extra_data['access_token'] = token
             user_profile.save()

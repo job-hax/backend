@@ -1,9 +1,6 @@
 import logging
+import datetime
 
 def log(log, type):
-    if type is 'w':
-        logging.warning(log)
-    if type is 'i':
-        logging.info(log)
-    if type is 'e':
-        logging.error(log)        
+    with open("inapp_error.log", "a") as text_file:
+        print(str(datetime.datetime.now()) + ' / ' + str(type) + ' ' + str(log), file=text_file)    

@@ -4,6 +4,7 @@ from jobapps.models import JobApplication
 from jobapps.models import ApplicationStatus
 from users.models import Profile
 from jobapps.models import JobPostDetail
+from jobapps.models import Source
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
@@ -27,7 +28,10 @@ def get_total_application_count(request):
 @api_view(["GET"])
 def get_application_count_by_month(request):
   response = []
-  sources = ['Hired.com','LinkedIn','Indeed','Vettery', 'Others']
+  system_sources = Source.objects.filter(system=True)
+  sources = ['Others']
+  for s in system_sources:
+    sources.insert(0, s.value)
   today = datetime.date.today() + relativedelta(days=+1)
   last_year = datetime.date.today() + relativedelta(years=-1)
   months = []
@@ -44,9 +48,9 @@ def get_application_count_by_month(request):
     dec = dec + relativedelta(months=-1)  
   for i in sources:
     if i != 'Others':
-      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,source=i,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,app_source__value=i,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     else:  
-      appsByMonths = JobApplication.objects.filter(~Q(source = 'LinkedIn'),~Q(source = 'Hired.com'),~Q(source = 'Indeed'),~Q(source = 'Vettery'),user_id=request.user.id,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(app_source__system=False,user_id=request.user.id,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     item = {}
     item['source'] = i
     data = [0] * 12
@@ -64,7 +68,10 @@ def get_application_count_by_month(request):
 @api_view(["GET"])
 def get_application_count_by_month_with_total(request):
   response = []
-  sources = ['Hired.com','LinkedIn','Indeed', 'Vettery', 'Others', 'Total']
+  system_sources = Source.objects.filter(system=True)
+  sources = ['Others', 'Total']
+  for s in system_sources:
+    sources.insert(0, s.value)
   today = datetime.date.today() + relativedelta(days=+1)
   last_year = datetime.date.today() + relativedelta(years=-1)
   months = []
@@ -83,9 +90,9 @@ def get_application_count_by_month_with_total(request):
     if i == 'Total':
       appsByMonths = JobApplication.objects.filter(user_id=request.user.id,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     elif i != 'Others':
-      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,source=i,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(user_id=request.user.id,app_source__value=i,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     else:  
-      appsByMonths = JobApplication.objects.filter(~Q(source = 'LinkedIn'),~Q(source = 'Hired.com'),~Q(source = 'Indeed'),~Q(source = 'Vettery'),user_id=request.user.id,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(app_source__system=False,user_id=request.user.id,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     item = {}
     item['source'] = i
     data = [0] * 12
@@ -204,7 +211,10 @@ def get_statistics(request):
 @api_view(["GET"])
 def get_monthly_application_count(request):
   response = []
-  sources = ['Hired.com','LinkedIn','Indeed', 'Vettery', 'Others', 'Total']
+  system_sources = Source.objects.filter(system=True)
+  sources = ['Others', 'Total']
+  for s in system_sources:
+    sources.insert(0, s.value)
   today = datetime.date.today() + relativedelta(days=+1)
   last_year = datetime.date.today() + relativedelta(years=-1)
   months = []
@@ -223,9 +233,9 @@ def get_monthly_application_count(request):
     if i == 'Total':
       appsByMonths = JobApplication.objects.filter(applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     elif i != 'Others':
-      appsByMonths = JobApplication.objects.filter(source=i,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(app_source__value=i,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     else:  
-      appsByMonths = JobApplication.objects.filter(~Q(source = 'LinkedIn'),~Q(source = 'Hired.com'),~Q(source = 'Indeed'),~Q(source = 'Vettery'),applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+      appsByMonths = JobApplication.objects.filter(app_source__system=False,applyDate__range=[last_year, today], isDeleted=False).values('applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
     item = {}
     item['source'] = i
     data = [0] * 12
