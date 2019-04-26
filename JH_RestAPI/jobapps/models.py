@@ -29,7 +29,7 @@ class JobApplication(models.Model):
   isDeleted = models.BooleanField(default=False)
   
   def __str__(self):
-    return self.position.job_title + '@' + self.companyObject.company + ' / ' + str(self.applyDate) + ' / ' + self.app_source.value
+    return self.position.job_title + '@' + self.companyObject.company
 
 class StatusHistory(models.Model):
   job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 
