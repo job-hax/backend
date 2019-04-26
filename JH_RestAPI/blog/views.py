@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from utils.generic_json_creator import create_response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
+from utils.error_codes import ResponseCodes
 
 @csrf_exempt
 @api_view(["GET"])
@@ -19,7 +20,7 @@ def blog(request, blog_pk):
     try:
         blog = models.Blog.objects.get(pk=blog_pk)
     except:
-        return JsonResponse(create_response(None, False, 104), safe=False)
+        return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)
     return JsonResponse(create_response(BlogSerializer(instance=blog, many=False, context={'user':request.user}).data, True, 0), safe=False)   
 
 @csrf_exempt
@@ -37,7 +38,7 @@ def upvote(request, blog_pk):
         return JsonResponse(create_response(BlogSnippetSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)
     except Exception as e:
         print(e)
-        return JsonResponse(create_response(None, False, 104), safe=False)
+        return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)
 
 @csrf_exempt
 @api_view(["POST"])
@@ -54,7 +55,7 @@ def downvote(request, blog_pk):
         return JsonResponse(create_response(BlogSnippetSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)
     except Exception as e:
         print(e)
-        return JsonResponse(create_response(None, False, 104), safe=False)
+        return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)
 
 @csrf_exempt
 @api_view(["POST"])
@@ -65,4 +66,4 @@ def view(request, blog_pk):
         blog.save()
         return JsonResponse(create_response(None), safe=False)
     except:
-        return JsonResponse(create_response(None, False, 104), safe=False)        
+        return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)        

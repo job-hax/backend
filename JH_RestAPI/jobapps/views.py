@@ -23,6 +23,7 @@ import json
 from utils.logger import log
 from rest_framework.parsers import JSONParser
 from datetime import datetime   
+from utils.error_codes import ResponseCodes
 
 
 # Create your views here.
@@ -49,11 +50,11 @@ def get_statuses(request):
 def get_status_history(request):
     jobapp_id = request.GET.get('jopapp_id')
     success = True
-    code = 0
+    code = ResponseCodes.success
     slist = []  
     if jobapp_id is None:
         success = False
-        code = 10
+        code = ResponseCodes.invalid_parameters
     else:    
         statuses = StatusHistory.objects.filter(job_post__pk = jobapp_id)
         try:
@@ -61,7 +62,7 @@ def get_status_history(request):
         except Exception as e:
             log(e, 'e')  
             success=False
-            code=11     
+            code= ResponseCodes.record_not_found     
     return JsonResponse(create_response(slist, success, code), safe=False)   
 
 @csrf_exempt
@@ -69,19 +70,19 @@ def get_status_history(request):
 def get_jobapp_notes(request):
     jobapp_id = request.GET.get('jopapp_id')
     success = True
-    code = 0
+    code = ResponseCodes.success
     slist = []  
     if jobapp_id is None:
         success = False
-        code = 10
+        code = ResponseCodes.invalid_parameters
     else:    
-        notes = JobApplicationNote.objects.filter(job_post__pk = jobapp_id)
+        notes = JobApplicationNote.objects.filter(job_post__pk = jobapp_id).order_by('-update_date', '-created_date')
         try:
             slist = JobApplicationNoteSerializer(instance=notes, many=True).data
         except Exception as e:
             log(e, 'e')  
             success=False
-            code=11     
+            code= ResponseCodes.record_not_found       
     return JsonResponse(create_response(slist, success, code), safe=False) 
 
 @csrf_exempt
@@ -91,21 +92,23 @@ def update_jobapp_note(request):
     jobapp_note_id = body['jobapp_note_id']
     description = body['description']
     success = True
-    code = 0
+    code = ResponseCodes.success
+    data = None
     if jobapp_note_id is None:
         success = False
-        code = 10
+        code = ResponseCodes.invalid_parameters
     else:    
         try:
             note = JobApplicationNote.objects.get(pk = jobapp_note_id)
             note.description = description
             note.update_date = datetime.now()
             note.save()
+            data = JobApplicationNoteSerializer(instance=note, many=False).data
         except Exception as e:
             log(e, 'e')  
             success=False
-            code=11     
-    return JsonResponse(create_response(None, success, code), safe=False)     
+            code= ResponseCodes.record_not_found       
+    return JsonResponse(create_response(data, success, code), safe=False)     
 
 @csrf_exempt
 @api_view(["POST"])
@@ -113,15 +116,15 @@ def delete_jobapp_note(request):
     body = request.data
     jobapp_note_id = body['jobapp_note_id']
     success = True
-    code = 0
+    code = ResponseCodes.success
     if jobapp_note_id is None:
         success = False
-        code = 10
+        code = ResponseCodes.invalid_parameters
     else:
         user_job_app_note = JobApplicationNote.objects.filter(pk=jobapp_note_id)
         if len(user_job_app_note) == 0:
             success = False
-            code = 11
+            code = ResponseCodes.record_not_found     
         else:
             user_job_app_note = user_job_app_note[0]
             user_job_app_note.delete()
@@ -134,11 +137,11 @@ def add_jobapp_note(request):
     jobapp_id = body['jobapp_id']
     description = body['description']
     success = True
-    code = 0
+    code = ResponseCodes.success
     data = None
     if jobapp_id is None or description is None:
         success = False
-        code = 10
+        code = ResponseCodes.invalid_parameters
     else:    
         try:
             user_job_app = JobApplication.objects.get(pk=jobapp_id)
@@ -148,7 +151,7 @@ def add_jobapp_note(request):
         except Exception as e:
             log(e, 'e')  
             success=False
-            code=11     
+            code= ResponseCodes.record_not_found        
     return JsonResponse(create_response(data, success, code), safe=False)     
 
 @csrf_exempt
@@ -159,18 +162,18 @@ def update_jobapp(request):
     rejected = body.get('rejected')
     jobapp_id = body.get('jobapp_id')
     success = True
-    code = 0
+    code = ResponseCodes.success
     if jobapp_id is None:
         success = False
-        code = 10
+        code = ResponseCodes.record_not_found
     elif rejected is None and status_id is None:
         success = False
-        code = 10
+        code = ResponseCodes.record_not_found
     else:
         user_job_app = JobApplication.objects.filter(pk=jobapp_id)
         if len(user_job_app) == 0:
             success = False
-            code = 11
+            code = ResponseCodes.record_not_found     
         else:
             user_job_app = user_job_app[0]
             if status_id is None:
@@ -179,7 +182,7 @@ def update_jobapp(request):
                 new_status = ApplicationStatus.objects.filter(pk=status_id)
                 if len(new_status) == 0:
                     success = False
-                    code = 11
+                    code = ResponseCodes.record_not_found     
                 else:
                     if rejected is None:
                         user_job_app.applicationStatus = new_status[0]
@@ -197,15 +200,15 @@ def delete_jobapp(request):
     body = request.data
     jobapp_id = body['jobapp_id']
     success = True
-    code = 0
+    code = ResponseCodes.success
     if jobapp_id is None:
         success = False
-        code = 10
+        code = ResponseCodes.record_not_found
     else:
         user_job_app = JobApplication.objects.filter(pk=jobapp_id)
         if len(user_job_app) == 0:
             success = False
-            code = 11
+            code = ResponseCodes.record_not_found     
         else:
             user_job_app = user_job_app[0]
             user_job_app.isDeleted = True
@@ -261,10 +264,10 @@ def get_jobapp_detail(request):
     jobapp_detail['decoratedJobPosting'] = json.loads(details.decoratedJobPosting)
     jobapp_detail['topCardV2'] = json.loads(details.topCardV2)
     success=True
-    code=0 
+    code=ResponseCodes.success 
   except Exception as e:
     log(e, 'e')  
     success=False
-    code=11
+    code= ResponseCodes.record_not_found     
     jobapp_detail=None
   return JsonResponse(create_response(jobapp_detail,success,code), safe=False)

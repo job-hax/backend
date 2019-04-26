@@ -16,6 +16,7 @@ from background_task import background
 from social_django.models import UserSocialAuth
 from rest_framework.parsers import JSONParser
 from utils.logger import log
+from utils.error_codes import ResponseCodes
 
 
 # Create your views here.
@@ -32,25 +33,25 @@ def register(request):
     password2 = body['password2']
 
     success = True
-    code = 0
+    code = ResponseCodes.success
 
     # Check if passwords match
     if password == password2:
         # Check username
         if User.objects.filter(username=username).exists():
             success = False
-            code = 8
+            code = ResponseCodes.username_exists
         else:
             if User.objects.filter(email=email).exists():
                 success = False
-                code = 9
+                code = ResponseCodes.email_exists
             else:
                 # Looks good
                 user = User.objects.create_user(username=username, password=password,email=email, first_name=first_name, last_name=last_name)
                 user.save()
     else:
         success = False
-        code = 7
+        code = ResponseCodes.passwords_do_not_match
     return JsonResponse(create_response(None, success, code), safe=False)    
 
 @require_POST
@@ -66,10 +67,10 @@ def login(request):
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
-        code = 6
+        code = ResponseCodes.couldnt_login
     else:
         success = True   
-        code = 0 
+        code = ResponseCodes.success 
     return JsonResponse(create_response(jsonres, success, code), safe=False)
 
 @require_POST
@@ -84,10 +85,10 @@ def logout(request):
     log(response.text, 'i')
     if response.status_code is 204 or response.status_code is 200:
         success = True
-        code = 0
+        code = ResponseCodes.success
     else:
         success = False   
-        code = 5 
+        code = ResponseCodes.couldnt_logout_user 
     return JsonResponse(create_response(None, success, code), safe=False)
 
 
@@ -105,10 +106,10 @@ def auth_social_user(request):
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
-        code = 1
+        code = ResponseCodes.invalid_credentials
     else:
         success = True   
-        code = 0
+        code = ResponseCodes.success
     return JsonResponse(create_response(jsonres, success, code), safe=False)
 
 @require_POST
@@ -123,10 +124,10 @@ def refresh_token(request):
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
-        code = 1
+        code = ResponseCodes.invalid_credentials
     else:
         success = True   
-        code = 0 
+        code = ResponseCodes.success 
     return JsonResponse(create_response(jsonres, success, code), safe=False)    
 
 @csrf_exempt
@@ -134,7 +135,7 @@ def refresh_token(request):
 def sync_user_emails(request):
     profile = Profile.objects.get(user=request.user)
     if not profile.is_gmail_read_ok:
-        return JsonResponse(create_response(None, False, 4), safe=False)    
+        return JsonResponse(create_response(None, False, ResponseCodes.google_token_expired), safe=False)    
     #it'll be used for background tasking in production
     #refs. https://medium.com/@robinttt333/running-background-tasks-in-django-f4c1d3f6f06e
     #https://django-background-tasks.readthedocs.io/en/latest/
@@ -150,7 +151,7 @@ def get_linkedin_profile(request):
     if result:
         return JsonResponse(create_response(text), safe=False) 
     else:
-        return JsonResponse(create_response(None, False, 2))    
+        return JsonResponse(create_response(None, False, ResponseCodes.user_profile_not_found))    
 
 @background(schedule=1)
 def scheduleFetcher(user_id):
@@ -173,15 +174,15 @@ def update_gmail_token(request):
             profile = Profile.objects.get(user=request.user)
             profile.is_gmail_read_ok = True
             profile.save()  
-            code = 0
+            code = ResponseCodes.success
             scheduleFetcher(request.user.id)
         else:
             success = False
-            code = 2
+            code = ResponseCodes.user_profile_not_found
     except Exception as e: 
         log(e, 'e')
         success = False   
-        code = 3         
+        code = ResponseCodes.couldnt_update_google_token         
     return JsonResponse(create_response(None, success, code), safe=False)    
 
 @csrf_exempt
