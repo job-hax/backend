@@ -75,7 +75,7 @@ def get_jobapp_notes(request):
         success = False
         code = 10
     else:    
-        notes = JobApplicationNote.objects.filter(job_post__pk = jobapp_id)
+        notes = JobApplicationNote.objects.filter(job_post__pk = jobapp_id).order_by('-update_date', '-created_date')
         try:
             slist = JobApplicationNoteSerializer(instance=notes, many=True).data
         except Exception as e:
@@ -127,7 +127,7 @@ def delete_jobapp_note(request):
         else:
             user_job_app_note = user_job_app_note[0]
             user_job_app_note.delete()
-    return JsonResponse(create_response(data, success, code), safe=False)    
+    return JsonResponse(create_response(None, success, code), safe=False)    
 
 @csrf_exempt
 @api_view(["POST"])
