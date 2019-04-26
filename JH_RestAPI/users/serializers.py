@@ -1,5 +1,5 @@
 from django.db import models
-from .models import Profile
+from .models import Profile, EmploymentStatus
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -10,10 +10,20 @@ class UserSerializer(serializers.ModelSerializer):
         return User.objects.create(**validated_data)
   class Meta:
     model = User
-    fields = ('username', 'first_name', 'last_name', 'email', 'date_joined')    
+    fields = ('username', 'first_name', 'last_name', 'email', 'date_joined')  
+
+class EmploymentStatusSerializer(serializers.ModelSerializer):
+
+  def create(self, validated_data):
+        return EmploymentStatus.objects.create(**validated_data)
+  class Meta:
+    model = EmploymentStatus
+    fields = ('__all__')      
 
 class ProfileSerializer(serializers.ModelSerializer):
   user = UserSerializer(read_only=True) 
+  emp_status = EmploymentStatusSerializer(read_only=True)
+  dob = serializers.DateField(format="%Y-%m-%d")
 
   def create(self, validated_data):
         return Profile.objects.create(**validated_data)

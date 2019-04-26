@@ -9,11 +9,11 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 from django.db.models.manager import Manager
 from JH_RestAPI import settings
+from django.contrib.auth import get_user_model
 
 
 User = settings.AUTH_USER_MODEL
     
-
 
 class PublishedManager(Manager):
     def get_query_set(self):
@@ -69,7 +69,7 @@ class Vote(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE, verbose_name=_('poll'))
     item = models.ForeignKey(Item, related_name='item', on_delete=models.CASCADE, verbose_name=_('voted item'))
     ip = models.GenericIPAddressField(verbose_name=_('user\'s IP'))
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True,
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True,
                              verbose_name=_('user'))
     datetime = models.DateTimeField(auto_now_add=True)
 
@@ -78,9 +78,12 @@ class Vote(models.Model):
         verbose_name_plural = _('votes')
 
     def __str__(self):
-        UserModel = settings.AUTH_USER_MODEL
+        if isinstance(User, str):
+            UserModel = get_user_model()
+        else:
+            UserModel = get_user_model()
 
         if isinstance(self.user, UserModel):
-            username_field = getattr(settings.AUTH_USER_MODEL, 'USERNAME_FIELD', 'username')
-            return getattr(settings.AUTH_USER_MODEL, username_field, '')
+            username_field = getattr(User, 'USERNAME_FIELD', 'username')
+            return getattr(User, username_field, '')
         return self.ip

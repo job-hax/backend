@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
 from JH_RestAPI import settings
+from django.contrib.auth import get_user_model
 
 class Blog(models.Model):
     title = models.CharField(max_length=50)
@@ -16,6 +16,7 @@ class Blog(models.Model):
         return self.title
 
 class Vote(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='vote_user')    
+    User = get_user_model()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vote_user')    
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)  
     vote_type = models.BooleanField(default=False)

@@ -8,6 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from .models import Profile
+from .models import EmploymentStatus
 from jobapps.models import GoogleMail
 from jobapps.serializers import GoogleMailSerializer
 from utils.gmail_lookup import fetchJobApplications
@@ -17,8 +18,10 @@ from rest_framework.parsers import JSONParser
 from utils.logger import log
 from utils.error_codes import ResponseCodes
 from .serializers import ProfileSerializer
+from .serializers import EmploymentStatusSerializer
 import traceback
 from django.contrib.auth import get_user_model
+from datetime import datetime
 
 
 # Create your views here.
@@ -107,6 +110,50 @@ def change_password(request):
     user.save()
     return JsonResponse(create_response(None), safe=False)
 
+@csrf_exempt
+@api_view(["POST"])
+def update_profile_photo(request):    
+    body = request.data
+    user = request.user
+    profile = Profile.objects.get(user=user)
+    if 'photo_url' in body:
+        profile.profile_photo = body['photo_url']
+    profile.save()
+    return JsonResponse(create_response(ProfileSerializer(instance=profile, many=False).data), safe=False) 
+
+@csrf_exempt
+@api_view(["POST"])
+def update_profile(request):    
+    body = request.data
+    user = request.user
+    User = get_user_model()
+    profile = Profile.objects.get(user=user)
+    if 'password' in body:
+        user.set_password(body['password'])
+    if 'username' in body:
+        if User.objects.filter(username=body['username']).exists():
+            return JsonResponse(create_response(None, False, ResponseCodes.username_exists), safe=False) 
+        user.username = body['username']
+    if 'first_name' in body:
+        user.first_name = body['first_name']
+    if 'last_name' in body:
+        user.last_name = body['last_name']    
+    if 'gender' in body:
+        profile.gender = body['gender']
+    if 'dob' in body:
+        profile.dob = datetime.strptime(body['dob'], "%Y-%m-%d").date()    
+    if 'itu_email' in body and '@students.itu.edu' in body['itu_email']:
+        profile.itu_email = body['itu_email']
+    if 'phone_number' in body:
+        profile.phone_number = body['phone_number']
+    if 'emp_status_id' in body:
+        if EmploymentStatus.objects.filter(pk=body['emp_status_id']).count() > 0:
+            profile.emp_status = EmploymentStatus.objects.get(pk=body['emp_status_id'])
+        
+    user.save()
+    profile.save()
+    return JsonResponse(create_response(ProfileSerializer(instance=profile, many=False).data), safe=False)    
+
 @require_POST
 @csrf_exempt
 def auth_social_user(request):
@@ -165,6 +212,12 @@ def get_profile(request):
     get_linkedin_profile(request.user)  
     profile = Profile.objects.get(user=request.user) 
     return JsonResponse(create_response(ProfileSerializer(instance=profile, many=False).data), safe=False)  
+
+@csrf_exempt
+@api_view(["GET"])
+def get_employment_statuses(request): 
+    statuses = EmploymentStatus.objects.all()
+    return JsonResponse(create_response(EmploymentStatusSerializer(instance=statuses, many=True).data), safe=False)      
 
 @background(schedule=1)
 def scheduleFetcher(user_id):
