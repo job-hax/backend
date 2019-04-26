@@ -3,7 +3,7 @@ from django.http import JsonResponse
 import requests
 import json
 from utils.generic_json_creator import create_response
-from utils.linkedin_lookup import get_profile
+from utils.linkedin_lookup import get_linkedin_profile
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
@@ -17,6 +17,7 @@ from social_django.models import UserSocialAuth
 from rest_framework.parsers import JSONParser
 from utils.logger import log
 from utils.error_codes import ResponseCodes
+from .serializers import ProfileSerializer
 
 
 # Create your views here.
@@ -146,12 +147,10 @@ def sync_user_emails(request):
 
 @csrf_exempt
 @api_view(["GET"])
-def get_linkedin_profile(request): 
-    result, text = get_profile(request.user)   
-    if result:
-        return JsonResponse(create_response(text), safe=False) 
-    else:
-        return JsonResponse(create_response(None, False, ResponseCodes.user_profile_not_found))    
+def get_profile(request): 
+    get_linkedin_profile(request.user)  
+    profile = Profile.objects.get(user=request.user) 
+    return JsonResponse(create_response(ProfileSerializer(instance=profile, many=False).data), safe=False)  
 
 @background(schedule=1)
 def scheduleFetcher(user_id):
