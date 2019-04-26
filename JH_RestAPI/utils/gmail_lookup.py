@@ -141,11 +141,11 @@ def get_email_detail(service, user_id, msg_id, user, source):
         else:
             jc = jc[0]   
 
-        if ApplicationStatus.objects.count() == 0:
-            status = ApplicationStatus(value='Applied')
+        if ApplicationStatus.objects.filter(default=True).count() == 0:
+            status = ApplicationStatus(value='Applied', default=True)
             status.save()  
         else:
-            status = ApplicationStatus.objects.get(value='Applied')
+            status = ApplicationStatus.objects.get(default=True)
         japp = JobApplication(position=jt, companyObject=jc, applyDate=date, msgId=msg_id, source = source, user = user, applicationStatus = status)
         japp.save()
         status_history = StatusHistory(job_post = japp, applicationStatus = status)
