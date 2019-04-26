@@ -25,6 +25,7 @@ from utils.logger import log
 from rest_framework.parsers import JSONParser
 from datetime import datetime   
 from utils.error_codes import ResponseCodes
+import traceback
 
 
 # Create your views here.
@@ -61,7 +62,7 @@ def get_status_history(request):
         try:
             slist = StatusHistorySerializer(instance=statuses, many=True).data
         except Exception as e:
-            log(e, 'e')  
+            log(traceback.format_exception(None, e, e.__traceback__), 'e')  
             success=False
             code= ResponseCodes.record_not_found     
     return JsonResponse(create_response(slist, success, code), safe=False)   
@@ -81,7 +82,7 @@ def get_jobapp_notes(request):
         try:
             slist = JobApplicationNoteSerializer(instance=notes, many=True).data
         except Exception as e:
-            log(e, 'e')  
+            log(traceback.format_exception(None, e, e.__traceback__), 'e')  
             success=False
             code= ResponseCodes.record_not_found       
     return JsonResponse(create_response(slist, success, code), safe=False) 
@@ -106,7 +107,7 @@ def update_jobapp_note(request):
             note.save()
             data = JobApplicationNoteSerializer(instance=note, many=False).data
         except Exception as e:
-            log(e, 'e')  
+            log(traceback.format_exception(None, e, e.__traceback__), 'e')  
             success=False
             code= ResponseCodes.record_not_found       
     return JsonResponse(create_response(data, success, code), safe=False)     
@@ -150,7 +151,7 @@ def add_jobapp_note(request):
             note.save()
             data = JobApplicationNoteSerializer(instance=note, many=False).data
         except Exception as e:
-            log(e, 'e')  
+            log(traceback.format_exception(None, e, e.__traceback__), 'e')  
             success=False
             code= ResponseCodes.record_not_found        
     return JsonResponse(create_response(data, success, code), safe=False)     
@@ -273,7 +274,7 @@ def get_jobapp_detail(request):
     success=True
     code=ResponseCodes.success 
   except Exception as e:
-    log(e, 'e')  
+    log(traceback.format_exception(None, e, e.__traceback__), 'e')  
     success=False
     code= ResponseCodes.record_not_found     
     jobapp_detail=None

@@ -1,6 +1,7 @@
 import requests
 from users.models import Profile
 from utils.logger import log
+import traceback
 
 def get_linkedin_profile(user):
     try:
@@ -12,4 +13,4 @@ def get_linkedin_profile(user):
             profile.linkedin_info = r.text
             profile.save()
     except Exception as e:
-        log(e, 'e')  
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')  

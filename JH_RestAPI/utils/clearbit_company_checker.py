@@ -1,6 +1,7 @@
 import requests
 from utils.logger import log
 import os
+import traceback
 
 def get_company_detail(name):
     try:
@@ -12,5 +13,5 @@ def get_company_detail(name):
         else:
             return None
     except Exception as e:
-        log(e, 'e')  
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')  
         return None

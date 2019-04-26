@@ -225,7 +225,7 @@ def fetchJobApplications(user):
         #indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
     except Exception as e:
         log('Users google token probably expired. Should have new token from google', 'e')
-        log(e, 'e')
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
         profile.is_gmail_read_ok = False
         profile.save()
         return          
