@@ -8,7 +8,14 @@ class ApplicationStatus(models.Model):
   value = models.CharField(max_length=20)
   default = models.BooleanField(default=False)
   def __str__(self):
-    return self.value      
+    return self.value   
+
+class Source(models.Model):
+  value = models.CharField(max_length=20)
+  gmail_key = models.CharField(max_length=100, blank=True)
+  system = models.BooleanField(default=False)
+  def __str__(self):
+    return self.value       
 
 class JobApplication(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -17,12 +24,12 @@ class JobApplication(models.Model):
   companyObject = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True, related_name='%(class)s_company')
   applyDate = models.DateTimeField(blank=True)
   msgId = models.CharField(max_length=200)
-  source = models.CharField(max_length=200, default='')
+  app_source = models.ForeignKey(Source, on_delete=models.DO_NOTHING, null=True, related_name='%(class)s_source')
   isRejected = models.BooleanField(default=False)
   isDeleted = models.BooleanField(default=False)
   
   def __str__(self):
-    return self.position.job_title + '@' + self.companyObject.company + '/' + str(self.applyDate)
+    return self.position.job_title + '@' + self.companyObject.company + ' / ' + str(self.applyDate) + ' / ' + self.app_source.value
 
 class StatusHistory(models.Model):
   job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 

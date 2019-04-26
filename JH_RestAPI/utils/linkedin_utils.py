@@ -15,7 +15,6 @@ def parse_job_detail(body):
   """
   try:
     link = body[find_nth(body, 'https://www.linkedin.com/comm/jobs/view/', 1) : find_nth(body, '?trk', 1)]
-    log(link, 'i')
     url = requests.get(link)
     htmltext = url.text
     s = find_nth(htmltext, '<code id="viewJobMetaTagModule">', 1)

@@ -18,7 +18,6 @@ def convertTime(base):
 
     # utc = datetime.utcnow()
     #utc = datetime.strptime('2011-01-21 02:37:21', '%Y-%m-%d %H:%M:%S')
-    log(base, 'i')
     base = base[:25].strip()
     utc = datetime.strptime(base, '%a, %d %b %Y %H:%M:%S')
     #Mon, 1 Oct 2018 22:35:03 +0000 (UTC)

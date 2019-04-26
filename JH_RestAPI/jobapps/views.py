@@ -10,6 +10,7 @@ from .models import JobApplication
 from .models import JobPostDetail
 from .models import ApplicationStatus
 from .models import StatusHistory
+from .models import Source
 from .models import JobApplicationNote
 from position.models import JobPosition
 from company.models import Company
@@ -246,8 +247,14 @@ def add_jobapp(request):
             jc = Company(company=company, company_logo=None, cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
         jc.save()      
     else:
-        jc = jc[0]       
-    japp = JobApplication(position=jt, companyObject=jc, applyDate=applicationdate, msgId='', source =source, user = request.user)
+        jc = jc[0]   
+
+    if Source.objects.filter(value__iexact=source).count() == 0:
+        source = Source.objects.create(value=source)      
+    else:
+        source = Source.objects.get(value__iexact=source)
+            
+    japp = JobApplication(position=jt, companyObject=jc, applyDate=applicationdate, msgId='', app_source =source, user = request.user)
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
     japp.save()
     return JsonResponse(create_response(JobApplicationSerializer(instance=japp, many=False).data), safe=False)
