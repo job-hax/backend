@@ -92,6 +92,7 @@ def update_jobapp_note(request):
     description = body['description']
     success = True
     code = 0
+    data = None
     if jobapp_note_id is None:
         success = False
         code = 10
@@ -101,11 +102,12 @@ def update_jobapp_note(request):
             note.description = description
             note.update_date = datetime.now()
             note.save()
+            data = JobApplicationNoteSerializer(instance=note, many=False).data
         except Exception as e:
             log(e, 'e')  
             success=False
             code=11     
-    return JsonResponse(create_response(None, success, code), safe=False)     
+    return JsonResponse(create_response(data, success, code), safe=False)     
 
 @csrf_exempt
 @api_view(["POST"])
@@ -125,7 +127,7 @@ def delete_jobapp_note(request):
         else:
             user_job_app_note = user_job_app_note[0]
             user_job_app_note.delete()
-    return JsonResponse(create_response(None, success, code), safe=False)    
+    return JsonResponse(create_response(data, success, code), safe=False)    
 
 @csrf_exempt
 @api_view(["POST"])
