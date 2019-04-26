@@ -5,6 +5,7 @@ from .gmail_utils import find_nth
 from django.core import serializers
 from datetime import datetime
 from utils.logger import log
+import traceback
 
 def parse_job_detail(body):
   """Parse html body and get job posting details
@@ -41,5 +42,5 @@ def parse_job_detail(body):
         
     return posterInformationJSON, decoratedJobPostingJSON, topCardV2JSON
   except Exception as e:
-      log(e, 'e')  
+      log(traceback.format_exception(None, e, e.__traceback__), 'e')  
       return '{}','{}','{}'

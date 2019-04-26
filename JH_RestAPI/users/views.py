@@ -18,6 +18,7 @@ from rest_framework.parsers import JSONParser
 from utils.logger import log
 from utils.error_codes import ResponseCodes
 from .serializers import ProfileSerializer
+import traceback
 
 
 # Create your views here.
@@ -83,7 +84,6 @@ def logout(request):
     post_data['client_secret'] = body['client_secret']
     headers = {'content-type': 'application/json'}
     response = requests.post('http://localhost:8000/auth/revoke-token', data=json.dumps(post_data), headers=headers)
-    log(response.text, 'i')
     if response.status_code is 204 or response.status_code is 200:
         success = True
         code = ResponseCodes.success
@@ -178,7 +178,7 @@ def update_gmail_token(request):
             success = False
             code = ResponseCodes.user_profile_not_found
     except Exception as e: 
-        log(e, 'e')
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
         success = False   
         code = ResponseCodes.couldnt_update_google_token         
     return JsonResponse(create_response(None, success, code), safe=False)    
