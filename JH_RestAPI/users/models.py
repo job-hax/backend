@@ -1,11 +1,14 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager
 from JH_RestAPI import settings
 from django.core.validators import RegexValidator
+from django.contrib.auth import get_user_model
+
+class EmploymentStatus(models.Model):
+    value = models.CharField(max_length=20, null=True)
 
 class User(AbstractUser):
     objects = UserManager()
@@ -19,7 +22,8 @@ class User(AbstractUser):
 
 # Create your models here.
 class Profile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    User = get_user_model()
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     gmail_last_update_time = models.IntegerField(default=0)
     is_gmail_read_ok = models.BooleanField(default=True)
     linkedin_info = models.TextField(null=True, blank=True)
