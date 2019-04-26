@@ -14,7 +14,7 @@ from django.db.models import Count
 from utils.generic_json_creator import create_response
 import datetime
 from dateutil.relativedelta import relativedelta
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 @csrf_exempt
 @api_view(["GET"])
@@ -200,6 +200,7 @@ def get_top_positions(request):
 @api_view(["GET"])
 def get_statistics(request): 
   response = {}
+  User = get_user_model()
   total_user = User.objects.filter(is_staff=False).count()
   total_application = JobApplication.objects.all().count()
   response['total_user'] = total_user
