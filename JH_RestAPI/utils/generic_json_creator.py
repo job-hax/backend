@@ -30,9 +30,9 @@ def get_error_message(error_code):
     elif error_code == ResponseCodes.passwords_do_not_match:
         return 'Passwords do not match'
     elif error_code == ResponseCodes.username_exists:
-        return 'That username is taken'
+        return 'This username is taken'
     elif error_code == ResponseCodes.email_exists:
-        return 'That email is being used'
+        return 'This email is being used'
     elif error_code == ResponseCodes.invalid_parameters:
         return 'Invalid parameters...'   
     elif error_code == ResponseCodes.record_not_found:
@@ -45,4 +45,6 @@ def get_error_message(error_code):
         return 'Poll answer could not be found...'   
     elif error_code == ResponseCodes.blog_couldnt_found:
         return 'Blog could not be found...'       
+    elif error_code == ResponseCodes.invalid_username:
+        return 'Invalid username...'      
     return 'Unknown error'    

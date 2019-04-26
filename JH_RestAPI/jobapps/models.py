@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from datetime import datetime   
 from position.models import JobPosition
 from company.models import Company
+from JH_RestAPI import settings
     
 class ApplicationStatus(models.Model):
   value = models.CharField(max_length=20)
@@ -18,7 +19,7 @@ class Source(models.Model):
     return self.value       
 
 class JobApplication(models.Model):
-  user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+  user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
   applicationStatus = models.ForeignKey(ApplicationStatus, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='%(class)s_applicationStatus')
   position = models.ForeignKey(JobPosition, on_delete=models.DO_NOTHING, null=True, related_name='%(class)s_position')
   companyObject = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True, related_name='%(class)s_company')
@@ -37,7 +38,7 @@ class StatusHistory(models.Model):
   update_date = models.DateTimeField(default=datetime.now, blank=True)    
 
 class GoogleMail(models.Model):
-  user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=True)    
+  user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False, blank=True)    
   job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True)
   subject = models.CharField(max_length=200)
   body = models.TextField(null=True, blank=True)

@@ -7,7 +7,6 @@ from utils.linkedin_lookup import get_linkedin_profile
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
-from django.contrib.auth.models import User
 from .models import Profile
 from jobapps.models import GoogleMail
 from jobapps.serializers import GoogleMailSerializer
@@ -19,6 +18,7 @@ from utils.logger import log
 from utils.error_codes import ResponseCodes
 from .serializers import ProfileSerializer
 import traceback
+from django.contrib.auth import get_user_model
 
 
 # Create your views here.
@@ -37,9 +37,13 @@ def register(request):
     success = True
     code = ResponseCodes.success
 
+    if '@' in username:
+        return JsonResponse(create_response(None, False, ResponseCodes.invalid_username), safe=False)  
+
     # Check if passwords match
     if password == password2:
         # Check username
+        User = get_user_model()
         if User.objects.filter(username=username).exists():
             success = False
             code = ResponseCodes.username_exists
@@ -66,6 +70,7 @@ def login(request):
     post_data['username'] = body['username']
     post_data['password'] = body['password']
     response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
+    print(response.text)
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
@@ -92,6 +97,15 @@ def logout(request):
         code = ResponseCodes.couldnt_logout_user 
     return JsonResponse(create_response(None, success, code), safe=False)
 
+@csrf_exempt
+@api_view(["POST"])
+def change_password(request):    
+    body = request.data
+    password = body['password']
+    user = request.user
+    user.set_password(password)
+    user.save()
+    return JsonResponse(create_response(None), safe=False)
 
 @require_POST
 @csrf_exempt
