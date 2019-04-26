@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from .models import Profile
 from .models import EmploymentStatus
+from .models import Feedback
 from jobapps.models import GoogleMail
 from jobapps.serializers import GoogleMailSerializer
 from utils.gmail_lookup import fetchJobApplications
@@ -256,3 +257,13 @@ def get_user_google_mails(request):
     mails = GoogleMail.objects.all()
     slist = GoogleMailSerializer(instance=mails, many=True).data
     return JsonResponse(create_response(slist), safe=False)    
+
+@csrf_exempt
+@api_view(["POST"])
+def feedback(request):    
+    body = request.data
+    text = body['text']
+    star = body['star']
+    user = request.user
+    Feedback.objects.create(user=user, text=text, star=star)
+    return JsonResponse(create_response(None), safe=False)    
