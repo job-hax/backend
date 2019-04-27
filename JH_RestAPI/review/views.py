@@ -10,6 +10,7 @@ from position.models import JobPosition
 from users.models import EmploymentAuth, EmploymentStatus
 from .serializers import ReviewSerializer
 from .models import Review, CompanyEmploymentAuth
+from django.db.models import Q
 
 
 @csrf_exempt
@@ -75,9 +76,9 @@ def get_reviews(request):
     if company_id is None and position_id is None:
         return JsonResponse(create_response(None, False, ResponseCodes.invalid_parameters), safe=False)
     if company_id is None:
-        reviews = Review.objects.filter(position__pk=position_id)
+        reviews = Review.objects.filter(Q(is_published=True) | Q(jobapp__user=request.user), position__pk=position_id )
     elif position_id is None:
-        reviews = Review.objects.filter(company__pk=company_id)    
+        reviews = Review.objects.filter(Q(is_published=True) | Q(jobapp__user=request.user), company__pk=company_id)    
     else:
-        reviews = Review.objects.filter(position__pk=position_id, company__pk=company_id)    
+        reviews = Review.objects.filter(Q(is_published=True) | Q(jobapp__user=request.user), position__pk=position_id, company__pk=company_id)    
     return JsonResponse(create_response(ReviewSerializer(instance=reviews, many=True).data), safe=False)           
