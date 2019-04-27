@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from .models import Profile
-from .models import EmploymentStatus
+from .models import EmploymentStatus, EmploymentAuth
 from .models import Feedback
 from jobapps.models import GoogleMail
 from jobapps.serializers import GoogleMailSerializer
@@ -19,7 +19,7 @@ from rest_framework.parsers import JSONParser
 from utils.logger import log
 from utils.error_codes import ResponseCodes
 from .serializers import ProfileSerializer
-from .serializers import EmploymentStatusSerializer
+from .serializers import EmploymentStatusSerializer, EmploymentAuthSerializer
 import traceback
 from django.contrib.auth import get_user_model
 from datetime import datetime
@@ -219,6 +219,12 @@ def get_profile(request):
 def get_employment_statuses(request): 
     statuses = EmploymentStatus.objects.all()
     return JsonResponse(create_response(EmploymentStatusSerializer(instance=statuses, many=True).data), safe=False)      
+
+@csrf_exempt
+@api_view(["GET"])
+def get_employment_auths(request): 
+    statuses = EmploymentAuth.objects.all()
+    return JsonResponse(create_response(EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)      
 
 @background(schedule=1)
 def scheduleFetcher(user_id):

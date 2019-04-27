@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Company(models.Model):
   company = models.CharField(max_length=200, null=True)
   company_logo = models.CharField(max_length=200, null=True, blank=True)

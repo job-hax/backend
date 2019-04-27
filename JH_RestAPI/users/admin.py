@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, User, EmploymentStatus, Feedback
+from .models import Profile, User, EmploymentStatus, Feedback, EmploymentAuth
 from utils.export_csv import ExportCsv
 
 
@@ -18,3 +18,4 @@ class FeedbackAdmin(admin.ModelAdmin, ExportCsv):
     actions = ["export_as_csv"]     
 
 admin.site.register(EmploymentStatus)
+admin.site.register(EmploymentAuth)

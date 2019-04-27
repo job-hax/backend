@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import JobApplication, ApplicationStatus, Source, JobPostDetail, GoogleMail
+from .models import JobApplication, ApplicationStatus, Source, JobPostDetail, GoogleMail, SourceType
 from utils.export_csv import ExportCsv
 
 # Register your models here.
@@ -10,3 +10,4 @@ admin.site.register(ApplicationStatus)
 admin.site.register(JobPostDetail)
 admin.site.register(GoogleMail)
 admin.site.register(Source)
+admin.site.register(SourceType)
