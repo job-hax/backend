@@ -5,6 +5,7 @@ from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from django.http import JsonResponse
 from jobapps.models import JobApplication, SourceType
+from jobapps.serializers import SourceSerializer
 from company.models import Company
 from position.models import JobPosition
 from users.models import EmploymentAuth, EmploymentStatus
@@ -81,4 +82,10 @@ def get_reviews(request):
         reviews = Review.objects.filter(Q(is_published=True) | Q(jobapp__user=request.user), company__pk=company_id)    
     else:
         reviews = Review.objects.filter(Q(is_published=True) | Q(jobapp__user=request.user), position__pk=position_id, company__pk=company_id)    
-    return JsonResponse(create_response(ReviewSerializer(instance=reviews, many=True).data), safe=False)           
+    return JsonResponse(create_response(ReviewSerializer(instance=reviews, many=True).data), safe=False)     
+
+@csrf_exempt
+@api_view(["GET"])
+def get_source_types(request):
+    sources = SourceType.objects.all()
+    return JsonResponse(create_response(SourceSerializer(instance=sources, many=True).data), safe=False)  
