@@ -6,11 +6,18 @@ from django.contrib.auth.models import UserManager
 from JH_RestAPI import settings
 from django.core.validators import RegexValidator
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 
 class EmploymentStatus(models.Model):
     value = models.CharField(max_length=20, default='N/A')
     def __str__(self):
       return self.value 
+
+class EmploymentAuth(models.Model):
+    value = models.CharField(max_length=20, null=False)
+    def __str__(self):
+      return self.value       
 
 class User(AbstractUser):
     objects = UserManager()
@@ -55,4 +62,7 @@ class Feedback(models.Model):
     User = get_user_model()
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True) 
     text = models.TextField(null=True, blank=True)   
-    star = models.IntegerField(null=True, blank=True)
+    star = models.IntegerField(validators=[
+            MaxValueValidator(5),
+            MinValueValidator(0)
+        ], null=True, blank=True)

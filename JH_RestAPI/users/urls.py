@@ -13,6 +13,7 @@ urlpatterns = [
     path('update_profile', views.update_profile, name='update_profile'),
     path('update_profile_photo', views.update_profile_photo, name='update_profile_photo'),
     path('get_employment_statuses', views.get_employment_statuses, name='get_employment_statuses'),
+    path('get_employment_auths', views.get_employment_auths, name='get_employment_auths'),
     path('auth_social_user', views.auth_social_user, name='auth_social_user'),
     path('get_profile', views.get_profile, name='get_profile'),
     path('refresh_token', views.refresh_token, name='refresh_token'),

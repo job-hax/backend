@@ -6,7 +6,7 @@ from .models import GoogleMail
 from .models import JobPostDetail
 from .models import StatusHistory
 from .models import Source
-from .models import JobApplicationNote
+from .models import JobApplicationNote, SourceType
 from rest_framework import serializers
 from position.serializers import JobPositionSerializer
 from company.serializers import CompanySerializer
@@ -19,6 +19,13 @@ class ApplicationStatusSerializer(serializers.ModelSerializer):
   class Meta:
     model = ApplicationStatus
     fields = ('__all__')
+
+class SourceTypeSerializer(serializers.ModelSerializer):
+  def create(self, validated_data):
+        return SourceType.objects.create(**validated_data)
+  class Meta:
+    model = SourceType
+    fields = ('__all__')    
 
 class GoogleMailSerializer(serializers.ModelSerializer):
   def create(self, validated_data):

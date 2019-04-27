@@ -1,5 +1,5 @@
 from django.db import models
-from .models import Profile, EmploymentStatus
+from .models import Profile, EmploymentStatus, EmploymentAuth
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -18,6 +18,14 @@ class EmploymentStatusSerializer(serializers.ModelSerializer):
         return EmploymentStatus.objects.create(**validated_data)
   class Meta:
     model = EmploymentStatus
+    fields = ('__all__')      
+
+class EmploymentAuthSerializer(serializers.ModelSerializer):
+
+  def create(self, validated_data):
+        return EmploymentAuth.objects.create(**validated_data)
+  class Meta:
+    model = EmploymentAuth
     fields = ('__all__')      
 
 class ProfileSerializer(serializers.ModelSerializer):

@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'company',
     'position',
     'notifications',
+    'review',
 ]
 
 MIDDLEWARE = [
