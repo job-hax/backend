@@ -74,7 +74,6 @@ def login(request):
     post_data['username'] = body['username']
     post_data['password'] = body['password']
     response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
-    print(response.text)
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False

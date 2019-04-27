@@ -7,6 +7,7 @@ from utils.generic_json_creator import create_response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from utils.error_codes import ResponseCodes
+from utils.logger import log
 
 @csrf_exempt
 @api_view(["GET"])
@@ -37,7 +38,7 @@ def upvote(request, blog_pk):
         vote.save()
         return JsonResponse(create_response(BlogSnippetSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)
     except Exception as e:
-        print(e)
+        log(e, 'e')
         return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)
 
 @csrf_exempt
@@ -54,7 +55,7 @@ def downvote(request, blog_pk):
         vote.save()
         return JsonResponse(create_response(BlogSnippetSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)
     except Exception as e:
-        print(e)
+        log(e, 'e')
         return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)
 
 @csrf_exempt
