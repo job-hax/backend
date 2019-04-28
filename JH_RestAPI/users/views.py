@@ -37,9 +37,12 @@ def register(request):
     email = body['email']
     password = body['password']
     password2 = body['password2']
+    client_id = body['client_id']
+    client_secret = body['client_secret']
 
     success = True
     code = ResponseCodes.success
+    data = None
 
     if '@' in username:
         return JsonResponse(create_response(None, False, ResponseCodes.invalid_username), safe=False)  
@@ -59,10 +62,25 @@ def register(request):
                 # Looks good
                 user = User.objects.create_user(username=username, password=password,email=email, first_name=first_name, last_name=last_name)
                 user.save()
+                post_data = {}
+                post_data['client_id'] = client_id
+                post_data['client_secret'] = client_secret
+                post_data['grant_type'] = 'password'
+                post_data['username'] = username
+                post_data['password'] = password
+                response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
+                jsonres = json.loads(response.text)
+                if 'error' in jsonres:
+                    success = False
+                    code = ResponseCodes.couldnt_login
+                else:
+                    success = True   
+                    code = ResponseCodes.success 
+                    data = jsonres
     else:
         success = False
         code = ResponseCodes.passwords_do_not_match
-    return JsonResponse(create_response(None, success, code), safe=False)    
+    return JsonResponse(create_response(data, success, code), safe=False)    
 
 @require_POST
 @csrf_exempt
