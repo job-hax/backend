@@ -38,14 +38,14 @@ def get_jobapps(request):
     else:
         user_job_apps = JobApplication.objects.filter(user_id=request.user.id, isDeleted=False).order_by('-applyDate')
     joblist = JobApplicationSerializer(instance=user_job_apps, many=True, context={'user':request.user}).data
-    return JsonResponse(create_response(joblist), safe=False)
+    return JsonResponse(create_response(data=joblist), safe=False)
 
 @csrf_exempt
 @api_view(["GET"])
 def get_statuses(request):
     statuses = ApplicationStatus.objects.all()
     slist = ApplicationStatusSerializer(instance=statuses, many=True).data
-    return JsonResponse(create_response(slist), safe=False)
+    return JsonResponse(create_response(data=slist), safe=False)
 
 @csrf_exempt
 @api_view(["GET"])
@@ -65,7 +65,7 @@ def get_status_history(request):
             log(traceback.format_exception(None, e, e.__traceback__), 'e')  
             success=False
             code= ResponseCodes.record_not_found     
-    return JsonResponse(create_response(slist, success, code), safe=False)   
+    return JsonResponse(create_response(data=slist, success=success, error_code=code), safe=False)   
 
 @csrf_exempt
 @api_view(["GET"])
@@ -85,7 +85,7 @@ def get_jobapp_notes(request):
             log(traceback.format_exception(None, e, e.__traceback__), 'e')  
             success=False
             code= ResponseCodes.record_not_found       
-    return JsonResponse(create_response(slist, success, code), safe=False) 
+    return JsonResponse(create_response(data=slist, success=success, error_code=code), safe=False) 
 
 @csrf_exempt
 @api_view(["POST"])
@@ -114,7 +114,7 @@ def update_jobapp_note(request):
             log(traceback.format_exception(None, e, e.__traceback__), 'e')  
             success=False
             code= ResponseCodes.record_not_found       
-    return JsonResponse(create_response(data, success, code), safe=False)     
+    return JsonResponse(create_response(data=data, success=success, error_code=code), safe=False)     
 
 @csrf_exempt
 @api_view(["POST"])
@@ -138,7 +138,7 @@ def delete_jobapp_note(request):
             else:
                 success = False
                 code = ResponseCodes.record_not_found    
-    return JsonResponse(create_response(None, success, code), safe=False)    
+    return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)    
 
 @csrf_exempt
 @api_view(["POST"])
@@ -166,7 +166,7 @@ def add_jobapp_note(request):
             log(traceback.format_exception(None, e, e.__traceback__), 'e')  
             success=False
             code= ResponseCodes.record_not_found        
-    return JsonResponse(create_response(data, success, code), safe=False)     
+    return JsonResponse(create_response(data=data, success=success, error_code=code), safe=False)     
 
 @csrf_exempt
 @api_view(["POST"])
@@ -210,7 +210,7 @@ def update_jobapp(request):
             else:
                 success = False
                 code = ResponseCodes.record_not_found     
-    return JsonResponse(create_response(None, success, code), safe=False)
+    return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
 
 @csrf_exempt
 @api_view(["POST"])
@@ -235,7 +235,7 @@ def delete_jobapp(request):
             else:
                 success = False
                 code = ResponseCodes.record_not_found        
-    return JsonResponse(create_response(None, success, code), safe=False)
+    return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
 
 @csrf_exempt
 @api_view(["POST"])
@@ -278,7 +278,7 @@ def add_jobapp(request):
     japp = JobApplication(position=jt, companyObject=jc, applyDate=applicationdate, msgId='', app_source =source, user = request.user)
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
     japp.save()
-    return JsonResponse(create_response(JobApplicationSerializer(instance=japp, many=False, context={'user':request.user}).data), safe=False)
+    return JsonResponse(create_response(data=JobApplicationSerializer(instance=japp, many=False, context={'user':request.user}).data), safe=False)
 
 
 @csrf_exempt
@@ -298,4 +298,4 @@ def get_jobapp_detail(request):
     success=False
     code= ResponseCodes.record_not_found     
     jobapp_detail=None
-  return JsonResponse(create_response(jobapp_detail,success,code), safe=False)
+  return JsonResponse(create_response(data=jobapp_detail, success=success, error_code=code), safe=False)

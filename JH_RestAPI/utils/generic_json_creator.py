@@ -1,7 +1,7 @@
 import json
 from utils.error_codes import ResponseCodes
 
-def create_response(data, success=True, paginator=None, error_code=ResponseCodes.success):
+def create_response(data=None, success=True, paginator=None, error_code=ResponseCodes.success):
     response = {}
     response['success'] = success
     response['error_code'] = int(error_code.value)

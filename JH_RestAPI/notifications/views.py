@@ -10,4 +10,4 @@ from rest_framework.decorators import api_view
 @api_view(["GET"])
 def notifications(request):
     queryset = models.Notification.objects.all()
-    return JsonResponse(create_response(NotificationSerializer(instance=queryset, many=True).data), safe=False)
+    return JsonResponse(create_response(data=NotificationSerializer(instance=queryset, many=True).data), safe=False)

@@ -13,4 +13,4 @@ from django.views.decorators.http import require_GET
 def faqs(request):
     faq = Faq.objects.filter(is_published=True)
     slist = FaqSerializer(instance=faq, many=True).data
-    return JsonResponse(create_response(slist), safe= False)
+    return JsonResponse(create_response(data=slist), safe= False)

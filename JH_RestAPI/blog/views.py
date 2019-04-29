@@ -18,7 +18,7 @@ def blogs(request):
     paginator = pagination.CustomPagination()
     blogs = paginator.paginate_queryset(queryset, request)
     serialized_blogs = BlogSnippetSerializer(instance=blogs, many=True, context={'user':request.user}).data
-    return JsonResponse(create_response(serialized_blogs, paginator=paginator), safe=False) 
+    return JsonResponse(create_response(data=serialized_blogs, paginator=paginator), safe=False) 
 
 @csrf_exempt
 @api_view(["GET"])
@@ -26,7 +26,7 @@ def blog(request, blog_pk):
     try:
         blog = models.Blog.objects.get(pk=blog_pk)
     except:
-        return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.blog_couldnt_found), safe=False)
     return JsonResponse(create_response(BlogSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)   
 
 @csrf_exempt
@@ -41,10 +41,10 @@ def upvote(request, blog_pk):
             vote = vote[0]
             vote.vote_type = True    
         vote.save()
-        return JsonResponse(create_response(BlogSnippetSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)
+        return JsonResponse(create_response(data=BlogSnippetSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)
     except Exception as e:
         log(e, 'e')
-        return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.blog_couldnt_found), safe=False)
 
 @csrf_exempt
 @api_view(["POST"])
@@ -58,10 +58,10 @@ def downvote(request, blog_pk):
             vote = vote[0]
             vote.vote_type = False    
         vote.save()
-        return JsonResponse(create_response(BlogSnippetSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)
+        return JsonResponse(create_response(data=BlogSnippetSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)
     except Exception as e:
         log(e, 'e')
-        return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.blog_couldnt_found), safe=False)
 
 @csrf_exempt
 @api_view(["POST"])
@@ -70,6 +70,6 @@ def view(request, blog_pk):
         blog = models.Blog.objects.get(pk=blog_pk)
         blog.view_count = blog.view_count+1
         blog.save()
-        return JsonResponse(create_response(None), safe=False)
+        return JsonResponse(create_response(data=None), safe=False)
     except:
-        return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)        
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.blog_couldnt_found), safe=False)        
