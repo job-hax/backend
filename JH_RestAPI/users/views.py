@@ -45,7 +45,7 @@ def register(request):
     data = None
 
     if '@' in username:
-        return JsonResponse(create_response(None, False, ResponseCodes.invalid_username), safe=False)  
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_username), safe=False)  
 
     # Check if passwords match
     if password == password2:
@@ -80,7 +80,7 @@ def register(request):
     else:
         success = False
         code = ResponseCodes.passwords_do_not_match
-    return JsonResponse(create_response(data, success, code), safe=False)    
+    return JsonResponse(create_response(data=data, success=success, error_code=code), safe=False)    
 
 @require_POST
 @csrf_exempt
@@ -99,7 +99,7 @@ def login(request):
     else:
         success = True   
         code = ResponseCodes.success 
-    return JsonResponse(create_response(jsonres, success, code), safe=False)
+    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 @require_POST
 @csrf_exempt
@@ -116,7 +116,7 @@ def logout(request):
     else:
         success = False   
         code = ResponseCodes.couldnt_logout_user 
-    return JsonResponse(create_response(None, success, code), safe=False)
+    return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
 
 @csrf_exempt
 @api_view(["POST"])
@@ -126,7 +126,7 @@ def change_password(request):
     user = request.user
     user.set_password(password)
     user.save()
-    return JsonResponse(create_response(None), safe=False)
+    return JsonResponse(create_response(data=None), safe=False)
 
 @csrf_exempt
 @api_view(["POST"])
@@ -137,7 +137,7 @@ def update_profile_photo(request):
     if 'photo_url' in body:
         profile.profile_photo = body['photo_url']
     profile.save()
-    return JsonResponse(create_response(ProfileSerializer(instance=profile, many=False).data), safe=False) 
+    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False) 
 
 @csrf_exempt
 @api_view(["POST"])
@@ -150,7 +150,7 @@ def update_profile(request):
         user.set_password(body['password'])
     if 'username' in body:
         if User.objects.filter(username=body['username']).exists():
-            return JsonResponse(create_response(None, False, ResponseCodes.username_exists), safe=False) 
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.username_exists), safe=False) 
         user.username = body['username']
     if 'first_name' in body:
         user.first_name = body['first_name']
@@ -170,7 +170,7 @@ def update_profile(request):
         
     user.save()
     profile.save()
-    return JsonResponse(create_response(ProfileSerializer(instance=profile, many=False).data), safe=False)    
+    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)    
 
 @require_POST
 @csrf_exempt
@@ -190,7 +190,7 @@ def auth_social_user(request):
     else:
         success = True   
         code = ResponseCodes.success
-    return JsonResponse(create_response(jsonres, success, code), safe=False)
+    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 @require_POST
 @csrf_exempt
@@ -208,40 +208,40 @@ def refresh_token(request):
     else:
         success = True   
         code = ResponseCodes.success 
-    return JsonResponse(create_response(jsonres, success, code), safe=False)    
+    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)    
 
 @csrf_exempt
 @api_view(["GET"])
 def sync_user_emails(request):
     profile = Profile.objects.get(user=request.user)
     if not profile.is_gmail_read_ok:
-        return JsonResponse(create_response(None, False, ResponseCodes.google_token_expired), safe=False)    
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.google_token_expired), safe=False)    
     #it'll be used for background tasking in production
     #refs. https://medium.com/@robinttt333/running-background-tasks-in-django-f4c1d3f6f06e
     #https://django-background-tasks.readthedocs.io/en/latest/
     #https://stackoverflow.com/questions/41205607/how-to-activate-the-process-queue-in-django-background-tasks
     #scheduleFetcher.now(request.user.id)
     scheduleFetcher(request.user.id)
-    return JsonResponse(create_response(None), safe=False)    
+    return JsonResponse(create_response(data=None), safe=False)    
 
 @csrf_exempt
 @api_view(["GET"])
 def get_profile(request): 
     get_linkedin_profile(request.user)  
     profile = Profile.objects.get(user=request.user) 
-    return JsonResponse(create_response(ProfileSerializer(instance=profile, many=False).data), safe=False)  
+    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)  
 
 @csrf_exempt
 @api_view(["GET"])
 def get_employment_statuses(request): 
     statuses = EmploymentStatus.objects.all()
-    return JsonResponse(create_response(EmploymentStatusSerializer(instance=statuses, many=True).data), safe=False)      
+    return JsonResponse(create_response(data=EmploymentStatusSerializer(instance=statuses, many=True).data), safe=False)      
 
 @csrf_exempt
 @api_view(["GET"])
 def get_employment_auths(request): 
     statuses = EmploymentAuth.objects.all()
-    return JsonResponse(create_response(EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)      
+    return JsonResponse(create_response(data=EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)      
 
 @background(schedule=1)
 def scheduleFetcher(user_id):
@@ -272,14 +272,14 @@ def update_gmail_token(request):
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
         success = False   
         code = ResponseCodes.couldnt_update_google_token         
-    return JsonResponse(create_response(None, success, code), safe=False)    
+    return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)    
 
 @csrf_exempt
 @api_view(["GET"])
 def get_user_google_mails(request):
     mails = GoogleMail.objects.all()
     slist = GoogleMailSerializer(instance=mails, many=True).data
-    return JsonResponse(create_response(slist), safe=False)    
+    return JsonResponse(create_response(data=slist), safe=False)    
 
 @csrf_exempt
 @api_view(["POST"])
@@ -289,4 +289,4 @@ def feedback(request):
     star = body['star']
     user = request.user
     Feedback.objects.create(user=user, text=text, star=star)
-    return JsonResponse(create_response(None), safe=False)    
+    return JsonResponse(create_response(data=None), safe=False)    

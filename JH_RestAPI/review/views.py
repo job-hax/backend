@@ -21,13 +21,13 @@ def add_or_update_review(request):
     body = request.data
     user = request.user
     if 'company_id' not in body or 'position_id' not in body:
-        return JsonResponse(create_response(None, False, ResponseCodes.invalid_parameters), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
     company = Company.objects.get(pk=body['company_id'])  
     position = JobPosition.objects.get(pk=body['position_id'])   
     if 'review_id' in body:
         review = Review.objects.get(pk=body['review_id']) 
         if review.jobapp.user.pk != user.pk:
-            return JsonResponse(create_response(None, False, ResponseCodes.record_not_found), safe=False)
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
     else:       
         review = Review()
     review.company = company
@@ -68,7 +68,7 @@ def add_or_update_review(request):
     response = {}
     response['review'] = ReviewSerializer(instance=review, many=False).data
     response['company'] = CompanySerializer(instance=company, many=False).data
-    return JsonResponse(create_response(response), safe=False) 
+    return JsonResponse(create_response(data=response), safe=False) 
 
 @csrf_exempt
 @api_view(["GET"])
@@ -77,7 +77,7 @@ def get_reviews(request):
     position_id = request.GET.get('position_id')
     all_reviews = request.GET.get('all_reviews')
     if company_id is None and position_id is None:
-        return JsonResponse(create_response(None, False, ResponseCodes.invalid_parameters), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
     if company_id is None:
         reviews = Review.objects.filter(Q(is_published=True) | Q(user=request.user), position__pk=position_id )
     elif position_id is None:
@@ -88,13 +88,13 @@ def get_reviews(request):
         else:
             reviews = Review.objects.filter(user=request.user, position__pk=position_id, company__pk=company_id) 
             if reviews.count() > 0:
-                return JsonResponse(create_response(ReviewSerializer(instance=reviews[0], many=False).data), safe=False)
+                return JsonResponse(create_response(data=ReviewSerializer(instance=reviews[0], many=False).data), safe=False)
             else:
-                return JsonResponse(create_response(None), safe=False)                
-    return JsonResponse(create_response(ReviewSerializer(instance=reviews, many=True).data), safe=False)     
+                return JsonResponse(create_response(data=None), safe=False)                
+    return JsonResponse(create_response(data=ReviewSerializer(instance=reviews, many=True).data), safe=False)     
 
 @csrf_exempt
 @api_view(["GET"])
 def get_source_types(request):
     sources = SourceType.objects.all()
-    return JsonResponse(create_response(SourceSerializer(instance=sources, many=True).data), safe=False)  
+    return JsonResponse(create_response(data=SourceSerializer(instance=sources, many=True).data), safe=False)  

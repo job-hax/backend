@@ -22,7 +22,7 @@ def get_total_application_count(request):
   count = JobApplication.objects.filter(user_id=request.user.id, isDeleted=False).count()
   response = {}
   response['count'] = count
-  return JsonResponse(create_response(response), safe=False)
+  return JsonResponse(create_response(data=response), safe=False)
 
 @csrf_exempt
 @api_view(["GET"])
@@ -62,7 +62,7 @@ def get_application_count_by_month(request):
     counts.append(item)  
   response.append(counts)  
   response.append(months_string)  
-  return JsonResponse(create_response(response), safe=False)
+  return JsonResponse(create_response(data=response), safe=False)
 
 @csrf_exempt
 @api_view(["GET"])
@@ -104,7 +104,7 @@ def get_application_count_by_month_with_total(request):
     counts.append(item)
   response.append(counts)  
   response.append(months_string)    
-  return JsonResponse(create_response(response), safe=False)  
+  return JsonResponse(create_response(data=response), safe=False)  
 
 @csrf_exempt
 @api_view(["GET"])
@@ -116,7 +116,7 @@ def get_count_by_statuses(request):
     item['name'] = ApplicationStatus.objects.get(pk=i['applicationStatus']).value
     item['value'] = i['count']
     response.append(item)
-  return JsonResponse(create_response(response), safe=False)
+  return JsonResponse(create_response(data=response), safe=False)
   
 @csrf_exempt
 @api_view(["GET"])  
@@ -128,7 +128,7 @@ def get_word_count(request):
     item['word'] = i['companyObject__company']
     item['value'] = i['count']
     response.append(item)  
-  return JsonResponse(create_response(response), safe=False)  
+  return JsonResponse(create_response(data=response), safe=False)  
 
 @csrf_exempt
 @api_view(["GET"])
@@ -153,7 +153,7 @@ def get_count_by_jobtitle_and_statuses(request):
     status_data.append(item)
   response['statuses'] = statuses_data  
   response['data'] = status_data  
-  return JsonResponse(create_response(response), safe=False)
+  return JsonResponse(create_response(data=response), safe=False)
 
 
 @csrf_exempt
@@ -174,7 +174,7 @@ def get_top_companies(request):
   response = []
   for c in top_companies:
     response.append(c)
-  return JsonResponse(create_response(response), safe=False)  
+  return JsonResponse(create_response(data=response), safe=False)  
 
 @csrf_exempt
 @api_view(["GET"])
@@ -194,7 +194,7 @@ def get_top_positions(request):
   response = []
   for c in top_companies:
     response.append(c)
-  return JsonResponse(create_response(response), safe=False)  
+  return JsonResponse(create_response(data=response), safe=False)  
        
 @csrf_exempt
 @api_view(["GET"])
@@ -206,7 +206,7 @@ def get_statistics(request):
   response['total_user'] = total_user
   response['total_application'] = total_application
   response['total_average'] = total_application / total_user
-  return JsonResponse(create_response(response), safe=False)  
+  return JsonResponse(create_response(data=response), safe=False)  
 
 @csrf_exempt
 @api_view(["GET"])
@@ -248,4 +248,4 @@ def get_monthly_application_count(request):
     counts.append(item)
   response.append(counts)  
   response.append(months_string)    
-  return JsonResponse(create_response(response), safe=False)  
+  return JsonResponse(create_response(data=response), safe=False)  
