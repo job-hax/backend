@@ -8,12 +8,11 @@ class Faq(models.Model):
     title = models.CharField(max_length=250, verbose_name=_('faq title'))
     description = models.CharField(max_length=250, verbose_name=_('faq description'))
     is_published = models.BooleanField(default=True, verbose_name=_('is published'))
-    position = models.SmallIntegerField(default=0, verbose_name=_('position'))
 
     objects = models.Manager()
 
     class Meta:
-        ordering = ['position']
+        ordering = ['pk']
         verbose_name = _('faq')
         verbose_name_plural = _('faqs')
 
