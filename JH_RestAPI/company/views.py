@@ -15,7 +15,7 @@ from position.serializers import JobPositionSerializer
 @api_view(["GET"])
 def get_companies(request):
     companies = Company.objects.all()
-    return JsonResponse(create_response(CompanySerializer(instance=companies, many=True).data), safe=False) 
+    return JsonResponse(create_response(CompanySerializer(instance=companies, many=True, context={'user':request.user}).data), safe=False) 
 
 @csrf_exempt
 @api_view(["GET"])

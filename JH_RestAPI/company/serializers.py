@@ -8,6 +8,16 @@ from django.db.models import Avg, Count
 class CompanySerializer(serializers.ModelSerializer):
     ratings = serializers.SerializerMethodField()
     supported_employment_auths = serializers.SerializerMethodField()
+    reviewed = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+
+    def get_review_count(self, obj):
+        return Review.objects.filter(is_published=True, company__pk=obj.pk).count()
+
+    def get_reviewed(self, obj):
+        if Review.objects.filter(user=self.context.get('user'), company__pk=obj.pk).count() == 0:
+            return False
+        return True   
 
     def get_ratings(self, obj):
         ratings = []
