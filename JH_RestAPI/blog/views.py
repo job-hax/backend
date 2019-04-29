@@ -8,12 +8,17 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from utils.error_codes import ResponseCodes
 from utils.logger import log
+from JH_RestAPI import pagination
+
 
 @csrf_exempt
 @api_view(["GET"])
 def blogs(request):
     queryset = models.Blog.objects.all()
-    return JsonResponse(create_response(BlogSnippetSerializer(instance=queryset, many=True, context={'user':request.user}).data), safe=False)
+    paginator = pagination.CustomPagination()
+    blogs = paginator.paginate_queryset(queryset, request)
+    serialized_blogs = BlogSnippetSerializer(instance=blogs, many=True, context={'user':request.user}).data
+    return JsonResponse(create_response(serialized_blogs, paginator=paginator), safe=False) 
 
 @csrf_exempt
 @api_view(["GET"])

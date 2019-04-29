@@ -9,13 +9,17 @@ from position.models import JobPosition
 from jobapps.models import JobApplication
 from .serializers import CompanySerializer
 from position.serializers import JobPositionSerializer
+from JH_RestAPI import pagination
 
 
 @csrf_exempt
 @api_view(["GET"])
 def get_companies(request):
     companies = Company.objects.all()
-    return JsonResponse(create_response(CompanySerializer(instance=companies, many=True, context={'user':request.user}).data), safe=False) 
+    paginator = pagination.CustomPagination()
+    companies = paginator.paginate_queryset(companies, request)
+    serialized_companies = CompanySerializer(instance=companies, many=True, context={'user':request.user}).data
+    return JsonResponse(create_response(serialized_companies, paginator=paginator), safe=False) 
 
 @csrf_exempt
 @api_view(["GET"])

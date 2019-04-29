@@ -10,6 +10,7 @@ from company.models import Company
 from position.models import JobPosition
 from users.models import EmploymentAuth, EmploymentStatus
 from .serializers import ReviewSerializer
+from company.serializers import CompanySerializer
 from .models import Review, CompanyEmploymentAuth
 from django.db.models import Q
 
@@ -64,7 +65,10 @@ def add_or_update_review(request):
         review.source_type = SourceType.objects.get(pk=body['source_type_id'])       
 
     review.save()
-    return JsonResponse(create_response(ReviewSerializer(instance=review, many=False).data), safe=False) 
+    response = {}
+    response['review'] = ReviewSerializer(instance=review, many=False).data
+    response['company'] = CompanySerializer(instance=company, many=False).data
+    return JsonResponse(create_response(response), safe=False) 
 
 @csrf_exempt
 @api_view(["GET"])

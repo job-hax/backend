@@ -1,11 +1,16 @@
 import json
 from utils.error_codes import ResponseCodes
 
-def create_response(data, success=True, error_code=ResponseCodes.success):
+def create_response(data, success=True, paginator=None, error_code=ResponseCodes.success):
     response = {}
     response['success'] = success
     response['error_code'] = int(error_code.value)
     response['error_message'] = get_error_message(error_code)
+    if paginator is not None:
+        response['pagination'] = {}
+        response['pagination']['current_page'] = paginator.page.number
+        response['pagination']['page_count'] = paginator.page.paginator.num_pages
+        response['pagination']['total_count'] = paginator.page.paginator.count
     if not success:
         response['data'] = None
     else:    

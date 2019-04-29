@@ -31,7 +31,7 @@ class BlogSerializer(serializers.ModelSerializer):
         return voted              
 
     class Meta:
-        fields = ('id', 'title', 'content', 'image', 'is_html', 'created_at', 'view_count', 'upvote', 'downvote', 'voted')
+        fields = ('id', 'title', 'author_name', 'author_image', 'content', 'image', 'is_html', 'created_at', 'view_count', 'upvote', 'downvote', 'voted')
         model = models.Blog
 
 class BlogSnippetSerializer(serializers.ModelSerializer):
@@ -62,5 +62,5 @@ class BlogSnippetSerializer(serializers.ModelSerializer):
         return voted        
 
     class Meta:
-        fields = ('id', 'title', 'snippet', 'image', 'created_at', 'view_count', 'upvote', 'downvote', 'voted')
+        fields = ('id', 'title', 'author_name', 'author_image', 'snippet', 'image', 'created_at', 'view_count', 'upvote', 'downvote', 'voted')
         model = models.Blog        

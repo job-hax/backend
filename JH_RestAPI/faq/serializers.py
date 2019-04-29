@@ -11,7 +11,6 @@ class ItemSerializer(serializers.ModelSerializer):
     fields = ('id', 'value', 'position')    
 
 class FaqSerializer(serializers.ModelSerializer):
-  items = ItemSerializer(instance=serializers.PrimaryKeyRelatedField(many=True, read_only=True), many=True)
   def create(self, validated_data):
         return Faq.objects.create(**validated_data)
 
@@ -22,4 +21,4 @@ class FaqSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Faq
-    fields = ('id', 'title', 'description', 'is_published', 'position', 'items')    
+    fields = ('id', 'title', 'description', 'is_published')    

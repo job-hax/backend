@@ -75,6 +75,8 @@ REST_FRAMEWORK = {
         'rest_framework_social_oauth2.authentication.SocialAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'JH_RestAPI.pagination.CustomPagination',
+    'PAGE_SIZE': 30,
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated', ),
     'DEFAULT_PARSER_CLASSES': (
