@@ -76,7 +76,13 @@ def get_reviews(request):
     company_id = request.GET.get('company_id')
     position_id = request.GET.get('position_id')
     all_reviews = request.GET.get('all_reviews')
-    if company_id is None and position_id is None:
+    review_id = request.GET.get('review_id')
+    if review_id is not None:
+        reviews = Review.objects.filter(pk=review_id, user=request.user)
+        if reviews.count() == 0:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+        return JsonResponse(create_response(data=ReviewSerializer(instance=reviews[0], many=False).data), safe=False)
+    elif company_id is None and position_id is None:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
     if company_id is None:
         reviews = Review.objects.filter(Q(is_published=True) | Q(user=request.user), position__pk=position_id )
