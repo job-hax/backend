@@ -19,15 +19,10 @@ from django.db.models import Q
 def add_or_update_review(request):    
     body = request.data
     user = request.user
-    if 'job_app_id' not in body or 'company_id' not in body or 'position_id' not in body:
+    if 'company_id' not in body or 'position_id' not in body:
         return JsonResponse(create_response(None, False, ResponseCodes.invalid_parameters), safe=False)
-    job_app = JobApplication.objects.get(pk=body['job_app_id']) 
     company = Company.objects.get(pk=body['company_id'])  
-    position = JobPosition.objects.get(pk=body['position_id'])
-    if job_app.user.pk != user.pk:
-        return JsonResponse(create_response(None, False, ResponseCodes.record_not_found), safe=False)
-    if job_app.position.id != position.id or job_app.companyObject.id != company.id:
-        return JsonResponse(create_response(None, False, ResponseCodes.record_not_found), safe=False)    
+    position = JobPosition.objects.get(pk=body['position_id'])   
     if 'review_id' in body:
         review = Review.objects.get(pk=body['review_id']) 
         if review.jobapp.user.pk != user.pk:
@@ -36,7 +31,7 @@ def add_or_update_review(request):
         review = Review()
     review.company = company
     review.position = position
-    review.jobapp = job_app
+    review.user = request.user
     if 'pros' in body:
         review.pros = body['pros']
     if 'cons' in body:
@@ -55,8 +50,10 @@ def add_or_update_review(request):
         for a in body['emp_auths']:
             if 'value' in a:
                 auth = EmploymentAuth.objects.get(pk=a['id'])
+                review.save()
                 if CompanyEmploymentAuth.objects.filter(review=review, employment_auth=auth).count() == 0:
-                    CompanyEmploymentAuth.objects.create(review=review, employment_auth=auth, value=a['value']) 
+                    c_auth = CompanyEmploymentAuth(review=review, employment_auth=auth, value=a['value'])
+                    c_auth.save() 
                 else:
                     c_auth =CompanyEmploymentAuth.objects.get(review=review, employment_auth=auth)
                     c_auth.value = a['value']  
@@ -74,14 +71,22 @@ def add_or_update_review(request):
 def get_reviews(request):
     company_id = request.GET.get('company_id')
     position_id = request.GET.get('position_id')
+    all_reviews = request.GET.get('all_reviews')
     if company_id is None and position_id is None:
         return JsonResponse(create_response(None, False, ResponseCodes.invalid_parameters), safe=False)
     if company_id is None:
-        reviews = Review.objects.filter(Q(is_published=True) | Q(jobapp__user=request.user), position__pk=position_id )
+        reviews = Review.objects.filter(Q(is_published=True) | Q(user=request.user), position__pk=position_id )
     elif position_id is None:
-        reviews = Review.objects.filter(Q(is_published=True) | Q(jobapp__user=request.user), company__pk=company_id)    
+        reviews = Review.objects.filter(Q(is_published=True) | Q(user=request.user), company__pk=company_id)    
     else:
-        reviews = Review.objects.filter(Q(is_published=True) | Q(jobapp__user=request.user), position__pk=position_id, company__pk=company_id)    
+        if all_reviews == 'true':
+            reviews = Review.objects.filter(is_published=True, position__pk=position_id, company__pk=company_id)
+        else:
+            reviews = Review.objects.filter(user=request.user, position__pk=position_id, company__pk=company_id) 
+            if reviews.count() > 0:
+                return JsonResponse(create_response(ReviewSerializer(instance=reviews[0], many=False).data), safe=False)
+            else:
+                return JsonResponse(create_response(None), safe=False)                
     return JsonResponse(create_response(ReviewSerializer(instance=reviews, many=True).data), safe=False)     
 
 @csrf_exempt

@@ -37,7 +37,7 @@ def get_jobapps(request):
         user_job_apps = JobApplication.objects.filter(applicationStatus_id=status_id,user_id=request.user.id, isDeleted=False).order_by('-applyDate')
     else:
         user_job_apps = JobApplication.objects.filter(user_id=request.user.id, isDeleted=False).order_by('-applyDate')
-    joblist = JobApplicationSerializer(instance=user_job_apps, many=True).data
+    joblist = JobApplicationSerializer(instance=user_job_apps, many=True, context={'user':request.user}).data
     return JsonResponse(create_response(joblist), safe=False)
 
 @csrf_exempt
@@ -278,7 +278,7 @@ def add_jobapp(request):
     japp = JobApplication(position=jt, companyObject=jc, applyDate=applicationdate, msgId='', app_source =source, user = request.user)
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
     japp.save()
-    return JsonResponse(create_response(JobApplicationSerializer(instance=japp, many=False).data), safe=False)
+    return JsonResponse(create_response(JobApplicationSerializer(instance=japp, many=False, context={'user':request.user}).data), safe=False)
 
 
 @csrf_exempt

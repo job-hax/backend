@@ -44,8 +44,12 @@ class SourceSerializer(serializers.ModelSerializer):
 class JobApplicationSerializer(serializers.ModelSerializer):
   applicationStatus = ApplicationStatusSerializer(read_only=True)
   position = JobPositionSerializer(read_only=True)
-  companyObject = CompanySerializer(read_only=True)
+  companyObject = serializers.SerializerMethodField()
   app_source = SourceSerializer(read_only=True)
+
+  def get_companyObject(self, obj):
+    return CompanySerializer(instance=obj.companyObject, many=False, context=self.context).data
+
   def create(self, validated_data):
         return JobApplication.objects.create(**validated_data)
   class Meta:

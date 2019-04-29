@@ -15,6 +15,9 @@ class Blog(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        ordering = ['-created_at']      
+
 class Vote(models.Model):
     User = get_user_model()
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vote_user')    

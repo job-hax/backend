@@ -3,7 +3,7 @@ from .models import Review, CompanyEmploymentAuth
 from rest_framework import serializers
 from company.serializers import CompanySerializer
 from position.serializers import JobPositionSerializer
-from jobapps.serializers import JobApplicationSerializer, SourceTypeSerializer
+from jobapps.serializers import SourceTypeSerializer
 from users.serializers import EmploymentAuthSerializer, EmploymentStatusSerializer
 import pytz
 
@@ -20,9 +20,6 @@ class CompanyEmploymentAuthSerializer(serializers.ModelSerializer):
         fields = ('id', 'value', 'employment_auth')
 
 class ReviewSerializer(serializers.ModelSerializer):
-  company = CompanySerializer(read_only=True) 
-  position = JobPositionSerializer(read_only=True)
-  jobapp = JobApplicationSerializer(read_only=True)
   emp_auths = serializers.SerializerMethodField()
   emp_status = EmploymentStatusSerializer(read_only=True)
   source_type = SourceTypeSerializer(read_only=True)
@@ -31,7 +28,7 @@ class ReviewSerializer(serializers.ModelSerializer):
   def get_username(self, obj):
     username = 'Anonymous'
     if not obj.anonymous:
-      username = obj.jobapp.user.username
+      username = obj.user.username
     return username 
 
   def get_emp_auths(self, obj):
@@ -52,5 +49,5 @@ class ReviewSerializer(serializers.ModelSerializer):
         return Review.objects.create(**validated_data)
   class Meta:
     model = Review
-    fields = ('__all__')
+    fields = ('id', 'emp_auths', 'emp_status', 'source_type', 'username', 'pros', 'cons', 'interview_notes', 'overall_company_experience', 'interview_difficulty', 'overall_interview_experience', 'anonymous', 'created_date', 'update_date', 'is_published')
 

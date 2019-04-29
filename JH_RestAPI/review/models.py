@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
-from jobapps.models import JobApplication, SourceType
+from jobapps.models import SourceType
 from company.models import Company
 from position.models import JobPosition
 from users.models import EmploymentStatus
@@ -14,7 +14,7 @@ User = get_user_model()
 class Review(models.Model):
   company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True, blank=True)
   position = models.ForeignKey(JobPosition, on_delete=models.DO_NOTHING, null=True, blank=True)
-  jobapp = models.ForeignKey(JobApplication, on_delete=models.DO_NOTHING, null=True, blank=True)
+  user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
   pros = models.TextField(null=True, blank=True)
   cons = models.TextField(null=True, blank=True)
   emp_status = models.ForeignKey(EmploymentStatus, on_delete=models.DO_NOTHING, null=True, blank=True) 
@@ -29,7 +29,7 @@ class Review(models.Model):
             MinValueValidator(0)
         ], null=True, blank=True)       
   overall_interview_experience = models.IntegerField(validators=[
-            MaxValueValidator(1),
+            MaxValueValidator(5),
             MinValueValidator(0)
         ], null=True, blank=True)  
   anonymous = models.BooleanField(default=False, null=False, blank=False)  
@@ -37,6 +37,9 @@ class Review(models.Model):
   update_date = models.DateTimeField(default=datetime.now, null=True, blank=True) 
   is_published = models.BooleanField(default=False)    
   is_deleted = models.BooleanField(default=False) 
+
+  class Meta:
+        ordering = ['-created_date']
 
 
 class CompanyEmploymentAuth(models.Model):

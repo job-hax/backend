@@ -13,7 +13,7 @@ from utils.logger import log
 @api_view(["GET"])
 def blogs(request):
     queryset = models.Blog.objects.all()
-    return JsonResponse(create_response(BlogSnippetSerializer(instance=queryset, many=True, context={'user':request.user}).data, True, 0), safe=False)
+    return JsonResponse(create_response(BlogSnippetSerializer(instance=queryset, many=True, context={'user':request.user}).data), safe=False)
 
 @csrf_exempt
 @api_view(["GET"])
@@ -22,7 +22,7 @@ def blog(request, blog_pk):
         blog = models.Blog.objects.get(pk=blog_pk)
     except:
         return JsonResponse(create_response(None, False, ResponseCodes.blog_couldnt_found), safe=False)
-    return JsonResponse(create_response(BlogSerializer(instance=blog, many=False, context={'user':request.user}).data, True, 0), safe=False)   
+    return JsonResponse(create_response(BlogSerializer(instance=blog, many=False, context={'user':request.user}).data), safe=False)   
 
 @csrf_exempt
 @api_view(["POST"])
