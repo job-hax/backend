@@ -39,7 +39,7 @@ class SourceSerializer(serializers.ModelSerializer):
         return Source.objects.create(**validated_data)
   class Meta:
     model = Source
-    fields = ('id', 'value')    
+    fields = ('id', 'value', 'image')    
 
 class JobApplicationSerializer(serializers.ModelSerializer):
   applicationStatus = ApplicationStatusSerializer(read_only=True)

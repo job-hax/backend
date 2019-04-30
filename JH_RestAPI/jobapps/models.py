@@ -19,6 +19,7 @@ class Source(models.Model):
   value = models.CharField(max_length=20)
   gmail_key = models.CharField(max_length=100, blank=True)
   system = models.BooleanField(default=False)
+  image = models.CharField(null=True, max_length=200, blank=True)
   def __str__(self):
     return self.value       
 
