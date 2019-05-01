@@ -129,7 +129,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
       inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
       if inserted_before is None or (len(inserted_before) == 0 and jobTitle != '' and company != ''):
         #jt is current dummy job title in the db
-        jt = JobPosition.objects.all().filter(job_title=jobTitle)
+        jt = JobPosition.objects.all().filter(job_title__iexact=jobTitle)
         if jt is None or len(jt) == 0:
             jt = JobPosition(job_title=jobTitle)
             jt.save()
@@ -141,7 +141,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
             company_title = company
         else:
             company_title = cd['name'] 
-        jc = Company.objects.all().filter(cb_name=company_title)
+        jc = Company.objects.all().filter(cb_name__iexact=company_title)
         if jc is None or len(jc) == 0:
             #if company doesnt exist save it
             if cd is None:

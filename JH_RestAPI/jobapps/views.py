@@ -245,7 +245,7 @@ def add_jobapp(request):
     status = int(body['status_id'])
     source = body['source']
     #jt is current dummy job title in the db
-    jt = JobPosition.objects.all().filter(job_title=job_title)
+    jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
     if jt is None or len(jt) == 0:
         jt = JobPosition(job_title=job_title)
         jt.save()
@@ -257,7 +257,7 @@ def add_jobapp(request):
         company_title = company
     else:
         company_title = cd['name'] 
-    jc = Company.objects.all().filter(cb_name=company_title)
+    jc = Company.objects.all().filter(cb_name__iexact=company_title)
     if jc is None or len(jc) == 0:
         #if company doesnt exist save it
         if cd is None:
