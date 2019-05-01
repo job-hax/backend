@@ -19,6 +19,7 @@ class Source(models.Model):
   value = models.CharField(max_length=20)
   gmail_key = models.CharField(max_length=100, blank=True)
   system = models.BooleanField(default=False)
+  image = models.CharField(null=True, max_length=200, blank=True)
   def __str__(self):
     return self.value       
 
@@ -48,12 +49,6 @@ class GoogleMail(models.Model):
   body = models.TextField(null=True, blank=True)
   date = models.CharField(max_length=50)
   msgId = models.CharField(max_length=200, null=True)
-
-class JobPostDetail(models.Model):
-  job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 
-  posterInformation = models.TextField(null=True, blank=True)
-  decoratedJobPosting = models.TextField(null=True, blank=True)
-  topCardV2 = models.TextField(null=True, blank=True)
 
 class JobApplicationNote(models.Model):
   job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 

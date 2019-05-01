@@ -3,7 +3,6 @@ from django.http import JsonResponse
 from jobapps.models import JobApplication
 from jobapps.models import ApplicationStatus
 from users.models import Profile
-from jobapps.models import JobPostDetail
 from jobapps.models import Source
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
