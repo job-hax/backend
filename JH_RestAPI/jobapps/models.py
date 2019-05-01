@@ -25,12 +25,12 @@ class Source(models.Model):
 
 class JobApplication(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-  applicationStatus = models.ForeignKey(ApplicationStatus, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='%(class)s_applicationStatus')
-  position = models.ForeignKey(JobPosition, on_delete=models.DO_NOTHING, null=True, related_name='%(class)s_position')
-  companyObject = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True, related_name='%(class)s_company')
+  applicationStatus = models.ForeignKey(ApplicationStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_applicationStatus')
+  position = models.ForeignKey(JobPosition, on_delete=models.SET_NULL, null=True, related_name='%(class)s_position')
+  companyObject = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, related_name='%(class)s_company')
   applyDate = models.DateTimeField(blank=True)
   msgId = models.CharField(max_length=200)
-  app_source = models.ForeignKey(Source, on_delete=models.DO_NOTHING, null=True, related_name='%(class)s_source')
+  app_source = models.ForeignKey(Source, on_delete=models.SET_NULL, null=True, related_name='%(class)s_source')
   isRejected = models.BooleanField(default=False)
   isDeleted = models.BooleanField(default=False)
   
@@ -39,7 +39,7 @@ class JobApplication(models.Model):
 
 class StatusHistory(models.Model):
   job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 
-  applicationStatus = models.ForeignKey(ApplicationStatus, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='%(class)s_applicationStatus')
+  applicationStatus = models.ForeignKey(ApplicationStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_applicationStatus')
   update_date = models.DateTimeField(default=datetime.now, blank=True)    
 
 class GoogleMail(models.Model):

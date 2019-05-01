@@ -12,14 +12,14 @@ User = get_user_model()
 
 
 class Review(models.Model):
-  company = models.ForeignKey(Company, on_delete=models.DO_NOTHING, null=True, blank=True)
-  position = models.ForeignKey(JobPosition, on_delete=models.DO_NOTHING, null=True, blank=True)
-  user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+  company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
+  position = models.ForeignKey(JobPosition, on_delete=models.SET_NULL, null=True, blank=True)
+  user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
   pros = models.TextField(null=True, blank=True)
   cons = models.TextField(null=True, blank=True)
-  emp_status = models.ForeignKey(EmploymentStatus, on_delete=models.DO_NOTHING, null=True, blank=True) 
+  emp_status = models.ForeignKey(EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True) 
   interview_notes = models.TextField(null=True, blank=True)
-  source_type = models.ForeignKey(SourceType, on_delete=models.DO_NOTHING, null=True, blank=True) 
+  source_type = models.ForeignKey(SourceType, on_delete=models.SET_NULL, null=True, blank=True) 
   overall_company_experience = models.IntegerField(validators=[
             MaxValueValidator(5),
             MinValueValidator(0)
@@ -43,6 +43,6 @@ class Review(models.Model):
 
 
 class CompanyEmploymentAuth(models.Model):
-  review = models.ForeignKey(Review, on_delete=models.DO_NOTHING)
-  employment_auth = models.ForeignKey(EmploymentAuth, on_delete=models.DO_NOTHING)
+  review = models.ForeignKey(Review, on_delete=models.CASCADE)
+  employment_auth = models.ForeignKey(EmploymentAuth, on_delete=models.CASCADE)
   value = models.BooleanField(default=False)
