@@ -9,6 +9,7 @@ from datetime import datetime
 import requests
 import traceback
 from requests import exceptions as requests_errors
+from bs4 import BeautifulSoup as bs
 
 from google.auth.exceptions import RefreshError
 from .social_auth_credentials import Credentials
@@ -58,6 +59,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 company = subject[subject.index('at ') + 3 : subject.index('($')]
             elif(source == 'Indeed'):
                 jobTitle = subject[subject.index('Indeed Application: ') + 20 : ]
+            elif source == 'glassdoor':
+                company = subject[subject.index('on to ') + 6 : subject.index(' completed.')]  
         elif header['name'] == 'Date':
             date = header['value']
             original_date = header['value']
@@ -102,6 +105,17 @@ def get_email_detail(service, user_id, msg_id, user, source):
             image_url = None
         elif(source == 'Hired.com'):
             image_url = None    
+        elif source == 'glassdoor':
+            soup = bs(body, 'html.parser')
+            images = soup.findAll('img')
+            for image in images:
+                if image.has_attr('alt') and image['alt'] == company:
+                    image_url = image[src]
+                    image_exists=requests.get(image_url)
+                    if(image_exists.status_code == 404):
+                        image_url = None 
+                    break    
+            jobTitle = soup.find('a', attrs={'style': 'text-decoration: none; color:#0066cc'}).contents[0]
 
     if subject is not None and body is not None and original_date is not None:
         inserted_before = GoogleMail.objects.all().filter(msgId=msg_id)
