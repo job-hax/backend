@@ -50,12 +50,6 @@ class GoogleMail(models.Model):
   date = models.CharField(max_length=50)
   msgId = models.CharField(max_length=200, null=True)
 
-class JobPostDetail(models.Model):
-  job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 
-  posterInformation = models.TextField(null=True, blank=True)
-  decoratedJobPosting = models.TextField(null=True, blank=True)
-  topCardV2 = models.TextField(null=True, blank=True)
-
 class JobApplicationNote(models.Model):
   job_post = models.ForeignKey(JobApplication, on_delete=models.CASCADE, null=True, blank=True) 
   description = models.TextField(null=True, blank=True)

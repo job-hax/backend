@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from .models import ApplicationStatus
 from .models import JobApplication
 from .models import GoogleMail
-from .models import JobPostDetail
 from .models import StatusHistory
 from .models import Source
 from .models import JobApplicationNote, SourceType
@@ -83,12 +82,5 @@ class StatusHistorySerializer(serializers.ModelSerializer):
   class Meta:
     model = StatusHistory
     fields = ('applicationStatus','update_date')       
-
-class JobAppllicationDetailSerializer(serializers.ModelSerializer):
-  def create(self, validated_data):
-        return JobPostDetail.objects.create(**validated_data)
-  class Meta:
-    model = JobPostDetail
-    fields = ('posterInformation', 'decoratedJobPosting', 'topCardV2')
 
  

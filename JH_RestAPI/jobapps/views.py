@@ -7,7 +7,6 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
 from django.db import models
 from .models import JobApplication
-from .models import JobPostDetail
 from .models import ApplicationStatus
 from .models import StatusHistory
 from .models import Source
@@ -17,7 +16,6 @@ from company.models import Company
 from utils.clearbit_company_checker import get_company_detail
 from .serializers import JobApplicationSerializer
 from .serializers import ApplicationStatusSerializer
-from .serializers import JobAppllicationDetailSerializer
 from .serializers import StatusHistorySerializer
 from .serializers import JobApplicationNoteSerializer
 import json
@@ -279,23 +277,3 @@ def add_jobapp(request):
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
     japp.save()
     return JsonResponse(create_response(data=JobApplicationSerializer(instance=japp, many=False, context={'user':request.user}).data), safe=False)
-
-
-@csrf_exempt
-@api_view(["GET"])
-def get_jobapp_detail(request):
-  id = request.GET.get('jopapp_id')
-  try:
-    details = JobPostDetail.objects.all().get(job_post__pk = id)
-    jobapp_detail = {}
-    jobapp_detail['posterInformation'] = json.loads(details.posterInformation)
-    jobapp_detail['decoratedJobPosting'] = json.loads(details.decoratedJobPosting)
-    jobapp_detail['topCardV2'] = json.loads(details.topCardV2)
-    success=True
-    code=ResponseCodes.success 
-  except Exception as e:
-    log(traceback.format_exception(None, e, e.__traceback__), 'e')  
-    success=False
-    code= ResponseCodes.record_not_found     
-    jobapp_detail=None
-  return JsonResponse(create_response(data=jobapp_detail, success=success, error_code=code), safe=False)

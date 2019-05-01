@@ -20,7 +20,6 @@ from jobapps.models import GoogleMail
 from jobapps.models import ApplicationStatus
 from jobapps.models import StatusHistory
 from jobapps.models import Source
-from jobapps.models import JobPostDetail
 from position.models import JobPosition
 from company.models import Company
 from utils.clearbit_company_checker import get_company_detail
@@ -150,9 +149,6 @@ def get_email_detail(service, user_id, msg_id, user, source):
         log('Job Application inserted : ' + str(japp), 'i')
         status_history = StatusHistory(job_post = japp, applicationStatus = status)
         status_history.save()
-        #if(source == 'LinkedIn'):
-        #    japp_details = JobPostDetail(job_post = japp, posterInformation = posterInformationJSON, decoratedJobPosting = decoratedJobPostingJSON, topCardV2 = topCardV2JSON)
-        #    japp_details.save()
         if mail is not None:
             mail.job_post = japp
             mail.save()

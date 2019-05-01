@@ -4,4 +4,4 @@ from .models import Agreement
 # Register your models here.
 @admin.register(Agreement)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('key', 'is_html', 'value')
+    list_display = ('key', 'is_html')
