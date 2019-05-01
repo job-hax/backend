@@ -47,7 +47,7 @@ class Profile(models.Model):
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
     profile_photo = models.CharField(max_length=200, blank=True)
-    emp_status = models.ForeignKey(EmploymentStatus, on_delete=models.DO_NOTHING, null=True, blank=True)    
+    emp_status = models.ForeignKey(EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)    
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -60,7 +60,7 @@ def save_user_profile(sender, instance, **kwargs):
 
 class Feedback(models.Model):
     User = get_user_model()
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True) 
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True) 
     text = models.TextField(null=True, blank=True)   
     star = models.IntegerField(validators=[
             MaxValueValidator(5),

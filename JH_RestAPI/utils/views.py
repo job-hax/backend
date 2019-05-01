@@ -13,5 +13,8 @@ from django.views.decorators.http import require_GET
 def agreements(request):
     agreements = Agreement.objects.all()
     slist = AgreementSerializer(instance=agreements, many=True).data
-    return JsonResponse(create_response(data=slist), safe= False)
+    response = {}
+    for s in slist:
+        response[s['key']] = s
+    return JsonResponse(create_response(data=response), safe= False)
 
