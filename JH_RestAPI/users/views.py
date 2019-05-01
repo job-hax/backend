@@ -245,6 +245,7 @@ def get_employment_auths(request):
 
 @background(schedule=1)
 def scheduleFetcher(user_id):
+    User = get_user_model()
     user = User.objects.get(pk=user_id)
     if user.social_auth.filter(provider='google-oauth2'):
         fetchJobApplications(user)    
