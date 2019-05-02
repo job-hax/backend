@@ -14,6 +14,9 @@ class ResponseCodes(Enum):
     invalid_parameters = 10
     record_not_found = 11
     invalid_username = 12
+    email_verification_required = 13
+    email_already_verified = 14
+    activation_key_expired = 15
     poll_couldnt_found = 101
     missing_item_id_parameter = 102
     poll_answer_couldnt_found = 103

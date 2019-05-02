@@ -7,9 +7,11 @@ from utils.linkedin_lookup import get_linkedin_profile
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view, permission_classes
+from django.db.models import Q
 from .models import Profile
 from .models import EmploymentStatus, EmploymentAuth
 from .models import Feedback
+from django.http import HttpResponse
 from jobapps.models import GoogleMail
 from jobapps.serializers import GoogleMailSerializer
 from utils.gmail_lookup import fetchJobApplications
@@ -23,6 +25,10 @@ from .serializers import EmploymentStatusSerializer, EmploymentAuthSerializer
 import traceback
 from django.contrib.auth import get_user_model
 from datetime import datetime
+from oauth2_provider.models import AccessToken
+from django.contrib.auth import authenticate
+from utils import utils
+from django.utils import timezone
 
 
 # Create your views here.
@@ -37,8 +43,7 @@ def register(request):
     email = body['email']
     password = body['password']
     password2 = body['password2']
-    client_id = body['client_id']
-    client_secret = body['client_secret']
+    activation_key, expiration_time = utils.generate_activation_key_and_expiredate(username)
 
     success = True
     code = ResponseCodes.success
@@ -60,27 +65,114 @@ def register(request):
                 code = ResponseCodes.email_exists
             else:
                 # Looks good
-                user = User.objects.create_user(username=username, password=password,email=email, first_name=first_name, last_name=last_name)
+                user = User.objects.create_user(username=username, password=password,email=email, first_name=first_name, last_name=last_name, approved=False, activation_key=activation_key, key_expires=expiration_time)
                 user.save()
-                post_data = {}
-                post_data['client_id'] = client_id
-                post_data['client_secret'] = client_secret
-                post_data['grant_type'] = 'password'
-                post_data['username'] = username
-                post_data['password'] = password
-                response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
-                jsonres = json.loads(response.text)
-                if 'error' in jsonres:
-                    success = False
-                    code = ResponseCodes.couldnt_login
-                else:
-                    success = True   
-                    code = ResponseCodes.success 
-                    data = jsonres
+                success = True   
+                code = ResponseCodes.success 
+                activation_key, expiration_time = utils.generate_activation_key_and_expiredate(body['username'])
+                user.activation_key = activation_key
+                user.key_expires = expiration_time
+                user.save()
+                utils.send_email(request, user.email, activation_key, 0)
     else:
         success = False
         code = ResponseCodes.passwords_do_not_match
     return JsonResponse(create_response(data=data, success=success, error_code=code), safe=False)    
+
+@require_GET
+@csrf_exempt
+def activate_user(request):
+    try:
+        User = get_user_model()
+        user = User.objects.filter(activation_key=request.GET.get('code'))
+        if user.count() == 0:
+            return utils.redirect_to_page(request, -1, 'signin')
+        user = user[0]    
+        if user.approved == False:
+            if timezone.now() > user.key_expires:
+                return utils.redirect_to_page(request, -5, 'signin')
+            else: #Activation successful
+                user.approved = True
+                user.activation_key = None
+                user.key_expires = None
+                user.save()
+                return utils.redirect_to_page(request, 0, 'signin')
+        #If user is already active, simply display error message
+        else:
+            return utils.redirect_to_page(request, -2, 'signin')
+    except Exception as e:
+        log(e, 'e')
+        return utils.redirect_to_page(request, -3, 'signin')
+    
+
+@require_POST
+@csrf_exempt
+def generate_activation_code(request):
+    body = JSONParser().parse(request)
+    user = authenticate(username=body['username'], password=body['password'])
+    if user is not None:
+        if user.approved:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.email_already_verified), safe=False)
+        else:  
+            activation_key, expiration_time = utils.generate_activation_key_and_expiredate(body['username'])
+            user.activation_key = activation_key
+            user.key_expires = expiration_time
+            user.save()
+            utils.send_email(request, user.email, activation_key, 0)
+            return JsonResponse(create_response(data=None, success=True), safe=False)
+    else:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
+
+@require_POST
+@csrf_exempt
+def forgot_password(request):
+    body = JSONParser().parse(request)
+    username = body['username']
+    User = get_user_model()
+    try:
+        user = User.objects.get(Q(username__iexact=username) | Q(email__iexact=username))
+        activation_key, expiration_time = utils.generate_activation_key_and_expiredate(user.username)
+        user.forgot_password_key = activation_key
+        user.forgot_password_key_expires = expiration_time
+        user.save()
+        utils.send_email(request, user.email, activation_key, 1)
+    except:
+        log('user not found for forgot password', 'e')
+    return JsonResponse(create_response(data=None, success=True), safe=False) 
+
+@require_GET
+@csrf_exempt
+def check_forgot_password(request):
+    try:
+        User = get_user_model()
+        user = User.objects.filter(forgot_password_key=request.GET.get('code'))
+        if user.count() == 0:
+            return utils.redirect_to_page(request, -4, 'signin')
+        user = user[0]    
+        if timezone.now() > user.forgot_password_key_expires:
+            return utils.redirect_to_page(request, -5, 'signin')
+        else:
+            return utils.redirect_to_page(request, request.GET.get('code'), 'resetPassword')
+    except Exception as e:
+        log(e, 'e')
+        return utils.redirect_to_page(request, -3, 'signin')
+
+@require_POST
+@csrf_exempt
+def reset_password(request):    
+    body = JSONParser().parse(request)
+    password = body['password']
+    code = body['code']
+    User = get_user_model()
+    user = User.objects.filter(forgot_password_key=code)
+    if user.count() == 0:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
+    user = user[0]
+    user.forgot_password_key = None
+    user.forgot_password_key_expires = None
+    user.set_password(password)
+    user.save()
+    return JsonResponse(create_response(data=None), safe=False)        
 
 @require_POST
 @csrf_exempt
@@ -91,6 +183,11 @@ def login(request):
     post_data['grant_type'] = 'password'
     post_data['username'] = body['username']
     post_data['password'] = body['password']
+    user = authenticate(username=body['username'], password=body['password'])
+    if user is not None and not user.approved:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.email_verification_required), safe=False)
+    else:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
     response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
@@ -99,6 +196,7 @@ def login(request):
     else:
         success = True   
         code = ResponseCodes.success 
+        jsonres['profile_updated'] = Profile.objects.get(user__username=body['username']).profile_updated
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 @require_POST
@@ -122,7 +220,7 @@ def logout(request):
 @api_view(["POST"])
 def change_password(request):    
     body = request.data
-    password = body['password']
+    password = body['password']   
     user = request.user
     user.set_password(password)
     user.save()
@@ -167,7 +265,7 @@ def update_profile(request):
     if 'emp_status_id' in body:
         if EmploymentStatus.objects.filter(pk=body['emp_status_id']).count() > 0:
             profile.emp_status = EmploymentStatus.objects.get(pk=body['emp_status_id'])
-        
+    profile.profile_updated = True    
     user.save()
     profile.save()
     return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)    
@@ -190,6 +288,10 @@ def auth_social_user(request):
     else:
         success = True   
         code = ResponseCodes.success
+        user = AccessToken.objects.get(token=jsonres['access_token']).user
+        jsonres['profile_updated'] = Profile.objects.get(user= user).profile_updated
+        user.approved = True
+        user.save()
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 @require_POST
