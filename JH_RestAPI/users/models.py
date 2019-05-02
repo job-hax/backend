@@ -23,10 +23,10 @@ class User(AbstractUser):
     objects = UserManager()
     email = models.EmailField(('email address'), unique=True)
     approved = models.BooleanField(default=False, null=False)
-    activation_key = models.TextField(null=True)
-    key_expires = models.DateTimeField(null=True)
-    forgot_password_key = models.TextField(null=True)
-    forgot_password_key_expires = models.DateTimeField(null=True)
+    activation_key = models.TextField(null=True, blank=True)
+    key_expires = models.DateTimeField(null=True, blank=True)
+    forgot_password_key = models.TextField(null=True, blank=True)
+    forgot_password_key_expires = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = ('user')
