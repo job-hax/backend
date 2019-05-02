@@ -73,7 +73,7 @@ def register(request):
                 user.activation_key = activation_key
                 user.key_expires = expiration_time
                 user.save()
-                utils.send_email(request, user.email, activation_key, 0)
+                utils.send_email(request, user.email, activation_key, 'activate')
     else:
         success = False
         code = ResponseCodes.passwords_do_not_match
@@ -101,7 +101,7 @@ def activate_user(request):
         else:
             return utils.redirect_to_page(request, -2, 'signin')
     except Exception as e:
-        log(e, 'e')
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')  
         return utils.redirect_to_page(request, -3, 'signin')
     
 
@@ -118,7 +118,7 @@ def generate_activation_code(request):
             user.activation_key = activation_key
             user.key_expires = expiration_time
             user.save()
-            utils.send_email(request, user.email, activation_key, 0)
+            utils.send_email(request, user.email, activation_key, 'activate')
             return JsonResponse(create_response(data=None, success=True), safe=False)
     else:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
@@ -135,9 +135,9 @@ def forgot_password(request):
         user.forgot_password_key = activation_key
         user.forgot_password_key_expires = expiration_time
         user.save()
-        utils.send_email(request, user.email, activation_key, 1)
-    except:
-        log('user not found for forgot password', 'e')
+        utils.send_email(request, user.email, activation_key, 'check_forgot_password')
+    except Exception as e:
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')  
     return JsonResponse(create_response(data=None, success=True), safe=False) 
 
 @require_GET
@@ -154,7 +154,7 @@ def check_forgot_password(request):
         else:
             return utils.redirect_to_page(request, request.GET.get('code'), 'resetPassword')
     except Exception as e:
-        log(e, 'e')
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')  
         return utils.redirect_to_page(request, -3, 'signin')
 
 @require_POST

@@ -4,6 +4,7 @@ from django.utils.crypto import get_random_string
 from django.urls import reverse
 from django.http import HttpResponsePermanentRedirect
 from django.core.mail import EmailMessage
+from django.conf import settings
 
 
 def get_boolean_from_request(request, key, method='POST'):
@@ -30,11 +31,11 @@ def generate_activation_key(username):
     secret_key = get_random_string(20, chars)
     return hashlib.sha256((secret_key + username).encode('utf-8')).hexdigest()	
 
-def send_email(request, email, activation_key, type):
-	site = request.scheme + '://' + request.META['HTTP_HOST']
+def send_email(request, email, activation_key, action):
+	site = settings.SITE_URL
+	url = site + '/action?action=' + action + '&code=' + activation_key
 	
-	if type == 0:
-		url = site + reverse('activate') + '?code=' + activation_key
+	if action == 'activate':
 		subject = '[JobHax] Confirm E-mail Address'
 		body = '''<html>
 						Welcome to JobHax!<br>
@@ -45,7 +46,6 @@ def send_email(request, email, activation_key, type):
 						Have fun with the JobHax, and don't hesitate to contact us with your feedback.
 						</html>'''
 	else:
-		url = site + reverse('check_forgot_password') + '?code=' + activation_key
 		subject = '[JobHax] Reset your password'
 		body = '''<html>
 						You recently requested to reset your password.<br>
@@ -61,6 +61,6 @@ def send_email(request, email, activation_key, type):
 	email.send()
 
 def redirect_to_page(request, code, page):
-	site = request.scheme + '://' + request.META['HTTP_HOST']
+	site = settings.SITE_URL
 	url = site + '/' + page + '?code=' + str(code) + '&page=' + page
 	return HttpResponsePermanentRedirect(url)
