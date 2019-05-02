@@ -25,11 +25,11 @@ class Review(models.Model):
             MinValueValidator(0)
         ], null=True, blank=True) 
   interview_difficulty = models.IntegerField(validators=[
-            MaxValueValidator(1),
+            MaxValueValidator(5),
             MinValueValidator(0)
         ], null=True, blank=True)       
   overall_interview_experience = models.IntegerField(validators=[
-            MaxValueValidator(5),
+            MaxValueValidator(1),
             MinValueValidator(0)
         ], null=True, blank=True)  
   anonymous = models.BooleanField(default=False, null=False, blank=False)  

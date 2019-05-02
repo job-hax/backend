@@ -79,11 +79,11 @@ class Vote(models.Model):
 
     def __str__(self):
         if isinstance(User, str):
-            UserModel = get_user_model()
+            User = get_user_model()
         else:
-            UserModel = get_user_model()
+            User = get_user_model()
 
-        if isinstance(self.user, UserModel):
+        if isinstance(self.user, User):
             username_field = getattr(User, 'USERNAME_FIELD', 'username')
             return getattr(User, username_field, '')
         return self.ip

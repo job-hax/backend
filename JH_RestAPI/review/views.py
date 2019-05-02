@@ -62,7 +62,11 @@ def add_or_update_review(request):
     if 'emp_status_id' in body:
         review.emp_status = EmploymentStatus.objects.get(pk=body['emp_status_id'])   
     if 'source_type_id' in body:
-        review.source_type = SourceType.objects.get(pk=body['source_type_id'])       
+        review.source_type = SourceType.objects.get(pk=body['source_type_id'])   
+
+    #publish review if there is no content to approve
+    if 'pros' not in body and 'cons' not in body and 'interview_notes' not in body:
+        review.is_published = True        
 
     review.save()
     response = {}

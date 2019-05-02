@@ -24,6 +24,12 @@ def get_error_message(error_code):
         return 'Invalid credentials'
     elif error_code == ResponseCodes.user_profile_not_found:
         return 'User profile not found.'   
+    elif error_code == ResponseCodes.email_verification_required:
+        return 'Email verification required.'  
+    elif error_code == ResponseCodes.email_already_verified:
+        return 'Email already verified.'        
+    elif error_code == ResponseCodes.activation_key_expired:
+        return 'Activation key expired.'        
     elif error_code == ResponseCodes.couldnt_update_google_token:
         return 'Error occured while updating the google token.'   
     elif error_code == ResponseCodes.google_token_expired:
