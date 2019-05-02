@@ -26,7 +26,7 @@ def add_or_update_review(request):
     position = JobPosition.objects.get(pk=body['position_id'])   
     if 'review_id' in body:
         review = Review.objects.get(pk=body['review_id']) 
-        if review.jobapp.user.pk != user.pk:
+        if review.user.pk != user.pk:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
     else:       
         review = Review()
