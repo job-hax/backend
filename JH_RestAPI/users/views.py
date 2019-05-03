@@ -56,11 +56,11 @@ def register(request):
     if password == password2:
         # Check username
         User = get_user_model()
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(username__iexact=username).exists():
             success = False
             code = ResponseCodes.username_exists
         else:
-            if User.objects.filter(email=email).exists():
+            if User.objects.filter(email__iexact=email).exists():
                 success = False
                 code = ResponseCodes.email_exists
             else:

@@ -33,7 +33,44 @@ def convertTime(base):
     #return central.strftime('%a, %d %b %Y %H:%M:%S %z')
 
 def find_nth(string, substring, n):
-   if (n == 1):
-       return string.find(substring)
-   else:
-       return string.find(substring, find_nth(string, substring, n - 1) + 1)
+    try:
+        if (n == 1):
+            return string.find(substring)
+        else:
+            return string.find(substring, find_nth(string, substring, n - 1) + 1)
+    except:
+        return -1        
+
+def unicodetoascii(text):
+
+    TEXT = (text.
+    		replace('\\xe2\\x80\\x99', "'").
+            replace('\\xc3\\xa9', 'e').
+            replace('\\xe2\\x80\\x90', '-').
+            replace('\\xe2\\x80\\x91', '-').
+            replace('\\xe2\\x80\\x92', '-').
+            replace('\\xe2\\x80\\x93', '-').
+            replace('\\xe2\\x80\\x94', '-').
+            replace('\\xe2\\x80\\x94', '-').
+            replace('\\xe2\\x80\\x98', "'").
+            replace('\\xe2\\x80\\x9b', "'").
+            replace('\\xe2\\x80\\x9c', '"').
+            replace('\\xe2\\x80\\x9c', '"').
+            replace('\\xe2\\x80\\x9d', '"').
+            replace('\\xe2\\x80\\x9e', '"').
+            replace('\\xe2\\x80\\x9f', '"').
+            replace('\\xe2\\x80\\xa6', '...').#
+            replace('\\xe2\\x80\\xb2', "'").
+            replace('\\xe2\\x80\\xb3', "'").
+            replace('\\xe2\\x80\\xb4', "'").
+            replace('\\xe2\\x80\\xb5', "'").
+            replace('\\xe2\\x80\\xb6', "'").
+            replace('\\xe2\\x80\\xb7', "'").
+            replace('\\xe2\\x81\\xba', "+").
+            replace('\\xe2\\x81\\xbb', "-").
+            replace('\\xe2\\x81\\xbc', "=").
+            replace('\\xe2\\x81\\xbd', "(").
+            replace('\\xe2\\x81\\xbe', ")")
+
+                 )
+    return TEXT       
