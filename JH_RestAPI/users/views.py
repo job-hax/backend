@@ -184,10 +184,11 @@ def login(request):
     post_data['username'] = body['username']
     post_data['password'] = body['password']
     user = authenticate(username=body['username'], password=body['password'])
-    if user is not None and not user.approved:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.email_verification_required), safe=False)
-    else:
+    if user is None:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
+    if not user.approved:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.email_verification_required), safe=False)
+        
     response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
@@ -196,7 +197,7 @@ def login(request):
     else:
         success = True   
         code = ResponseCodes.success 
-        jsonres['profile_updated'] = Profile.objects.get(user__username=body['username']).profile_updated
+        jsonres['profile_updated'] = Profile.objects.get(user=user).profile_updated
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 @require_POST
