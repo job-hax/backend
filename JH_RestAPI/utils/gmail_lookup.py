@@ -47,14 +47,15 @@ def get_email_detail(service, user_id, msg_id, user, source):
     mail_from = None
     mail_subject = None
     mail_body = None
+    original_date = None
     for header in message['payload']['headers']:
         if header['name'] == 'Subject':
             mail_subject = str(header['value'])
-            if mail_from is not None:
+            if mail_from is not None and original_date is not None:
                 break
         elif header['name'] == 'From':
             mail_from = str(header['value'])
-            if mail_subject is not None:
+            if mail_subject is not None and original_date is not None:
                 break
         elif header['name'] == 'Date':
             date = header['value']
@@ -74,10 +75,14 @@ def get_email_detail(service, user_id, msg_id, user, source):
             else:
                 mail_body = None
 
+    if original_date is None:
+        log(mail_subject, 'e')   
+        log(str(message['payload']['headers']), 'e')         
+
     if mail_subject is not None and mail_body is not None and original_date is not None:
         inserted_before = GoogleMail.objects.all().filter(msgId=msg_id)
         if inserted_before.count() == 0:
-            mail = GoogleMail(user=user, subject=subject, body=body, date=date, msgId=msg_id)
+            mail = GoogleMail(user=user, subject=mail_subject, body=mail_body, date=date, msgId=msg_id)
             mail.save()
         else:
             mail = inserted_before[0]    
@@ -90,8 +95,11 @@ def get_email_detail(service, user_id, msg_id, user, source):
 
     if source == 'LinkedIn':
         #job_title and company are in the subject in LinkedIn mails
-        job_title = mail_subject[mail_subject.index('for ') + 4: mail_subject.index(' at ')]
-        company = mail_subject[mail_subject.index('at ') + 3:]
+        #we should find them in the subject
+        if 'for ' in mail_subject and ' at ' in mail_subject:
+            job_title = mail_subject[mail_subject.index('for ') + 4: mail_subject.index(' at ')]
+        if 'at ' in mail_subject:    
+            company = mail_subject[mail_subject.index('at ') + 3:]
 
         if mail_body is not None:
             #trying to find company logo in the body
@@ -100,37 +108,45 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 e = find_nth(mail_body, '" alt="' + company + '"', 1)
                 image_url = mail_body[s: e].replace('&amp;', '&')
                 image_exists = requests.get(image_url)
+                if len(image_url) > 300:
+                    image_url = None
                 if image_exists.status_code == 404:
                     image_url = None
             else:
                 image_url = None
-            if len(image_url) > 300:
-                image_url = None
+            
     elif source == 'Vettery':
         #job_title and company are in the body in Vettery mails
         if mail_body is not None:
-            job_title = mail_body[mail_body.index('Role: ') + 6: mail_body.index('Salary')]
-            job_title = removeHtmlTags(job_title)
-            company = mail_body[mail_body.index('interview with ') + 15: mail_body.index('. Interested?')]
+            if 'Role: ' in mail_body and 'Salary' in mail_body:
+                job_title = mail_body[mail_body.index('Role: ') + 6: mail_body.index('Salary')]
+                job_title = removeHtmlTags(job_title)
+            if 'interview with ' in mail_body and '. Interested?' in mail_body:    
+                company = mail_body[mail_body.index('interview with ') + 15: mail_body.index('. Interested?')]
             image_url = None
     elif source == 'Hired.com':
         # job_title and company are in the body in Hired.com mails
-        job_title = mail_subject[mail_subject.index('Request: ') + 9: mail_subject.index(' at ')]
-        company = mail_subject[mail_subject.index('at ') + 3: mail_subject.index('($')]
+        if 'Request: ' in mail_subject and ' at ' in mail_subject:
+            job_title = mail_subject[mail_subject.index('Request: ') + 9: mail_subject.index(' at ')]
+        if 'at ' in mail_subject and '($' in mail_subject:    
+            company = mail_subject[mail_subject.index('at ') + 3: mail_subject.index('($')]
         image_url = None
     elif source == 'Indeed':
         #job_title is in the subject
-        job_title = mail_subject[mail_subject.index('Indeed Application: ') + 20:]
+        if 'Indeed Application: ' in mail_subject:
+            job_title = mail_subject[mail_subject.index('Indeed Application: ') + 20:]
 
         if mail_body is not None:
             #company is in the body
-            c_start_index = mail_body.index('updates from') + 16
-            c_end_index = mail_body[c_start_index: (c_start_index + 100)].index('</b>')
-            company = mail_body[c_start_index: c_start_index + c_end_index]
+            if 'updates from' in mail_body and '</b>' in mail_body:
+                c_start_index = mail_body.index('updates from') + 16
+                c_end_index = mail_body[c_start_index: (c_start_index + 100)].index('</b>')
+                company = mail_body[c_start_index: c_start_index + c_end_index]
             image_url = None
     elif source == 'glassdoor':
         # company is in the subject
-        company = mail_subject[mail_subject.index('on to ') + 6: mail_subject.index(' completed.')]
+        if 'on to ' in mail_subject and ' completed.' in mail_subject:
+            company = mail_subject[mail_subject.index('on to ') + 6: mail_subject.index(' completed.')]
 
         if mail_body is not None:
             # job_title is in the body
@@ -282,6 +298,7 @@ def fetchJobApplications(user):
         GMAIL = build('gmail', 'v1', credentials=creds)
         #retrieves user email's with custom query parameter
         sources = Source.objects.filter(system=True)
+        log(str(sources), 'e')
         allMails = {}
         for s in sources:
             mails = get_emails_with_custom_query(GMAIL, 'me', s.gmail_key + time_string)
@@ -290,6 +307,10 @@ def fetchJobApplications(user):
         #hiredMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:reply@hired.com AND subject:Interview Request' + time_string)
         #vetteryMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:@connect.vettery.com AND subject:Interview Request' + time_string)
         #indeedMessages = get_emails_with_custom_query(GMAIL, 'me', 'from:indeedapply@indeed.com AND subject:Indeed Application' + time_string)
+        #mails = get_emails_with_custom_query(service, 'me', 'from:notification@jobvite.com AND in:anywhere')
+        #mails = get_emails_with_custom_query(service, 'me', 'from:notifications@smartrecruiters.com AND subject:"Thank you for applying to" AND in:anywhere')
+        #mails = get_emails_with_custom_query(service, 'me', 'from:no-reply@greenhouse.io and in:anywhere and subject:{"appl" and "for"}')
+        #mails = get_emails_with_custom_query(service, 'me', 'from:@hire.lever.co and subject:"Thank" AND in:anywhere')
     except Exception as e:
         log('Users google token probably expired. Should have new token from google', 'e')
         log(traceback.format_exception(None, e, e.__traceback__), 'e')

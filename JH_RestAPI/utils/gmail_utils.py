@@ -33,10 +33,13 @@ def convertTime(base):
     #return central.strftime('%a, %d %b %Y %H:%M:%S %z')
 
 def find_nth(string, substring, n):
-   if (n == 1):
-       return string.find(substring)
-   else:
-       return string.find(substring, find_nth(string, substring, n - 1) + 1)
+    try:
+        if (n == 1):
+            return string.find(substring)
+        else:
+            return string.find(substring, find_nth(string, substring, n - 1) + 1)
+    except:
+        return -1        
 
 def unicodetoascii(text):
 
