@@ -1,7 +1,6 @@
 from django.db import models
 from .models import Review, CompanyEmploymentAuth
 from rest_framework import serializers
-from company.serializers import CompanySerializer
 from position.serializers import JobPositionSerializer
 from jobapps.serializers import SourceTypeSerializer
 from users.serializers import EmploymentAuthSerializer, EmploymentStatusSerializer
