@@ -71,7 +71,7 @@ def add_or_update_review(request):
     review.save()
     response = {}
     response['review'] = ReviewSerializer(instance=review, many=False).data
-    response['company'] = CompanySerializer(instance=company, many=False).data
+    response['company'] = CompanySerializer(instance=company, many=False, context={'user':request.user, 'position':position}).data
     return JsonResponse(create_response(data=response), safe=False) 
 
 @csrf_exempt

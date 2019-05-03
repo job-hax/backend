@@ -47,7 +47,9 @@ class JobApplicationSerializer(serializers.ModelSerializer):
   app_source = SourceSerializer(read_only=True)
 
   def get_companyObject(self, obj):
-    return CompanySerializer(instance=obj.companyObject, many=False, context=self.context).data
+    context = self.context
+    context['position'] = obj.position
+    return CompanySerializer(instance=obj.companyObject, many=False, context=context).data
 
   def create(self, validated_data):
         return JobApplication.objects.create(**validated_data)

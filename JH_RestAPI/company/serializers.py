@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Company
 from review.models import Review, CompanyEmploymentAuth
 from users.models import EmploymentAuth
+from position.models import JobPosition
 from users.serializers import EmploymentAuthSerializer
 from django.db.models import Avg, Count
 
@@ -15,9 +16,14 @@ class CompanySerializer(serializers.ModelSerializer):
         return Review.objects.filter(is_published=True, company__pk=obj.pk).count()
 
     def get_review_id(self, obj):
-        if Review.objects.filter(user=self.context.get('user'), company__pk=obj.pk).count() == 0:
-            return None
-        return Review.objects.filter(user=self.context.get('user'), company__pk=obj.pk)[0].pk   
+        if 'position' in self.context:
+            position = self.context.get('position')
+            review = Review.objects.filter(user=self.context.get('user'), company__pk=obj.pk, position=position)
+            if review.count() == 0:
+                return None
+            return review[0].pk  
+        else:
+            return None  
 
     def get_ratings(self, obj):
         ratings = []
