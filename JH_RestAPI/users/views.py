@@ -43,14 +43,15 @@ def register(request):
     email = body['email']
     password = body['password']
     password2 = body['password2']
-    activation_key, expiration_time = utils.generate_activation_key_and_expiredate(username)
+    activation_key, expiration_time = utils.generate_activation_key_and_expiredate(
+        username)
 
     success = True
     code = ResponseCodes.success
     data = None
 
     if '@' in username:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_username), safe=False)  
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_username), safe=False)
 
     # Check if passwords match
     if password == password2:
@@ -65,19 +66,23 @@ def register(request):
                 code = ResponseCodes.email_exists
             else:
                 # Looks good
-                user = User.objects.create_user(username=username, password=password,email=email, first_name=first_name, last_name=last_name, approved=False, activation_key=activation_key, key_expires=expiration_time)
+                user = User.objects.create_user(username=username, password=password, email=email, first_name=first_name,
+                                                last_name=last_name, approved=False, activation_key=activation_key, key_expires=expiration_time)
                 user.save()
-                success = True   
-                code = ResponseCodes.success 
-                activation_key, expiration_time = utils.generate_activation_key_and_expiredate(body['username'])
+                success = True
+                code = ResponseCodes.success
+                activation_key, expiration_time = utils.generate_activation_key_and_expiredate(
+                    body['username'])
                 user.activation_key = activation_key
                 user.key_expires = expiration_time
                 user.save()
-                utils.send_email(request, user.email, activation_key, 'activate')
+                utils.send_email(request, user.email,
+                                 activation_key, 'activate')
     else:
         success = False
         code = ResponseCodes.passwords_do_not_match
-    return JsonResponse(create_response(data=data, success=success, error_code=code), safe=False)    
+    return JsonResponse(create_response(data=data, success=success, error_code=code), safe=False)
+
 
 @require_GET
 @csrf_exempt
@@ -86,24 +91,24 @@ def activate_user(request):
         User = get_user_model()
         user = User.objects.filter(activation_key=request.GET.get('code'))
         if user.count() == 0:
-            return utils.redirect_to_page(request, -1, 'signin')
-        user = user[0]    
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+        user = user[0]
         if user.approved == False:
-            if timezone.now() > user.key_expires:
-                return utils.redirect_to_page(request, -5, 'signin')
-            else: #Activation successful
+            if user.key_expires is None or timezone.now() > user.key_expires:
+                return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+            else:  # Activation successful
                 user.approved = True
                 user.activation_key = None
                 user.key_expires = None
                 user.save()
-                return utils.redirect_to_page(request, 0, 'signin')
-        #If user is already active, simply display error message
+                return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
+        # If user is already active, simply display error message
         else:
-            return utils.redirect_to_page(request, -2, 'signin')
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
     except Exception as e:
-        log(traceback.format_exception(None, e, e.__traceback__), 'e')  
-        return utils.redirect_to_page(request, -3, 'signin')
-    
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+
 
 @require_POST
 @csrf_exempt
@@ -113,8 +118,9 @@ def generate_activation_code(request):
     if user is not None:
         if user.approved:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.email_already_verified), safe=False)
-        else:  
-            activation_key, expiration_time = utils.generate_activation_key_and_expiredate(body['username'])
+        else:
+            activation_key, expiration_time = utils.generate_activation_key_and_expiredate(
+                body['username'])
             user.activation_key = activation_key
             user.key_expires = expiration_time
             user.save()
@@ -123,6 +129,7 @@ def generate_activation_code(request):
     else:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
 
+
 @require_POST
 @csrf_exempt
 def forgot_password(request):
@@ -130,15 +137,19 @@ def forgot_password(request):
     username = body['username']
     User = get_user_model()
     try:
-        user = User.objects.get(Q(username__iexact=username) | Q(email__iexact=username))
-        activation_key, expiration_time = utils.generate_activation_key_and_expiredate(user.username)
+        user = User.objects.get(
+            Q(username__iexact=username) | Q(email__iexact=username))
+        activation_key, expiration_time = utils.generate_activation_key_and_expiredate(
+            user.username)
         user.forgot_password_key = activation_key
         user.forgot_password_key_expires = expiration_time
         user.save()
-        utils.send_email(request, user.email, activation_key, 'check_forgot_password')
+        utils.send_email(request, user.email, activation_key,
+                         'check_forgot_password')
     except Exception as e:
-        log(traceback.format_exception(None, e, e.__traceback__), 'e')  
-    return JsonResponse(create_response(data=None, success=True), safe=False) 
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
+    return JsonResponse(create_response(data=None, success=True), safe=False)
+
 
 @require_GET
 @csrf_exempt
@@ -147,19 +158,20 @@ def check_forgot_password(request):
         User = get_user_model()
         user = User.objects.filter(forgot_password_key=request.GET.get('code'))
         if user.count() == 0:
-            return utils.redirect_to_page(request, -4, 'signin')
-        user = user[0]    
-        if timezone.now() > user.forgot_password_key_expires:
-            return utils.redirect_to_page(request, -5, 'signin')
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+        user = user[0]
+        if user.forgot_password_key_expires is None or timezone.now() > user.forgot_password_key_expires:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
         else:
-            return utils.redirect_to_page(request, request.GET.get('code'), 'resetPassword')
+            return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
     except Exception as e:
-        log(traceback.format_exception(None, e, e.__traceback__), 'e')  
-        return utils.redirect_to_page(request, -3, 'signin')
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+
 
 @require_POST
 @csrf_exempt
-def reset_password(request):    
+def reset_password(request):
     body = JSONParser().parse(request)
     password = body['password']
     code = body['code']
@@ -172,7 +184,8 @@ def reset_password(request):
     user.forgot_password_key_expires = None
     user.set_password(password)
     user.save()
-    return JsonResponse(create_response(data=None), safe=False)        
+    return JsonResponse(create_response(data=None), safe=False)
+
 
 @require_POST
 @csrf_exempt
@@ -188,17 +201,20 @@ def login(request):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
     if not user.approved:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.email_verification_required), safe=False)
-        
-    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
+
+    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
+        post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
         code = ResponseCodes.couldnt_login
     else:
-        success = True   
-        code = ResponseCodes.success 
-        jsonres['profile_updated'] = Profile.objects.get(user=user).profile_updated
+        success = True
+        code = ResponseCodes.success
+        jsonres['profile_updated'] = Profile.objects.get(
+            user=user).profile_updated
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
+
 
 @require_POST
 @csrf_exempt
@@ -208,39 +224,43 @@ def logout(request):
     post_data['client_id'] = body['client_id']
     post_data['client_secret'] = body['client_secret']
     headers = {'content-type': 'application/json'}
-    response = requests.post('http://localhost:8000/auth/revoke-token', data=json.dumps(post_data), headers=headers)
+    response = requests.post('http://localhost:8000/auth/revoke-token',
+                             data=json.dumps(post_data), headers=headers)
     if response.status_code is 204 or response.status_code is 200:
         success = True
         code = ResponseCodes.success
     else:
-        success = False   
-        code = ResponseCodes.couldnt_logout_user 
+        success = False
+        code = ResponseCodes.couldnt_logout_user
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
+
 
 @csrf_exempt
 @api_view(["POST"])
-def change_password(request):    
+def change_password(request):
     body = request.data
-    password = body['password']   
+    password = body['password']
     user = request.user
     user.set_password(password)
     user.save()
     return JsonResponse(create_response(data=None), safe=False)
 
+
 @csrf_exempt
 @api_view(["POST"])
-def update_profile_photo(request):    
+def update_profile_photo(request):
     body = request.data
     user = request.user
     profile = Profile.objects.get(user=user)
     if 'photo_url' in body:
         profile.profile_photo = body['photo_url']
     profile.save()
-    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False) 
+    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
+
 
 @csrf_exempt
 @api_view(["POST"])
-def update_profile(request):    
+def update_profile(request):
     body = request.data
     user = request.user
     User = get_user_model()
@@ -249,27 +269,29 @@ def update_profile(request):
         user.set_password(body['password'])
     if 'username' in body:
         if User.objects.filter(username=body['username']).exists():
-            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.username_exists), safe=False) 
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.username_exists), safe=False)
         user.username = body['username']
     if 'first_name' in body:
         user.first_name = body['first_name']
     if 'last_name' in body:
-        user.last_name = body['last_name']    
+        user.last_name = body['last_name']
     if 'gender' in body:
         profile.gender = body['gender']
     if 'dob' in body:
-        profile.dob = datetime.strptime(body['dob'], "%Y-%m-%d").date()    
+        profile.dob = datetime.strptime(body['dob'], "%Y-%m-%d").date()
     if 'itu_email' in body and '@students.itu.edu' in body['itu_email']:
         profile.itu_email = body['itu_email']
     if 'phone_number' in body:
         profile.phone_number = body['phone_number']
     if 'emp_status_id' in body:
         if EmploymentStatus.objects.filter(pk=body['emp_status_id']).count() > 0:
-            profile.emp_status = EmploymentStatus.objects.get(pk=body['emp_status_id'])
-    profile.profile_updated = True    
+            profile.emp_status = EmploymentStatus.objects.get(
+                pk=body['emp_status_id'])
+    profile.profile_updated = True
     user.save()
     profile.save()
-    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)    
+    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
+
 
 @require_POST
 @csrf_exempt
@@ -281,19 +303,22 @@ def auth_social_user(request):
     provider = body['provider']
     post_data['backend'] = provider
     post_data['token'] = body['token']
-    response = requests.post('http://localhost:8000/auth/convert-token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
+    response = requests.post('http://localhost:8000/auth/convert-token',
+                             data=json.dumps(post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
         code = ResponseCodes.invalid_credentials
     else:
-        success = True   
+        success = True
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=jsonres['access_token']).user
-        jsonres['profile_updated'] = Profile.objects.get(user= user).profile_updated
+        jsonres['profile_updated'] = Profile.objects.get(
+            user=user).profile_updated
         user.approved = True
         user.save()
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
+
 
 @require_POST
 @csrf_exempt
@@ -303,55 +328,62 @@ def refresh_token(request):
     post_data['client_secret'] = body['client_secret']
     post_data['grant_type'] = 'refresh_token'
     post_data['refresh_token'] = body['refresh_token']
-    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(post_data), headers={'content-type': 'application/json'})
+    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
+        post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
     if 'error' in jsonres:
         success = False
         code = ResponseCodes.invalid_credentials
     else:
-        success = True   
-        code = ResponseCodes.success 
-    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)    
+        success = True
+        code = ResponseCodes.success
+    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
+
 
 @csrf_exempt
 @api_view(["GET"])
 def sync_user_emails(request):
     profile = Profile.objects.get(user=request.user)
     if not profile.is_gmail_read_ok:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.google_token_expired), safe=False)    
-    #it'll be used for background tasking in production
-    #refs. https://medium.com/@robinttt333/running-background-tasks-in-django-f4c1d3f6f06e
-    #https://django-background-tasks.readthedocs.io/en/latest/
-    #https://stackoverflow.com/questions/41205607/how-to-activate-the-process-queue-in-django-background-tasks
-    #scheduleFetcher.now(request.user.id)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.google_token_expired), safe=False)
+    # it'll be used for background tasking in production
+    # refs. https://medium.com/@robinttt333/running-background-tasks-in-django-f4c1d3f6f06e
+    # https://django-background-tasks.readthedocs.io/en/latest/
+    # https://stackoverflow.com/questions/41205607/how-to-activate-the-process-queue-in-django-background-tasks
+    # scheduleFetcher.now(request.user.id)
     scheduleFetcher(request.user.id)
-    return JsonResponse(create_response(data=None), safe=False)    
+    return JsonResponse(create_response(data=None), safe=False)
+
 
 @csrf_exempt
 @api_view(["GET"])
-def get_profile(request): 
-    get_linkedin_profile(request.user)  
-    profile = Profile.objects.get(user=request.user) 
-    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)  
+def get_profile(request):
+    get_linkedin_profile(request.user)
+    profile = Profile.objects.get(user=request.user)
+    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
+
 
 @csrf_exempt
 @api_view(["GET"])
-def get_employment_statuses(request): 
+def get_employment_statuses(request):
     statuses = EmploymentStatus.objects.all()
-    return JsonResponse(create_response(data=EmploymentStatusSerializer(instance=statuses, many=True).data), safe=False)      
+    return JsonResponse(create_response(data=EmploymentStatusSerializer(instance=statuses, many=True).data), safe=False)
+
 
 @csrf_exempt
 @api_view(["GET"])
-def get_employment_auths(request): 
+def get_employment_auths(request):
     statuses = EmploymentAuth.objects.all()
-    return JsonResponse(create_response(data=EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)      
+    return JsonResponse(create_response(data=EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)
+
 
 @background(schedule=1)
 def scheduleFetcher(user_id):
     User = get_user_model()
     user = User.objects.get(pk=user_id)
     if user.social_auth.filter(provider='google-oauth2'):
-        fetchJobApplications(user)    
+        fetchJobApplications(user)
+
 
 @api_view(["POST"])
 @csrf_exempt
@@ -366,31 +398,33 @@ def update_gmail_token(request):
             success = True
             profile = Profile.objects.get(user=request.user)
             profile.is_gmail_read_ok = True
-            profile.save()  
+            profile.save()
             code = ResponseCodes.success
             scheduleFetcher(request.user.id)
         else:
             success = False
             code = ResponseCodes.user_profile_not_found
-    except Exception as e: 
+    except Exception as e:
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
-        success = False   
-        code = ResponseCodes.couldnt_update_google_token         
-    return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)    
+        success = False
+        code = ResponseCodes.couldnt_update_google_token
+    return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
+
 
 @csrf_exempt
 @api_view(["GET"])
 def get_user_google_mails(request):
     mails = GoogleMail.objects.all()
     slist = GoogleMailSerializer(instance=mails, many=True).data
-    return JsonResponse(create_response(data=slist), safe=False)    
+    return JsonResponse(create_response(data=slist), safe=False)
+
 
 @csrf_exempt
 @api_view(["POST"])
-def feedback(request):    
+def feedback(request):
     body = request.data
     text = body['text']
     star = body['star']
     user = request.user
     Feedback.objects.create(user=user, text=text, star=star)
-    return JsonResponse(create_response(data=None), safe=False)    
+    return JsonResponse(create_response(data=None), safe=False)
