@@ -16,8 +16,8 @@ class CompanySerializer(serializers.ModelSerializer):
     def get_review_count(self, obj):
         if 'position' in self.context:
             position = self.context.get('position')
-            review = Review.objects.filter(user=self.context.get(
-                'user'), company__pk=obj.pk, position=position)
+            review = Review.objects.filter(
+                is_published=True, company__pk=obj.pk, position=position)
             return review.count()
         else:
             return Review.objects.filter(is_published=True, company__pk=obj.pk).count()
