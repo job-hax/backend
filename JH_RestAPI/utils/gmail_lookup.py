@@ -197,6 +197,12 @@ def get_email_detail(service, user_id, msg_id, user, source):
         if 'application for ' in mail_body and ', and we are d' in mail_body:
             job_title = mail_body[mail_body.index('application for ')+16:mail_body.index(', and we are d')]
             job_title = str(unicodetoascii(job_title))
+    elif source == 'ziprecruiter.com':
+        soup = bs(mail_body, 'html.parser')
+        ps = soup.findAll('b')
+        if len(ps) == 2:
+            job_title = ps[0].text
+            company = ps[1].text        
 
     inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
     if inserted_before.count() == 0 and job_title != '' and company != '':
