@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/blogs/', include('blog.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/companies/', include('company.urls')),
+    path('api/positions/', include('position.urls')),
     path('api/reviews/', include('review.urls')),
     path('api/agreements/', include('utils.urls')),
     re_path(r'^auth/', include('rest_framework_social_oauth2.urls')),
