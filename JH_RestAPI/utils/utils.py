@@ -5,6 +5,12 @@ from django.urls import reverse
 from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse
 from django.core.mail import EmailMessage
 from django.conf import settings
+from django.http import JsonResponse
+import requests
+import json
+from utils.generic_json_creator import create_response
+from utils.logger import log
+from utils.error_codes import ResponseCodes
 
 
 def get_boolean_from_request(request, key, method='POST'):
@@ -35,7 +41,7 @@ def generate_activation_key(username):
     return hashlib.sha256((secret_key + username).encode('utf-8')).hexdigest()
 
 
-def send_email(request, email, activation_key, action):
+def send_email(email, activation_key, action):
     site = settings.SITE_URL
     url = site + '/action?action=' + action + '&code=' + activation_key
 
@@ -47,6 +53,14 @@ def send_email(request, email, activation_key, action):
 						You must follow this link to <span class="il">activate</span> your account:<br>
 						<a href="''' + url + '''">''' + url + '''</a><br>
 						<br>
+						Have fun with the JobHax, and don't hesitate to contact us with your feedback.
+						</html>'''
+    elif action == 'warning':
+        subject = '[JobHax] Unusual Activity Detected'
+        body = '''<html>
+						Welcome to JobHax!<br>
+						<br>
+						You must follow this link to <span class="il">activate</span> your account:<br>
 						Have fun with the JobHax, and don't hesitate to contact us with your feedback.
 						</html>'''
     else:
@@ -63,3 +77,20 @@ def send_email(request, email, activation_key, action):
     email = EmailMessage(subject, body, to=[email])
     email.content_subtype = "html"  # this is the crucial part
     email.send()
+
+
+def verify_recaptcha(email, token, action):
+    secret = '6LfOH6IUAAAAAI7pqBduqUTlyq6-y3P7CI9c8VOv'
+    post_data = {}
+    post_data['secret'] = secret
+    post_data['response'] = token
+    response = requests.post('https://www.google.com/recaptcha/api/siteverify',
+                             data=post_data, headers={'content-type': 'application/x-www-form-urlencoded'})
+    jsonres = json.loads(response.text)
+    if jsonres['success'] == True and jsonres['action'] == action and jsonres['score'] > 0.5:
+        return ResponseCodes.success
+    else:
+        log(jsonres, "e")
+        # if email is not None:
+        #    send_email(email, "", "warning")
+        return ResponseCodes.verify_recaptcha_failed

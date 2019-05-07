@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ResponseCodes(Enum):
     success = 0
     invalid_credentials = 1
@@ -17,6 +18,7 @@ class ResponseCodes(Enum):
     email_verification_required = 13
     email_already_verified = 14
     activation_key_expired = 15
+    verify_recaptcha_failed = 99
     poll_couldnt_found = 101
     missing_item_id_parameter = 102
     poll_answer_couldnt_found = 103
