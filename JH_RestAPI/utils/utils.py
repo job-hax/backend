@@ -11,6 +11,7 @@ import json
 from utils.generic_json_creator import create_response
 from utils.logger import log
 from utils.error_codes import ResponseCodes
+import os
 
 
 def get_boolean_from_request(request, key, method='POST'):
@@ -80,7 +81,11 @@ def send_email(email, activation_key, action):
 
 
 def verify_recaptcha(email, token, action):
-    secret = '6LfOH6IUAAAAAI7pqBduqUTlyq6-y3P7CI9c8VOv'
+    try:
+        secret = os.environ['JOBHAX_RECAPTCHA_SECRET']
+    except Exception as e:
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
+        return ResponseCodes.success
     post_data = {}
     post_data['secret'] = secret
     post_data['response'] = token
