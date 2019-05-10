@@ -37,6 +37,9 @@ from django.utils import timezone
 def register(request):
     # Get form values
     body = JSONParser().parse(request)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'signup') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+
     first_name = body['first_name']
     last_name = body['last_name']
     username = body['username']
@@ -76,7 +79,7 @@ def register(request):
                 user.activation_key = activation_key
                 user.key_expires = expiration_time
                 user.save()
-                utils.send_email(request, user.email,
+                utils.send_email(user.email,
                                  activation_key, 'activate')
     else:
         success = False
@@ -124,7 +127,7 @@ def generate_activation_code(request):
             user.activation_key = activation_key
             user.key_expires = expiration_time
             user.save()
-            utils.send_email(request, user.email, activation_key, 'activate')
+            utils.send_email(user.email, activation_key, 'activate')
             return JsonResponse(create_response(data=None, success=True), safe=False)
     else:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
@@ -134,6 +137,9 @@ def generate_activation_code(request):
 @csrf_exempt
 def forgot_password(request):
     body = JSONParser().parse(request)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'forgot_password') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+
     username = body['username']
     User = get_user_model()
     try:
@@ -144,7 +150,7 @@ def forgot_password(request):
         user.forgot_password_key = activation_key
         user.forgot_password_key_expires = expiration_time
         user.save()
-        utils.send_email(request, user.email, activation_key,
+        utils.send_email(user.email, activation_key,
                          'check_forgot_password')
     except Exception as e:
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
@@ -191,6 +197,7 @@ def reset_password(request):
 @csrf_exempt
 def login(request):
     body = JSONParser().parse(request)
+
     post_data = {'client_id': body['client_id']}
     post_data['client_secret'] = body['client_secret']
     post_data['grant_type'] = 'password'
@@ -201,6 +208,8 @@ def login(request):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
     if not user.approved:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.email_verification_required), safe=False)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(user.email, body['recaptcha_token'], 'signin') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
 
     response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
         post_data), headers={'content-type': 'application/json'})
@@ -262,6 +271,9 @@ def update_profile_photo(request):
 @api_view(["POST"])
 def update_profile(request):
     body = request.data
+    if 'recaptcha_token' in body and utils.verify_recaptcha(request.user.email, body['recaptcha_token'], 'update_profile') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+
     user = request.user
     User = get_user_model()
     profile = Profile.objects.get(user=user)
@@ -297,6 +309,9 @@ def update_profile(request):
 @csrf_exempt
 def auth_social_user(request):
     body = JSONParser().parse(request)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'signin') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+
     post_data = {'client_id': body['client_id']}
     post_data['client_secret'] = body['client_secret']
     post_data['grant_type'] = 'convert_token'
@@ -313,10 +328,14 @@ def auth_social_user(request):
         success = True
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=jsonres['access_token']).user
-        jsonres['profile_updated'] = Profile.objects.get(
-            user=user).profile_updated
+        profile = Profile.objects.get(user=user)
+        jsonres['profile_updated'] = profile.profile_updated
         user.approved = True
         user.save()
+        if provider == 'google-oauth2':
+            profile.is_gmail_read_ok = True
+            profile.save()
+            scheduleFetcher(user.id)
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 
@@ -423,8 +442,23 @@ def get_user_google_mails(request):
 @api_view(["POST"])
 def feedback(request):
     body = request.data
+    if 'recaptcha_token' in body and utils.verify_recaptcha(request.user.email, body['recaptcha_token'], 'feedback') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+
     text = body['text']
     star = body['star']
     user = request.user
     Feedback.objects.create(user=user, text=text, star=star)
     return JsonResponse(create_response(data=None), safe=False)
+
+
+@csrf_exempt
+@api_view(["POST"])
+def verify_recaptcha(request):
+    body = request.data
+    if 'recaptcha_token' not in body or 'action' not in body:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+    elif utils.verify_recaptcha(request.user.email, body['recaptcha_token'], body['action']) == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+    else:
+        return JsonResponse(create_response(data=None, success=True), safe=False)

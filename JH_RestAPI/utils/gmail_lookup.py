@@ -123,6 +123,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 job_title = removeHtmlTags(job_title)
             if 'interview with ' in mail_body and '. Interested?' in mail_body:    
                 company = mail_body[mail_body.index('interview with ') + 15: mail_body.index('. Interested?')]
+            elif 'Our take on ' in mail_body and ':</span>' in mail_body:
+                company = mail_body[mail_body.index('Our take on ') + 12 : mail_body.index(':</span></')]    
             image_url = None
     elif source == 'Hired.com':
         # job_title and company are in the body in Hired.com mails

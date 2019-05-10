@@ -3,9 +3,9 @@ from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from django.urls import reverse
 
-from utils import views
+from position import views
 
 urlpatterns = [
-    path('', views.agreements),
+    path('', views.get_positions),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
