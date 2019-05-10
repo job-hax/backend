@@ -74,6 +74,8 @@ def add_or_update_review(request):
     # publish review if there is no content to approve
     if 'pros' not in body and 'cons' not in body and 'interview_notes' not in body:
         review.is_published = True
+    else:
+        review.is_published = False
 
     review.save()
     response = {}
