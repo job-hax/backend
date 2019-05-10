@@ -328,10 +328,14 @@ def auth_social_user(request):
         success = True
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=jsonres['access_token']).user
-        jsonres['profile_updated'] = Profile.objects.get(
-            user=user).profile_updated
+        profile = Profile.objects.get(user=user)
+        jsonres['profile_updated'] = profile.profile_updated
         user.approved = True
         user.save()
+        if provider == 'google-oauth2':
+            profile.is_gmail_read_ok = True
+            profile.save()
+            scheduleFetcher(user.id)
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 
