@@ -85,7 +85,8 @@ def get_email_detail(service, user_id, msg_id, user, source):
     if mail_subject is not None and mail_body is not None and original_date is not None:
         inserted_before = GoogleMail.objects.all().filter(msgId=msg_id)
         if inserted_before.count() == 0:
-            mail = GoogleMail(user=user, subject=mail_subject, body=mail_body, date=date, msgId=msg_id)
+            app_source = Source.objects.get(value__iexact=source)   
+            mail = GoogleMail(user=user, subject=mail_subject, body=mail_body, date=date, msgId=msg_id, app_source=app_source)
             mail.save()
         else:
             mail = inserted_before[0]    
@@ -249,6 +250,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
         status_history.save()
         if mail is not None:
             mail.job_post = japp
+            mail.app_source = source
             mail.save()
 
   except errors.HttpError as error:

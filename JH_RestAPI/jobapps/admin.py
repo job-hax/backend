@@ -14,8 +14,8 @@ class CompanyAdmin(admin.ModelAdmin, ExportCsv):
 
 @admin.register(GoogleMail)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ("user", "job_post", "subject")
-    list_filter = ("user", "job_post", "subject")
+    list_display = ("user", "job_post", "subject", "app_source")
+    list_filter = ("user", "job_post", "subject", "app_source")
 
 
 admin.site.register(ApplicationStatus)
