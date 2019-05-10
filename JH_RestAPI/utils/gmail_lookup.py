@@ -43,6 +43,9 @@ def get_email_detail(service, user_id, msg_id, user, source):
     A Message.
   """
   try:
+    if JobApplication.objects.all().filter(msgId=msg_id).count() > 0:
+        log('this email parsed before', 'e')
+        return  
     message = service.users().messages().get(userId=user_id, id=msg_id, format='full').execute()
     mail_from = None
     mail_subject = None
