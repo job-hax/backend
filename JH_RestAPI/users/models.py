@@ -13,14 +13,14 @@ class EmploymentStatus(models.Model):
     value = models.CharField(max_length=20, default='N/A')
 
     def __str__(self):
-      return self.value
+        return self.value
 
 
 class EmploymentAuth(models.Model):
     value = models.CharField(max_length=20, null=False)
 
     def __str__(self):
-      return self.value
+        return self.value
 
 
 class User(AbstractUser):
@@ -64,7 +64,7 @@ class Profile(models.Model):
     profile_photo = models.CharField(max_length=200, blank=True)
     emp_status = models.ForeignKey(
         EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)
-    profile_updated = models.BooleanField(default=False, null=False)
+    first_login = models.BooleanField(default=True, null=False)
 
 
 @receiver(post_save, sender=User)

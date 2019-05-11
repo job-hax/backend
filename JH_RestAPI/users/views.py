@@ -220,8 +220,11 @@ def login(request):
     else:
         success = True
         code = ResponseCodes.success
-        jsonres['profile_updated'] = Profile.objects.get(
-            user=user).profile_updated
+        profile = Profile.objects.get(
+            user=user)
+        jsonres['first_login'] = profile.first_login
+        profile.first_login = False
+        profile.save()
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 
@@ -299,7 +302,7 @@ def update_profile(request):
         if EmploymentStatus.objects.filter(pk=body['emp_status_id']).count() > 0:
             profile.emp_status = EmploymentStatus.objects.get(
                 pk=body['emp_status_id'])
-    profile.profile_updated = True
+
     user.save()
     profile.save()
     return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
@@ -329,7 +332,9 @@ def auth_social_user(request):
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=jsonres['access_token']).user
         profile = Profile.objects.get(user=user)
-        jsonres['profile_updated'] = profile.profile_updated
+        jsonres['first_login'] = profile.first_login
+        profile.first_login = False
+        profile.save()
         user.approved = True
         user.save()
         if provider == 'google-oauth2':
