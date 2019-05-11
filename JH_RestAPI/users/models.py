@@ -13,14 +13,14 @@ class EmploymentStatus(models.Model):
     value = models.CharField(max_length=20, default='N/A')
 
     def __str__(self):
-      return self.value
+        return self.value
 
 
 class EmploymentAuth(models.Model):
     value = models.CharField(max_length=20, null=False)
 
     def __str__(self):
-      return self.value
+        return self.value
 
 
 class User(AbstractUser):
@@ -55,8 +55,8 @@ class Profile(models.Model):
     gender = models.CharField(
         max_length=1, choices=GENDER_CHOICES, default='N')
     dob = models.DateField(blank=True, null=True)
-    itu_email = models.EmailField(
-        ('itu email address'), unique=False, blank=True)
+    student_email = models.EmailField(
+        ('student email address'), unique=False, blank=True)
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     phone_number = models.CharField(
@@ -64,7 +64,7 @@ class Profile(models.Model):
     profile_photo = models.CharField(max_length=200, blank=True)
     emp_status = models.ForeignKey(
         EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)
-    profile_updated = models.BooleanField(default=False, null=False)
+    first_login = models.BooleanField(default=True, null=False)
 
 
 @receiver(post_save, sender=User)
