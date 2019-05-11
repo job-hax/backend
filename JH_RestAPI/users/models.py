@@ -55,8 +55,8 @@ class Profile(models.Model):
     gender = models.CharField(
         max_length=1, choices=GENDER_CHOICES, default='N')
     dob = models.DateField(blank=True, null=True)
-    itu_email = models.EmailField(
-        ('itu email address'), unique=False, blank=True)
+    student_email = models.EmailField(
+        ('student email address'), unique=False, blank=True)
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     phone_number = models.CharField(

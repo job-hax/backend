@@ -294,8 +294,8 @@ def update_profile(request):
         profile.gender = body['gender']
     if 'dob' in body:
         profile.dob = datetime.strptime(body['dob'], "%Y-%m-%d").date()
-    if 'itu_email' in body and '@students.itu.edu' in body['itu_email']:
-        profile.itu_email = body['itu_email']
+    if 'student_email' in body:
+        profile.student_email = body['student_email']
     if 'phone_number' in body:
         profile.phone_number = body['phone_number']
     if 'emp_status_id' in body:
