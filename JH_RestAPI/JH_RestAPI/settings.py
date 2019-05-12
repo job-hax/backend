@@ -25,7 +25,8 @@ SECRET_KEY = '&d&5*(y9+fk!x$+48^k=-&uy-+gcm9crt+xc_*)l94f#xk7*qk'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0']
+# can change the ip for local testing
+ALLOWED_HOSTS = ['0.0.0.0','localhost']
 SITE_URL = 'jobhax.com'
 CORS_ORIGIN_ALLOW_ALL = True
 
