@@ -10,10 +10,13 @@ class Migration(migrations.Migration):
         if ApplicationStatus.objects.filter(default=True).count() == 0:
             if ApplicationStatus.objects.filter(value__iexact='Applied').count == 0:
                 status = ApplicationStatus(value='Applied', default=True)
-                status.save()  
+                status.save()
             else:
                 status = ApplicationStatus.objects.filter(value='Applied')
-                status = status[0]  
+                if status.count() == 0:
+                    status = ApplicationStatus(value="Applied")
+                else:
+                    status = status[0]
                 status.default = True
                 status.save()
 
@@ -22,5 +25,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(check_default_status, reverse_code=migrations.RunPython.noop)
+        migrations.RunPython(check_default_status,
+                             reverse_code=migrations.RunPython.noop)
     ]
