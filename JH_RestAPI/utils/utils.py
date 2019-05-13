@@ -12,6 +12,7 @@ from utils.generic_json_creator import create_response
 from utils.logger import log
 from utils.error_codes import ResponseCodes
 import os
+import traceback
 
 
 def get_boolean_from_request(request, key, method='POST'):
@@ -77,7 +78,10 @@ def send_email(email, activation_key, action):
 						</html>'''
     email = EmailMessage(subject, body, to=[email])
     email.content_subtype = "html"  # this is the crucial part
-    email.send()
+    try:
+        email.send()
+    except Exception as e:
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
 
 
 def verify_recaptcha(email, token, action):
