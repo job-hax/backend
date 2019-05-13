@@ -18,9 +18,8 @@ export JOBHAX_CLEARBIT_KEY=/*key*/ # to get/verify company logo&name from ClearB
 export EMAIL_HOST_USER=/*test@gmail.com*/ # to send activation or reset password email to the user (should be Google Mail)
 export EMAIL_HOST_PASSWORD=/*password*/  # to send activation or reset password email to the user
 export JOBHAX_RECAPTCHA_SECRET=/*recaptcha_secret*/ # to verify recaptcha token coming from the user request
-
-[How to add variables to your Environment Variables](https://medium.com/@himanshuagarwal1395/setting-up-environment-variables-in-macos-sierra-f5978369b255)
 ```
+[How to add variables to your Environment Variables](https://medium.com/@himanshuagarwal1395/setting-up-environment-variables-in-macos-sierra-f5978369b255)
 
 4. Run install script located in /JH_RestAPI directory:
 ```
