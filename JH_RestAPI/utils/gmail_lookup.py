@@ -173,9 +173,15 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 job_title = mail_subject[mail_subject.index(' for ') + 5: mail_subject.index(' at ')]
 
             if mail_body is not None:
-                #check the body if we couldnt find the job_title in the subject
-                if job_title == '' and ' the ' and ' role at ' + company in mail_body:
+                #check the body for more accurate companmy name
+                if ' at ' in mail_body and '. We' in mail_body:
+                    company = mail_body[mail_body.index(' at ') + 4:mail_body.index('. We')]
+
+                #check the body for the job title
+                if ' the ' in mail_body and ' role at ' + company in mail_body:
                     job_title = mail_body[mail_body.index(' the ') + 5:mail_body.index(' role at ')]
+                elif ' the ' in mail_body and ' job at ' + company in mail_body:
+                    job_title = mail_body[mail_body.index(' the ') + 5:mail_body.index(' job at ')]    
         else:
             #jobinvite sends the approval email with this keyword
             return
@@ -200,6 +206,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
         pass
     elif source == 'lever.co':
         company = mail_from[:mail_from.index(' <no-reply@hire.lever.co>')]
+        company = company.replace('"', '')
         if 'application for ' in mail_body and ', and we are d' in mail_body:
             job_title = mail_body[mail_body.index('application for ')+16:mail_body.index(', and we are d')]
             job_title = str(unicodetoascii(job_title))
