@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Set Postgres
 initdb /usr/local/var/postgres
 
