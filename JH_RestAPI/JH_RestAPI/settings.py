@@ -71,6 +71,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'JH_RestAPI.urls'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         # 'oauth2_provider.ext.rest_framework.OAuth2Authentication',  # django-oauth-toolkit < 1.0.0
@@ -85,6 +88,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated', ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser'
     )
 }
 

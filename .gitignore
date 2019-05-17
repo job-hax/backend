@@ -189,6 +189,7 @@ target/
 *.pyc
 __pycache__/
 local_settings.py
+JH_RestAPI/media/
 
 .env
 db.sqlite3
