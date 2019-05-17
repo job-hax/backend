@@ -1,0 +1,38 @@
+<application>
+  <component name="ProjectViewFileNesting">
+    <nesting-rules>
+      <NestingRule child-file-suffix=".js" parent-file-suffix=".coffee" />
+      <NestingRule child-file-suffix=".js.map" parent-file-suffix=".coffee" />
+      <NestingRule child-file-suffix=".map" parent-file-suffix=".coffee" />
+      <NestingRule child-file-suffix=".css.map" parent-file-suffix=".css" />
+      <NestingRule child-file-suffix=".min.css" parent-file-suffix=".css" />
+      <NestingRule child-file-suffix=".min.css.map" parent-file-suffix=".css" />
+      <NestingRule child-file-suffix=".js" parent-file-suffix=".es6" />
+      <NestingRule child-file-suffix=".js.map" parent-file-suffix=".es6" />
+      <NestingRule child-file-suffix=".html" parent-file-suffix=".haml" />
+      <NestingRule child-file-suffix="-compiled.js" parent-file-suffix=".js" />
+      <NestingRule child-file-suffix="-compiled.js.map" parent-file-suffix=".js" />
+      <NestingRule child-file-suffix=".js.map" parent-file-suffix=".js" />
+      <NestingRule child-file-suffix=".map" parent-file-suffix=".js" />
+      <NestingRule child-file-suffix=".min.js" parent-file-suffix=".js" />
+      <NestingRule child-file-suffix=".min.js.map" parent-file-suffix=".js" />
+      <NestingRule child-file-suffix=".js" parent-file-suffix=".jsx" />
+      <NestingRule child-file-suffix=".js.map" parent-file-suffix=".jsx" />
+      <NestingRule child-file-suffix=".css" parent-file-suffix=".less" />
+      <NestingRule child-file-suffix=".css.map" parent-file-suffix=".less" />
+      <NestingRule child-file-suffix=".css" parent-file-suffix=".sass" />
+      <NestingRule child-file-suffix=".css.map" parent-file-suffix=".sass" />
+      <NestingRule child-file-suffix=".css" parent-file-suffix=".scss" />
+      <NestingRule child-file-suffix=".css.map" parent-file-suffix=".scss" />
+      <NestingRule child-file-suffix=".css" parent-file-suffix=".styl" />
+      <NestingRule child-file-suffix=".d.ts" parent-file-suffix=".ts" />
+      <NestingRule child-file-suffix=".js" parent-file-suffix=".ts" />
+      <NestingRule child-file-suffix=".js.map" parent-file-suffix=".ts" />
+      <NestingRule child-file-suffix=".d.ts" parent-file-suffix=".tsx" />
+      <NestingRule child-file-suffix=".js" parent-file-suffix=".tsx" />
+      <NestingRule child-file-suffix=".js.map" parent-file-suffix=".tsx" />
+      <NestingRule child-file-suffix=".jsx" parent-file-suffix=".tsx" />
+      <NestingRule child-file-suffix=".jsx.map" parent-file-suffix=".tsx" />
+    </nesting-rules>
+  </component>
+</application>
