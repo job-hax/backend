@@ -3,7 +3,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager
-from JH_RestAPI import settings
 from django.core.validators import RegexValidator
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -61,7 +60,8 @@ class Profile(models.Model):
         regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     phone_number = models.CharField(
         validators=[phone_regex], max_length=17, blank=True)  # validators should be a list
-    profile_photo = models.CharField(max_length=200, blank=True)
+    profile_photo_social = models.CharField(max_length=200, blank=True)
+    profile_photo_custom = models.FileField(blank=True, null=True)
     emp_status = models.ForeignKey(
         EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)
     first_login = models.BooleanField(default=True, null=False)

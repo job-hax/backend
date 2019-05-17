@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 import requests
 import json
@@ -6,12 +5,11 @@ from utils.generic_json_creator import create_response
 from utils.linkedin_lookup import get_linkedin_profile
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from django.db.models import Q
 from .models import Profile
 from .models import EmploymentStatus, EmploymentAuth
 from .models import Feedback
-from django.http import HttpResponse
 from jobapps.models import GoogleMail
 from jobapps.serializers import GoogleMailSerializer
 from utils.gmail_lookup import fetchJobApplications
@@ -29,6 +27,7 @@ from oauth2_provider.models import AccessToken
 from django.contrib.auth import authenticate
 from utils import utils
 from django.utils import timezone
+import uuid
 
 
 # Create your views here.
@@ -265,7 +264,12 @@ def update_profile_photo(request):
     user = request.user
     profile = Profile.objects.get(user=user)
     if 'photo_url' in body:
-        profile.profile_photo = body['photo_url']
+        profile.profile_photo_social = body['photo_url']
+    if 'photo' in body:
+        f = request.data['photo']
+        ext = f.name.split('.')[-1]
+        filename = "%s.%s" % (uuid.uuid4(), ext)
+        profile.profile_photo_custom.save(filename, f, save=True)
     profile.save()
     return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
 

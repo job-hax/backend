@@ -12,6 +12,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+.idea/
 eggs/
 .eggs/
 lib/
@@ -188,6 +189,7 @@ target/
 *.pyc
 __pycache__/
 local_settings.py
+JH_RestAPI/media/
 
 .env
 db.sqlite3
