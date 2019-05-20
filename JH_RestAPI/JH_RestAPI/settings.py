@@ -26,7 +26,7 @@ SECRET_KEY = '&d&5*(y9+fk!x$+48^k=-&uy-+gcm9crt+xc_*)l94f#xk7*qk'
 DEBUG = True
 
 # can change the ip for local testing
-ALLOWED_HOSTS = ['0.0.0.0','localhost']
+ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0','localhost']
 SITE_URL = 'jobhax.com'
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -71,6 +71,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'JH_RestAPI.urls'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         # 'oauth2_provider.ext.rest_framework.OAuth2Authentication',  # django-oauth-toolkit < 1.0.0
@@ -85,6 +88,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated', ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser'
     )
 }
 
