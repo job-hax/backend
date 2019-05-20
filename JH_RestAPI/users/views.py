@@ -197,11 +197,8 @@ def reset_password(request):
 def login(request):
     body = JSONParser().parse(request)
 
-    post_data = {'client_id': body['client_id']}
-    post_data['client_secret'] = body['client_secret']
-    post_data['grant_type'] = 'password'
-    post_data['username'] = body['username']
-    post_data['password'] = body['password']
+    post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'], 'grant_type': 'password',
+                 'username': body['username'], 'password': body['password']}
     user = authenticate(username=body['username'], password=body['password'])
     if user is None:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials), safe=False)
@@ -231,9 +228,7 @@ def login(request):
 @csrf_exempt
 def logout(request):
     body = JSONParser().parse(request)
-    post_data = {'token': body['token']}
-    post_data['client_id'] = body['client_id']
-    post_data['client_secret'] = body['client_secret']
+    post_data = {'token': body['token'], 'client_id': body['client_id'], 'client_secret': body['client_secret']}
     headers = {'content-type': 'application/json'}
     response = requests.post('http://localhost:8000/auth/revoke-token',
                              data=json.dumps(post_data), headers=headers)
@@ -328,6 +323,7 @@ def auth_social_user(request):
     response = requests.post('http://localhost:8000/auth/convert-token',
                              data=json.dumps(post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
+    log(jsonres, 'e')
     if 'error' in jsonres:
         success = False
         code = ResponseCodes.invalid_credentials
