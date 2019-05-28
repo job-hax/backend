@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view
 from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
 from .models import Source
 from .models import JobApplicationNote
+from users.models import Profile
 from position.models import JobPosition
 from company.models import Company
 from utils.clearbit_company_checker import get_company_detail
@@ -33,6 +34,21 @@ def get_jobapps(request):
     joblist = JobApplicationSerializer(instance=user_job_apps, many=True, context={
                                        'user': request.user}).data
     return JsonResponse(create_response(data=joblist), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def get_new_jobapps(request):
+    timestamp = request.GET.get('timestamp')
+    if timestamp is None:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters))
+    profile = Profile.objects.get(user=request.user)
+    time = datetime.fromtimestamp(int(timestamp))
+    user_job_apps = JobApplication.objects.filter(created__gte=time)
+    joblist = JobApplicationSerializer(instance=user_job_apps, many=True, context={
+                                       'user': request.user}).data
+    response = {'data': joblist, 'synching': profile.synching}
+    return JsonResponse(create_response(data=response), safe=False)
 
 
 @csrf_exempt
