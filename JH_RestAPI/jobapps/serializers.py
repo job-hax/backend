@@ -1,10 +1,8 @@
-from django.db import models
-from django.contrib.auth.models import User
 from .models import ApplicationStatus
 from .models import JobApplication
 from .models import GoogleMail
 from .models import StatusHistory
-from .models import Source
+from .models import Source, Contact
 from .models import JobApplicationNote, SourceType
 from rest_framework import serializers
 from position.serializers import JobPositionSerializer
@@ -89,6 +87,28 @@ class StatusHistorySerializer(serializers.ModelSerializer):
         return StatusHistory.objects.create(**validated_data)
   class Meta:
     model = StatusHistory
-    fields = ('applicationStatus','update_date')       
+    fields = ('applicationStatus','update_date')
+
+
+class ContactSerializer(serializers.ModelSerializer):
+  position = serializers.SerializerMethodField()
+  company = serializers.SerializerMethodField()
+
+  def get_position(self, obj):
+    if obj.position is not None:
+      return obj.position.job_title
+    return None
+
+  def get_company(self, obj):
+    if obj.company is not None:
+      return obj.company.company
+    return None
+
+  def create(self, validated_data):
+        return Contact.objects.create(**validated_data)
+
+  class Meta:
+    model = Contact
+    fields = ('id', 'name', 'phone_number', 'linkedin_url', 'description', 'created_date', 'update_date', 'position', 'company')
 
  

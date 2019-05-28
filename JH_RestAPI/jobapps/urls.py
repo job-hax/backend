@@ -18,5 +18,9 @@ urlpatterns = [
     path('delete_jobapp_note', views.delete_jobapp_note, name='delete_jobapp_note'),
     path('add_jobapp_note', views.add_jobapp_note, name='add_jobapp_note'),
     path('get_sources', views.get_sources, name='get_sources'),
+    path('get_contacts', views.get_contacts, name='get_contacts'),
+    path('add_contact', views.add_contact, name='add_contact'),
+    path('update_contact', views.update_contact, name='update_contact'),
+    path('delete_contact', views.delete_contact, name='delete_contact'),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

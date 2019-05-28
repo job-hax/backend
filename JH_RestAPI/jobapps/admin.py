@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import JobApplication, ApplicationStatus, Source, GoogleMail, SourceType
+from .models import JobApplication, ApplicationStatus, Source, GoogleMail, SourceType, Contact
 from utils.export_csv import ExportCsv
 
 # Register your models here.
@@ -20,4 +20,5 @@ class ReviewAdmin(admin.ModelAdmin):
 
 admin.site.register(ApplicationStatus)
 admin.site.register(Source)
+admin.site.register(Contact)
 admin.site.register(SourceType)

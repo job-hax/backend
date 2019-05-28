@@ -4,8 +4,8 @@ from position.models import JobPosition
 from company.models import Company
 from users.models import EmploymentStatus
 from users.models import EmploymentAuth
-from JH_RestAPI import settings
 from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator
 
 User = get_user_model()
 
@@ -90,3 +90,26 @@ class SourceType(models.Model):
 
     def __str__(self):
         return self.value
+
+
+class Contact(models.Model):
+    job_post = models.ForeignKey(
+        JobApplication, on_delete=models.CASCADE, null=True, blank=True)
+    name = models.CharField(max_length=50)
+    phone_regex = RegexValidator(
+        regex=r'^\+?1?\d{9,15}$',
+        message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone_number = models.CharField(
+        validators=[phone_regex], max_length=17, blank=True, null=True)  # validators should be a list
+    linkedin_url = models.CharField(max_length=100, blank=True, null=True)
+    position = models.ForeignKey(
+        JobPosition, on_delete=models.SET_NULL, null=True, related_name='%(class)s_position')
+    company = models.ForeignKey(
+        Company, on_delete=models.SET_NULL, null=True, related_name='%(class)s_company')
+    description = models.TextField(null=True, blank=True)
+    created_date = models.DateTimeField(default=datetime.now, blank=True)
+    update_date = models.DateTimeField(
+        default=datetime.now, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
