@@ -534,7 +534,8 @@ def agg_detailed(request):
                 serie = {'name': position['position_'], 'type': 'bar'}
                 data = [0] * 12
                 for j in range(0, 12):
-                    count = JobApplication.objects.filter(position__job_title=position['position_'],
+                    count = JobApplication.objects.filter(~Q(applicationStatus=None), ~Q(applicationStatus__pk=2),
+                                                          position__job_title=position['position_'],
                                                           applyDate__year=months[j].year,
                                                           applyDate__month=months[j].month,
                                                           isDeleted=False,
