@@ -228,6 +228,8 @@ def update_jobapp(request):
                         status_history = StatusHistory(
                             job_post=user_job_app, applicationStatus=new_status[0])
                         status_history.save()
+                if rejected is not None:
+                    user_job_app.rejected_date = datetime.now()
                 user_job_app.save()
             else:
                 success = False

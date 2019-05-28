@@ -41,6 +41,7 @@ class JobApplication(models.Model):
     msgId = models.CharField(max_length=200)
     app_source = models.ForeignKey(
         Source, on_delete=models.SET_NULL, null=True, related_name='%(class)s_source')
+    rejected_date = models.DateTimeField(null=True, blank=True)
     isRejected = models.BooleanField(default=False)
     isDeleted = models.BooleanField(default=False)
 
