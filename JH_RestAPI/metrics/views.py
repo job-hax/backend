@@ -307,12 +307,13 @@ def detailed(request):
 
             statuses = ApplicationStatus.objects.all()
             for status in statuses:
-                item['graph']['xAxis'].append(status.value)
+                item['graph']['xAxis'].append(status.value.upper())
             for company in top_companies:
                 serie = {'name': company['company'], 'type': "bar", 'stack': 'Company'}
                 data = [0] * statuses.count()
                 for idx, status in enumerate(statuses):
-                    data[idx] = JobApplication.objects.filter(companyObject__company=company['company'],
+                    data[idx] = JobApplication.objects.filter(~Q(applicationStatus=None), user=request.user,
+                                                              companyObject__company=company['company'],
                                                               applicationStatus=status).count()
                 serie['data'] = data
                 item['graph']['series'].append(serie)
@@ -643,7 +644,7 @@ def agg_generic(request):
             item['value'] = total_user_count
             total_application = JobApplication.objects.all().count()
             total_average = total_application / total_user_count
-            item['description'] = 'Average ' + str(round(total_average, 2)) + ' & ' + 'total ' + str(total_application) + ' jobs applied.'
+            item['description'] = 'Average ' + str(round(total_average, 2)) + ' & ' + 'Total ' + str(total_application) + ' Jobs'
 
             today = datetime.date.today() + relativedelta(days=+1)
             last_year = datetime.date.today() + relativedelta(years=-2)
