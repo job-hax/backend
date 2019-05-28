@@ -2,15 +2,13 @@ from django.http import JsonResponse
 from utils.generic_json_creator import create_response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from .models import JobApplication
-from .models import ApplicationStatus
-from .models import StatusHistory
+from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
 from .models import Source
 from .models import JobApplicationNote
 from position.models import JobPosition
 from company.models import Company
 from utils.clearbit_company_checker import get_company_detail
-from .serializers import JobApplicationSerializer
+from .serializers import JobApplicationSerializer, ContactSerializer
 from .serializers import ApplicationStatusSerializer
 from .serializers import StatusHistorySerializer
 from .serializers import JobApplicationNoteSerializer
@@ -22,7 +20,6 @@ import traceback
 from utils import utils
 
 
-# Create your views here.
 @csrf_exempt
 @api_view(["GET"])
 def get_jobapps(request):
@@ -68,6 +65,27 @@ def get_status_history(request):
         statuses = StatusHistory.objects.filter(job_post__pk=jobapp_id)
         try:
             slist = StatusHistorySerializer(instance=statuses, many=True).data
+        except Exception as e:
+            log(traceback.format_exception(None, e, e.__traceback__), 'e')
+            success = False
+            code = ResponseCodes.record_not_found
+    return JsonResponse(create_response(data=slist, success=success, error_code=code), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def get_contacts(request):
+    jobapp_id = request.GET.get('jobapp_id')
+    success = True
+    code = ResponseCodes.success
+    slist = []
+    if jobapp_id is None:
+        success = False
+        code = ResponseCodes.invalid_parameters
+    else:
+        contacts = Contact.objects.filter(job_post__pk=jobapp_id)
+        try:
+            slist = ContactSerializer(instance=contacts, many=True).data
         except Exception as e:
             log(traceback.format_exception(None, e, e.__traceback__), 'e')
             success = False
@@ -386,3 +404,156 @@ def edit_jobapp(request):
     user_job_app.updated_date = datetime.now()
     user_job_app.save()
     return JsonResponse(create_response(data=JobApplicationSerializer(instance=user_job_app, many=False, context={'user': request.user}).data), safe=False)
+
+
+@csrf_exempt
+@api_view(["POST"])
+def update_contact(request):
+    body = request.data
+    contact_id = body.get('contact_id')
+    if contact_id is None:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                            safe=False)
+    try:
+        contact = Contact.objects.get(pk=contact_id)
+        if contact.job_post.user == request.user:
+            name = body.get('name')
+            if name is not None:
+                contact.name = name
+            phone_number = body.get('phone_number')
+            if phone_number is not None:
+                contact.phone_number = phone_number
+            linkedin_url = body.get('linkedin_url')
+            if linkedin_url is not None:
+                contact.linkedin_url = linkedin_url
+            description = body.get('description')
+            if description is not None:
+                contact.description = description
+            job_title = body.get('job_title')
+            if job_title is not None:
+                # jt is current dummy job title in the db
+                jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
+                if jt is None or len(jt) == 0:
+                    jt = JobPosition(job_title=job_title)
+                    jt.save()
+                else:
+                    jt = jt[0]
+                contact.position = jt
+            company = body.get('company')
+            if company is not None:
+                # check if the company details already exists in the db
+                cd = get_company_detail(company)
+                if cd is None:
+                    company_title = company
+                else:
+                    company_title = cd['name']
+                jc = Company.objects.all().filter(cb_name__iexact=company_title)
+                if jc is None or len(jc) == 0:
+                    # if company doesnt exist save it
+                    if cd is None:
+                        jc = Company(company=company, company_logo=None,
+                                     cb_name=company, cb_company_logo=None, cb_domain=None)
+                    else:
+                        jc = Company(company=company, company_logo=None,
+                                     cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
+                    jc.save()
+                else:
+                    jc = jc[0]
+                contact.company = jc
+
+            contact.update_date = datetime.now()
+            contact.save()
+            data = ContactSerializer(
+                instance=contact, many=False).data
+            return JsonResponse(create_response(data=data, success=True, error_code=ResponseCodes.success), safe=False)
+        else:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                                safe=False)
+    except Exception as e:
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                            safe=False)
+
+
+@csrf_exempt
+@api_view(["POST"])
+def delete_contact(request):
+    body = request.data
+    contact_id = body.get('contact_id')
+    if contact_id is None:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                            safe=False)
+    user_job_app_contact = Contact.objects.filter(
+        pk=contact_id)
+    if user_job_app_contact.count() == 0:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                            safe=False)
+    user_job_app_contact = user_job_app_contact[0]
+    if user_job_app_contact.job_post.user == request.user:
+        user_job_app_contact.delete()
+        return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
+    else:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                            safe=False)
+
+
+@csrf_exempt
+@api_view(["POST"])
+def add_contact(request):
+    body = request.data
+
+    jobapp_id = body.get('jobapp_id')
+    name = body.get('name')
+    if jobapp_id is None or name is None:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+    try:
+        user_job_app = JobApplication.objects.get(pk=jobapp_id)
+        if user_job_app.user == request.user:
+            phone_number = body.get('phone_number')
+            linkedin_url = body.get('linkedin_url')
+            description = body.get('description')
+            job_title = body.get('job_title')
+            jt = None
+            jc = None
+            if job_title is not None:
+                # jt is current dummy job title in the db
+                jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
+                if jt is None or len(jt) == 0:
+                    jt = JobPosition(job_title=job_title)
+                    jt.save()
+                else:
+                    jt = jt[0]
+            company = body.get('company')
+            if company is not None:
+                # check if the company details already exists in the db
+                cd = get_company_detail(company)
+                if cd is None:
+                    company_title = company
+                else:
+                    company_title = cd['name']
+                jc = Company.objects.all().filter(cb_name__iexact=company_title)
+                if jc is None or len(jc) == 0:
+                    # if company doesnt exist save it
+                    if cd is None:
+                        jc = Company(company=company, company_logo=None,
+                                     cb_name=company, cb_company_logo=None, cb_domain=None)
+                    else:
+                        jc = Company(company=company, company_logo=None,
+                                     cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
+                    jc.save()
+                else:
+                    jc = jc[0]
+
+            contact = Contact(
+                job_post=user_job_app, name=name, phone_number=phone_number, linkedin_url=linkedin_url,description=description,
+                position=jt, company=jc)
+            contact.save()
+            data = ContactSerializer(
+                instance=contact, many=False).data
+            return JsonResponse(create_response(data=data), safe=False)
+        else:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+    except Exception as e:
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                            safe=False)
