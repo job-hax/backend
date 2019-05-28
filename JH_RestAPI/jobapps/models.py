@@ -17,6 +17,9 @@ class ApplicationStatus(models.Model):
     def __str__(self):
         return self.value
 
+    class Meta:
+        ordering = ['value']
+
 
 class Source(models.Model):
     value = models.CharField(max_length=20)
@@ -26,6 +29,9 @@ class Source(models.Model):
 
     def __str__(self):
         return self.value
+
+    class Meta:
+        ordering = ['value']
 
 
 class JobApplication(models.Model):
@@ -42,6 +48,9 @@ class JobApplication(models.Model):
     app_source = models.ForeignKey(
         Source, on_delete=models.SET_NULL, null=True, related_name='%(class)s_source')
     rejected_date = models.DateTimeField(null=True, blank=True)
+    deleted_date = models.DateTimeField(null=True, blank=True)
+    created = models.DateTimeField(default=datetime.now, null=True, blank=True)
+    updated_date = models.DateTimeField(null=True, blank=True)
     isRejected = models.BooleanField(default=False)
     isDeleted = models.BooleanField(default=False)
 
