@@ -6,9 +6,9 @@ from utils.export_csv import ExportCsv
 @admin.register(JobApplication)
 class CompanyAdmin(admin.ModelAdmin, ExportCsv):
     list_display = ("user", "applicationStatus", "position",
-                    'companyObject', 'app_source', 'isDeleted')
+                    'companyObject', 'app_source', 'isDeleted', 'created')
     list_filter = ("user", "applicationStatus", "position",
-                   'companyObject', 'app_source')
+                   'companyObject', 'app_source', 'created')
     actions = ["export_as_csv"]
 
 
