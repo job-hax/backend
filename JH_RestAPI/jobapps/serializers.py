@@ -45,6 +45,12 @@ class JobApplicationSerializer(serializers.ModelSerializer):
   position = JobPositionSerializer(read_only=True)
   companyObject = serializers.SerializerMethodField()
   app_source = SourceSerializer(read_only=True)
+  editable = serializers.SerializerMethodField()
+
+  def get_editable(self, obj):
+    if obj.msgId is not None and obj.msgId != '':
+      return False
+    return True
 
   def get_companyObject(self, obj):
     context = self.context
@@ -55,7 +61,7 @@ class JobApplicationSerializer(serializers.ModelSerializer):
         return JobApplication.objects.create(**validated_data)
   class Meta:
     model = JobApplication
-    fields = ('id', 'applicationStatus', 'position', 'companyObject', 'applyDate', 'app_source', 'isRejected')
+    fields = ('id', 'editable', 'applicationStatus', 'position', 'companyObject', 'applyDate', 'app_source', 'isRejected')
 
 class JobApplicationNoteSerializer(serializers.ModelSerializer):
   created_date = serializers.SerializerMethodField()

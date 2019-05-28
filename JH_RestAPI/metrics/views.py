@@ -286,10 +286,10 @@ def detailed(request):
             item['graph'] = {}
             item['graph']['type'] = 'bar'
             item['graph']['series'] = []
-            item['graph']['title'] = 'Top Companies Applied'
+            item['graph']['title'] = 'Top Companies'
             item['list'] = {}
             item['list']['data'] = []
-            item['list']['title'] = 'Top Companies Applied'
+            item['list']['title'] = 'Top Companies'
 
             item['graph']['xAxis'] = []
 

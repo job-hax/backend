@@ -1,11 +1,7 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from utils.generic_json_creator import create_response
-from utils.utils import get_boolean_from_request
-from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
-from django.db import models
+from rest_framework.decorators import api_view
 from .models import JobApplication
 from .models import ApplicationStatus
 from .models import StatusHistory
@@ -18,9 +14,8 @@ from .serializers import JobApplicationSerializer
 from .serializers import ApplicationStatusSerializer
 from .serializers import StatusHistorySerializer
 from .serializers import JobApplicationNoteSerializer
-import json
+from .serializers import SourceSerializer
 from utils.logger import log
-from rest_framework.parsers import JSONParser
 from datetime import datetime
 from utils.error_codes import ResponseCodes
 import traceback
@@ -48,6 +43,14 @@ def get_jobapps(request):
 def get_statuses(request):
     statuses = ApplicationStatus.objects.all()
     slist = ApplicationStatusSerializer(instance=statuses, many=True).data
+    return JsonResponse(create_response(data=slist), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def get_sources(request):
+    sources = Source.objects.all()
+    slist = SourceSerializer(instance=sources, many=True).data
     return JsonResponse(create_response(data=slist), safe=False)
 
 
@@ -230,6 +233,7 @@ def update_jobapp(request):
                         status_history.save()
                 if rejected is not None:
                     user_job_app.rejected_date = datetime.now()
+                user_job_app.updated_date = datetime.now()
                 user_job_app.save()
             else:
                 success = False
@@ -255,6 +259,7 @@ def delete_jobapp(request):
         else:
             user_job_app = user_job_app[0]
             if user_job_app.user == request.user:
+                user_job_app.deleted_date = datetime.now()
                 user_job_app.isDeleted = True
                 user_job_app.save()
             else:
@@ -311,3 +316,73 @@ def add_jobapp(request):
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
     japp.save()
     return JsonResponse(create_response(data=JobApplicationSerializer(instance=japp, many=False, context={'user': request.user}).data), safe=False)
+
+
+@csrf_exempt
+@api_view(["POST"])
+def edit_jobapp(request):
+    body = request.data
+    jobapp_id = body.get('jobapp_id')
+    if jobapp_id is None:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+    user_job_app = JobApplication.objects.filter(pk=jobapp_id)
+    if user_job_app.count() == 0:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                            safe=False)
+    user_job_app = user_job_app[0]
+
+    if user_job_app.user != request.user:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                            safe=False)
+    if user_job_app.msgId is not None and user_job_app.msgId != '':
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                            safe=False)
+
+    job_title = body.get('job_title')
+    company = body.get('company')
+    applicationdate = body.get('application_date')
+    source = body.get('source')
+
+    if applicationdate is not None:
+        user_job_app.applyDate =applicationdate
+
+    if job_title is not None:
+        # jt is current dummy job title in the db
+        jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
+        if jt is None or len(jt) == 0:
+            jt = JobPosition(job_title=job_title)
+            jt.save()
+        else:
+            jt = jt[0]
+        user_job_app.position = jt
+
+    if company is not None:
+        # check if the company details already exists in the db
+        cd = get_company_detail(company)
+        if cd is None:
+            company_title = company
+        else:
+            company_title = cd['name']
+        jc = Company.objects.all().filter(cb_name__iexact=company_title)
+        if jc is None or len(jc) == 0:
+            # if company doesnt exist save it
+            if cd is None:
+                jc = Company(company=company, company_logo=None,
+                             cb_name=company, cb_company_logo=None, cb_domain=None)
+            else:
+                jc = Company(company=company, company_logo=None,
+                             cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
+            jc.save()
+        else:
+            jc = jc[0]
+        user_job_app.companyObject = jc
+
+    if source is not None:
+        if Source.objects.filter(value__iexact=source).count() == 0:
+            source = Source.objects.create(value=source)
+        else:
+            source = Source.objects.get(value__iexact=source)
+        user_job_app.app_source = source
+    user_job_app.updated_date = datetime.now()
+    user_job_app.save()
+    return JsonResponse(create_response(data=JobApplicationSerializer(instance=user_job_app, many=False, context={'user': request.user}).data), safe=False)
