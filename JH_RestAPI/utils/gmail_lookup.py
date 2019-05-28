@@ -340,6 +340,8 @@ def fetchJobApplications(user):
     time_string = ''
     # checks user last update time and add it as a query parameter
     profile = Profile.objects.get(user=user)
+    profile.synching = True
+    profile.save()
 
     if profile.gmail_last_update_time != 0:
         time = profile.gmail_last_update_time - 24 * 60 * 60
@@ -373,12 +375,14 @@ def fetchJobApplications(user):
         log('Users google token probably expired. Should have new token from google', 'e')
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
         profile.is_gmail_read_ok = False
+        profile.synching = False
         profile.save()
         return
 
     for m in allMails.values():
         if m is False:
             profile.is_gmail_read_ok = False
+            profile.synching = False
             profile.save()
             log('403 error got from Google. Check permissions...', 'e')
             return
@@ -393,4 +397,5 @@ def fetchJobApplications(user):
     now = datetime.utcnow().timestamp()
     profile.gmail_last_update_time = now
     profile.is_gmail_read_ok = True
+    profile.synching = False
     profile.save()
