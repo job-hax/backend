@@ -636,10 +636,14 @@ def agg_generic(request):
             item['graph'] = {}
             item['graph']['type'] = 'line'
             item['graph']['series'] = []
-            item['title'] = 'Total Rejected Jobs'
-            item['value'] = str(total_jobs_applied.filter(isRejected=True).count()) + '/' + str(
-                total_jobs_applied.count())
-            item['description'] = '3% DECREASE from last month'
+            item['title'] = 'Total Users'
+            User = get_user_model()
+            total_user = User.objects.filter(is_staff=False)
+            total_user_count = total_user.count()
+            item['value'] = total_user_count
+            total_application = JobApplication.objects.all().count()
+            total_average = total_application / total_user_count
+            item['description'] = 'Average ' + str(round(total_average, 2)) + ' & ' + 'total ' + str(total_application) + ' jobs applied.'
 
             today = datetime.date.today() + relativedelta(days=+1)
             last_year = datetime.date.today() + relativedelta(years=-2)
@@ -651,17 +655,20 @@ def agg_generic(request):
             while len(months) != 12:
                 months.insert(0, dec)
                 dec = dec + relativedelta(months=-1)
-            apps_by_month = total_jobs_applied.filter(applyDate__range=[
-                last_year, today], isRejected=True).values('applyDate__year', 'applyDate__month').annotate(
+            apps_by_month = total_user.filter(date_joined__range=[
+                last_year, today]).values('date_joined__year', 'date_joined__month').annotate(
                 count=Count('pk'))
 
             serie = {'name': item['title'], 'type': 'line'}
             data = [0] * 12
             for j in range(0, 12):
                 count = apps_by_month.filter(
-                    rejected_date__year=months[j].year, rejected_date__month=months[j].month)
+                    date_joined__year=months[j].year, date_joined__month=months[j].month)
                 if count.count() > 0:
-                    data[j] = count[0]['count']
+                    if j == 0:
+                        data[j] = count[0]['count']
+                    else:
+                        data[j] = data[j-1] + count[0]['count']
             serie['data'] = data
             item['graph']['series'].append(serie)
         response.append(item)
