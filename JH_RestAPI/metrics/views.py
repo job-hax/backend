@@ -33,7 +33,7 @@ def generic(request):
                 item['value'] = '0%'
             else:
                 item['value'] = str(round(total_jobs_applied.filter(
-                    applicationStatus__value='PHONE SCREEN').count() / total_jobs_applied.count(), 2)) + '%'
+                    applicationStatus__value='PHONE SCREEN').count() / total_jobs_applied.count() * 100, 2)) + '%'
             item['description'] = '13% INCREASE from last month'
             statuses = total_jobs_applied.filter(~Q(applicationStatus=None)).values(
                 'applicationStatus').annotate(count=Count('pk'))
@@ -55,7 +55,7 @@ def generic(request):
                 item['value'] = '0%'
             else:
                 item['value'] = str(round(total_jobs_applied.filter(
-                    applicationStatus__value='ONSITE INTERVIEW').count() / total_jobs_applied.count(), 2)) + '%'
+                    applicationStatus__value='ONSITE INTERVIEW').count() / total_jobs_applied.count() * 100, 2)) + '%'
             item['description'] = '4% DECREASE from last month'
             statuses = total_jobs_applied.filter(~Q(applicationStatus=None)).values(
                 'applicationStatus').annotate(count=Count('pk'))
@@ -568,7 +568,7 @@ def agg_generic(request):
                 item['value'] = '0%'
             else:
                 item['value'] = str(round(total_jobs_applied.filter(
-                    applicationStatus__value='PHONE SCREEN').count() / total_jobs_applied.count(), 2)) + '%'
+                    applicationStatus__value='PHONE SCREEN').count() / total_jobs_applied.count() * 100, 2)) + '%'
             item['description'] = '13% INCREASE from last month'
             statuses = total_jobs_applied.filter(~Q(applicationStatus=None)).values(
                 'applicationStatus').annotate(count=Count('pk'))
@@ -590,7 +590,7 @@ def agg_generic(request):
                 item['value'] = '0%'
             else:
                 item['value'] = str(round(total_jobs_applied.filter(
-                    applicationStatus__value='ONSITE INTERVIEW').count() / total_jobs_applied.count(), 2)) + '%'
+                    applicationStatus__value='ONSITE INTERVIEW').count() / total_jobs_applied.count() * 100, 2)) + '%'
             item['description'] = '4% DECREASE from last month'
             statuses = total_jobs_applied.filter(~Q(applicationStatus=None)).values(
                 'applicationStatus').annotate(count=Count('pk'))
