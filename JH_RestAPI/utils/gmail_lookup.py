@@ -342,7 +342,8 @@ def fetchJobApplications(user):
     profile = Profile.objects.get(user=user)
 
     if profile.gmail_last_update_time != 0:
-        time_string = ' AND after:' + str(profile.gmail_last_update_time)
+        time = profile.gmail_last_update_time - 24 * 60 * 60
+        time_string = ' AND after:' + str(time)
         log('its not the first time query will be added : ' + time_string, 'i')
     else:
         log('its the first time.. so we are querying all mails', 'i')
