@@ -44,6 +44,7 @@ class Profile(models.Model):
     User = get_user_model()
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     gmail_last_update_time = models.IntegerField(default=0)
+    user_type = models.IntegerField(default=0)
     is_gmail_read_ok = models.BooleanField(default=True)
     synching = models.BooleanField(default=False)
     linkedin_info = models.TextField(null=True, blank=True)

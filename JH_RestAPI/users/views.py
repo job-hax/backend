@@ -40,17 +40,20 @@ def register(request):
     if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'signup') == ResponseCodes.verify_recaptcha_failed:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
 
-    first_name = body['first_name']
-    last_name = body['last_name']
+    first_name = ''
+    last_name = ''
+    linkedin_auth_code = None
+    if 'first_name' in body:
+        first_name = body['first_name']
+    if 'last_name' in body:
+        last_name = body['last_name']
+    if 'linkedin_auth_code' in body:
+        linkedin_auth_code = body['linkedin_auth_code']
     username = body['username']
     email = body['email']
     password = body['password']
     password2 = body['password2']
-    activation_key, expiration_time = utils.generate_activation_key_and_expiredate(
-        username)
 
-    success = True
-    code = ResponseCodes.success
     data = None
 
     if '@' in username:
@@ -70,17 +73,42 @@ def register(request):
             else:
                 # Looks good
                 user = User.objects.create_user(username=username, password=password, email=email, first_name=first_name,
-                                                last_name=last_name, approved=False, activation_key=activation_key, key_expires=expiration_time)
+                                                last_name=last_name, approved=False, activation_key=None, key_expires=None)
                 user.save()
-                success = True
-                code = ResponseCodes.success
-                activation_key, expiration_time = utils.generate_activation_key_and_expiredate(
-                    body['username'])
-                user.activation_key = activation_key
-                user.key_expires = expiration_time
-                user.save()
-                utils.send_email(user.email,
-                                 activation_key, 'activate')
+                profile = Profile.objects.get(user=user)
+                profile.user_type = body['user_type']
+                if linkedin_auth_code is None:
+                    success = True
+                    code = ResponseCodes.success
+                    activation_key, expiration_time = utils.generate_activation_key_and_expiredate(
+                        body['username'])
+                    user.activation_key = activation_key
+                    user.key_expires = expiration_time
+                    user.save()
+                    utils.send_email(user.email,
+                                     activation_key, 'activate')
+                else:
+                    post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'],
+                                 'grant_type': 'convert_token', 'backend': 'linkedin-oauth2',
+                                 'token': get_access_token_with_code(body['token'])}
+                    response = requests.post('http://localhost:8000/auth/convert-token',
+                                             data=json.dumps(post_data), headers={'content-type': 'application/json'})
+                    jsonres = json.loads(response.text)
+                    log(jsonres, 'e')
+                    if 'error' in jsonres:
+                        success = False
+                        code = ResponseCodes.invalid_credentials
+                    else:
+                        success = True
+                        code = ResponseCodes.success
+                        user = AccessToken.objects.get(token=jsonres['access_token']).user
+                        profile = Profile.objects.get(user=user)
+                        jsonres['first_login'] = profile.first_login
+                        profile.first_login = False
+                        profile.save()
+                        user.approved = True
+                        user.save()
+                    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
     else:
         success = False
         code = ResponseCodes.passwords_do_not_match
