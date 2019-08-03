@@ -28,6 +28,7 @@ from django.contrib.auth import authenticate
 from utils import utils
 from django.utils import timezone
 import uuid
+from utils.linkedin_utils import get_access_token_with_code
 
 
 # Create your views here.
@@ -247,7 +248,8 @@ def login(request):
 @csrf_exempt
 def logout(request):
     body = JSONParser().parse(request)
-    post_data = {'token': body['token'], 'client_id': body['client_id'], 'client_secret': body['client_secret']}
+    post_data = {'token': body['token'], 'client_id': body['client_id'],
+                 'client_secret': body['client_secret']}
     headers = {'content-type': 'application/json'}
     response = requests.post('http://localhost:8000/auth/revoke-token',
                              data=json.dumps(post_data), headers=headers)
@@ -333,12 +335,13 @@ def auth_social_user(request):
     if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'signin') == ResponseCodes.verify_recaptcha_failed:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
 
-    post_data = {'client_id': body['client_id']}
-    post_data['client_secret'] = body['client_secret']
-    post_data['grant_type'] = 'convert_token'
+    post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'], 'grant_type': 'convert_token'}
     provider = body['provider']
     post_data['backend'] = provider
-    post_data['token'] = body['token']
+    if provider == 'linkedin-oauth2':
+        post_data['token'] = get_access_token_with_code(body['token'])
+    else:
+        post_data['token'] = body['token']
     response = requests.post('http://localhost:8000/auth/convert-token',
                              data=json.dumps(post_data), headers={'content-type': 'application/json'})
     jsonres = json.loads(response.text)
@@ -363,6 +366,29 @@ def auth_social_user(request):
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 
+@background(schedule=1)
+def scheduleFetcher(user_id):
+    User = get_user_model()
+    user = User.objects.get(pk=user_id)
+    if user.social_auth.filter(provider='google-oauth2'):
+        fetchJobApplications(user)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def sync_user_emails(request):
+    profile = Profile.objects.get(user=request.user)
+    if not profile.is_gmail_read_ok:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.google_token_expired), safe=False)
+    # it'll be used for background tasking in production
+    # refs. https://medium.com/@robinttt333/running-background-tasks-in-django-f4c1d3f6f06e
+    # https://django-background-tasks.readthedocs.io/en/latest/
+    # https://stackoverflow.com/questions/41205607/how-to-activate-the-process-queue-in-django-background-tasks
+    # scheduleFetcher.now(request.user.id)
+    scheduleFetcher(request.user.id)
+    return JsonResponse(create_response(data=None), safe=False)
+
+
 @require_POST
 @csrf_exempt
 def refresh_token(request):
@@ -385,21 +411,6 @@ def refresh_token(request):
 
 @csrf_exempt
 @api_view(["GET"])
-def sync_user_emails(request):
-    profile = Profile.objects.get(user=request.user)
-    if not profile.is_gmail_read_ok:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.google_token_expired), safe=False)
-    # it'll be used for background tasking in production
-    # refs. https://medium.com/@robinttt333/running-background-tasks-in-django-f4c1d3f6f06e
-    # https://django-background-tasks.readthedocs.io/en/latest/
-    # https://stackoverflow.com/questions/41205607/how-to-activate-the-process-queue-in-django-background-tasks
-    # scheduleFetcher.now(request.user.id)
-    scheduleFetcher(request.user.id)
-    return JsonResponse(create_response(data=None), safe=False)
-
-
-@csrf_exempt
-@api_view(["GET"])
 def get_profile(request):
     get_linkedin_profile(request.user)
     profile = Profile.objects.get(user=request.user)
@@ -418,14 +429,6 @@ def get_employment_statuses(request):
 def get_employment_auths(request):
     statuses = EmploymentAuth.objects.all()
     return JsonResponse(create_response(data=EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)
-
-
-@background(schedule=1)
-def scheduleFetcher(user_id):
-    User = get_user_model()
-    user = User.objects.get(pk=user_id)
-    if user.social_auth.filter(provider='google-oauth2'):
-        fetchJobApplications(user)
 
 
 @api_view(["POST"])

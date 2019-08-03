@@ -120,6 +120,14 @@ AUTHENTICATION_BACKENDS = (
     'JH_RestAPI.backends.ModelBackend',
 )
 
+SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY = os.environ['JOBHAX_LINKEDIN_CLIENT_KEY']
+SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET = os.environ['JOBHAX_LINKEDIN_CLIENT_SECRET']
+SOCIAL_AUTH_LINKEDIN_OAUTH2_SCOPE = ['r_emailaddress', 'r_liteprofile']
+SOCIAL_AUTH_LINKEDIN_OAUTH2_FIELD_SELECTORS = [
+'emailAddress'
+]
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:8080/action-linkedin-oauth2'
+
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',

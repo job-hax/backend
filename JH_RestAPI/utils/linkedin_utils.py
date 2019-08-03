@@ -1,11 +1,10 @@
 import requests
 from bs4 import BeautifulSoup as bs
-from bs4.element import Comment, NavigableString
 from .gmail_utils import find_nth
-from django.core import serializers
-from datetime import datetime
 from utils.logger import log
 import traceback
+import os
+import json
 
 def parse_job_detail(body):
   """Parse html body and get job posting details
@@ -44,3 +43,19 @@ def parse_job_detail(body):
   except Exception as e:
       log(traceback.format_exception(None, e, e.__traceback__), 'e')  
       return '{}','{}','{}'
+
+def get_access_token_with_code(code):
+    try:
+        post_data = {'grant_type': 'authorization_code', 'code': code}
+        post_data['redirect_uri'] = 'http://localhost:8080/action-linkedin-oauth2'
+        post_data['client_id'] = os.environ['JOBHAX_LINKEDIN_CLIENT_KEY']
+        post_data['client_secret'] = os.environ['JOBHAX_LINKEDIN_CLIENT_SECRET']
+        log(post_data, 'e')
+        response = requests.post('https://www.linkedin.com/uas/oauth2/accessToken',
+                                 data=post_data, headers={'content-type': 'application/x-www-form-urlencoded'})
+        jsonres = json.loads(response.text)
+        log(jsonres, 'e')
+        return jsonres['access_token']
+    except Exception as e:
+        log(traceback.format_exception(None, e, e.__traceback__), 'e')
+        return None
