@@ -88,6 +88,25 @@ def register(request):
 
 @require_GET
 @csrf_exempt
+def check_credentials(request):
+    User = get_user_model()
+    email = request.GET.get('email');
+    username = request.GET.get('username');
+    error_code = ResponseCodes.invalid_parameters
+    if email is not None:
+        users = User.objects.filter(email=email)
+        if users.count() == 0:
+            return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
+        error_code = ResponseCodes.email_exists
+    if username is not None:
+        users = User.objects.filter(username=username)
+        if users.count() == 0:
+            return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
+        error_code = ResponseCodes.username_exists
+    return JsonResponse(create_response(data=None, success=False, error_code=error_code), safe=False)
+
+@require_GET
+@csrf_exempt
 def activate_user(request):
     try:
         User = get_user_model()
