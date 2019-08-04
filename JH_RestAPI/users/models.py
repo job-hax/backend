@@ -6,6 +6,9 @@ from django.contrib.auth.models import UserManager
 from django.core.validators import RegexValidator
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
+from company.models import Company
+from college.models import College, Major
+from position.models import JobPosition
 
 
 class EmploymentStatus(models.Model):
@@ -47,7 +50,6 @@ class Profile(models.Model):
     user_type = models.IntegerField(default=0)
     is_gmail_read_ok = models.BooleanField(default=True)
     synching = models.BooleanField(default=False)
-    linkedin_info = models.TextField(null=True, blank=True)
     GENDER_CHOICES = (
         ('M', 'Male'),
         ('F', 'Female'),
@@ -67,6 +69,15 @@ class Profile(models.Model):
     emp_status = models.ForeignKey(
         EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)
     first_login = models.BooleanField(default=True, null=False)
+    college = models.ForeignKey(
+        College, on_delete=models.SET_NULL, null=True, blank=True)
+    major = models.ForeignKey(
+        Major, on_delete=models.SET_NULL, null=True, blank=True)
+    grad_year = models.IntegerField(null=True, blank=True)
+    company = models.ForeignKey(
+        Company, on_delete=models.SET_NULL, null=True, blank=True)
+    job_position = models.ForeignKey(
+        JobPosition, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 @receiver(post_save, sender=User)

@@ -40,6 +40,7 @@ def get_jobapps(request):
 @api_view(["GET"])
 def get_new_jobapps(request):
     timestamp = request.GET.get('timestamp')
+    timestamp = int(timestamp) / 1000
     if timestamp is None:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters))
     profile = Profile.objects.get(user=request.user)

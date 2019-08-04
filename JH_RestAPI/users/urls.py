@@ -26,6 +26,7 @@ urlpatterns = [
     path('get_employment_auths', views.get_employment_auths,
          name='get_employment_auths'),
     path('auth_social_user', views.auth_social_user, name='auth_social_user'),
+    path('link_social_account', views.link_social_account, name='link_social_account'),
     path('get_profile', views.get_profile, name='get_profile'),
     path('refresh_token', views.refresh_token, name='refresh_token'),
     path('sync_user_emails', views.sync_user_emails, name='sync_user_emails'),

@@ -1,10 +1,17 @@
 from rest_framework import serializers
 from .models import Company
 from review.models import Review, CompanyEmploymentAuth
-from users.models import EmploymentAuth
-from position.models import JobPosition
-from users.serializers import EmploymentAuthSerializer
-from django.db.models import Avg, Count
+from django.db.models import Count
+
+
+class CompanyBasicsSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        return Company.objects.create(**validated_data)
+
+    class Meta:
+        model = Company
+        fields = '__all__'
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -36,14 +43,14 @@ class CompanySerializer(serializers.ModelSerializer):
     def get_ratings(self, obj):
         ratings = []
         for i in range(1, 6):
-            rating = {}
-            rating['id'] = i
-            rating['count'] = Review.objects.filter(company=obj, overall_company_experience=i).aggregate(
-                Count('overall_company_experience'))['overall_company_experience__count']
+            rating = {'id': i, 'count': Review.objects.filter(company=obj, overall_company_experience=i).aggregate(
+                Count('overall_company_experience'))['overall_company_experience__count']}
             ratings.append(rating)
         return ratings
 
     def get_supported_employment_auths(self, obj):
+        from users.models import EmploymentAuth
+        from users.serializers import EmploymentAuthSerializer
         auths = []
         for auth in EmploymentAuth.objects.all():
             a_ser = EmploymentAuthSerializer(instance=auth, many=False).data

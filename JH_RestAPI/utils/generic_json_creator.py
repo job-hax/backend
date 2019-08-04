@@ -60,6 +60,8 @@ def get_error_message(error_code):
         return 'Blog could not be found...'
     elif error_code == ResponseCodes.invalid_username:
         return 'Invalid username...'
+    elif error_code == ResponseCodes.account_already_linked:
+        return 'Account already linked...'
     elif error_code == ResponseCodes.verify_recaptcha_failed:
         return 'You didn\'t pass reCAPTCHA challenge! You\'ll need to sigin again!'
     return 'Unknown error'
