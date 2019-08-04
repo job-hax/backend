@@ -233,46 +233,50 @@ def update_jobapp(request):
     body = request.data
     status_id = body.get('status_id')
     rejected = body.get('rejected')
-    jobapp_id = body.get('jobapp_id')
+    jobapp_ids = []
+    if 'jobapp_ids' in body:
+        jobapp_ids = body['jobapp_ids']
+    if 'jobapp_id' in body:
+        jobapp_ids.append(body['jobapp_id'])
     success = True
     code = ResponseCodes.success
-    if jobapp_id is None:
+    if len(jobapp_ids) == 0:
         success = False
         code = ResponseCodes.record_not_found
     elif rejected is None and status_id is None:
         success = False
         code = ResponseCodes.record_not_found
     else:
-        user_job_app = JobApplication.objects.filter(pk=jobapp_id)
-        if len(user_job_app) == 0:
+        user_job_apps = JobApplication.objects.filter(pk__in=jobapp_ids)
+        if user_job_apps.count() == 0:
             success = False
             code = ResponseCodes.record_not_found
         else:
-            user_job_app = user_job_app[0]
-            if user_job_app.user == request.user:
-                if status_id is None:
-                    user_job_app.isRejected = rejected
-                else:
-                    new_status = ApplicationStatus.objects.filter(pk=status_id)
-                    if len(new_status) == 0:
-                        success = False
-                        code = ResponseCodes.record_not_found
+            for user_job_app in user_job_apps:
+                if user_job_app.user == request.user:
+                    if status_id is None:
+                        user_job_app.isRejected = rejected
                     else:
-                        if rejected is None:
-                            user_job_app.applicationStatus = new_status[0]
+                        new_status = ApplicationStatus.objects.filter(pk=status_id)
+                        if new_status.count() == 0:
+                            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                                                safe=False)
                         else:
-                            user_job_app.applicationStatus = new_status[0]
-                            user_job_app.isRejected = rejected
-                        status_history = StatusHistory(
-                            job_post=user_job_app, applicationStatus=new_status[0])
-                        status_history.save()
-                if rejected is not None:
-                    user_job_app.rejected_date = datetime.now()
-                user_job_app.updated_date = datetime.now()
-                user_job_app.save()
-            else:
-                success = False
-                code = ResponseCodes.record_not_found
+                            if rejected is None:
+                                user_job_app.applicationStatus = new_status[0]
+                            else:
+                                user_job_app.applicationStatus = new_status[0]
+                                user_job_app.isRejected = rejected
+                            status_history = StatusHistory(
+                                job_post=user_job_app, applicationStatus=new_status[0])
+                            status_history.save()
+                    if rejected is not None:
+                        user_job_app.rejected_date = datetime.now()
+                    user_job_app.updated_date = datetime.now()
+                    user_job_app.save()
+                #else:
+                #    success = False
+                #    code = ResponseCodes.record_not_found
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
 
 
@@ -280,26 +284,30 @@ def update_jobapp(request):
 @api_view(["POST"])
 def delete_jobapp(request):
     body = request.data
-    jobapp_id = body['jobapp_id']
+    jobapp_ids = []
+    if 'jobapp_ids' in body:
+        jobapp_ids = body['jobapp_ids']
+    if 'jobapp_id' in body:
+        jobapp_ids.append(body['jobapp_id'])
     success = True
     code = ResponseCodes.success
-    if jobapp_id is None:
+    if len(jobapp_ids) == 0:
         success = False
         code = ResponseCodes.record_not_found
     else:
-        user_job_app = JobApplication.objects.filter(pk=jobapp_id)
-        if len(user_job_app) == 0:
+        user_job_apps = JobApplication.objects.filter(pk__in=jobapp_ids)
+        if user_job_apps.count() == 0:
             success = False
             code = ResponseCodes.record_not_found
         else:
-            user_job_app = user_job_app[0]
-            if user_job_app.user == request.user:
-                user_job_app.deleted_date = datetime.now()
-                user_job_app.isDeleted = True
-                user_job_app.save()
-            else:
-                success = False
-                code = ResponseCodes.record_not_found
+            for user_job_app in user_job_apps:
+                if user_job_app.user == request.user:
+                    user_job_app.deleted_date = datetime.now()
+                    user_job_app.isDeleted = True
+                    user_job_app.save()
+                #else:
+                #    success = False
+                #    code = ResponseCodes.record_not_found
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
 
 
