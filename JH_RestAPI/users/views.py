@@ -22,6 +22,7 @@ from .serializers import EmploymentStatusSerializer, EmploymentAuthSerializer
 from college.models import College
 from company.models import Company
 from position.models import JobPosition
+from utils.models import Country, State
 from college.utils import insert_or_update_major
 import traceback
 from django.contrib.auth import get_user_model
@@ -427,6 +428,15 @@ def update_user_profile_and_type(request):
         else:
             jc = jc[0]
         profile.company = jc
+
+    if 'country_id' is not None and 'state_id' is not None:
+        state = State.objects.get(pk=body['state_id'])
+        if state.country.id != body['country_id']:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                                safe=False)
+        country = Country.objects.get(pk=body['country_id'])
+        profile.country = country
+        profile.state = state
 
     profile.save()
     return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)

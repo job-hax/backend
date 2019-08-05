@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from college.serializers import CollegeSerializer, MajorSerializer
 from company.serializers import CompanyBasicsSerializer
 from position.serializers import JobPositionSerializer
+from utils.serializers import CountrySerializer, StateSerializer
 
 User = get_user_model()
 
@@ -44,6 +45,8 @@ class ProfileSerializer(serializers.ModelSerializer):
   college = CollegeSerializer(read_only=True)
   major = MajorSerializer(read_only=True)
   company = CompanyBasicsSerializer(read_only=True)
+  country = CountrySerializer(read_only=True)
+  state = StateSerializer(read_only=True)
   job_position = JobPositionSerializer(read_only=True)
   dob = serializers.DateField(format="%Y-%m-%d")
 

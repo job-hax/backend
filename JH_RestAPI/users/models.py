@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from company.models import Company
 from college.models import College, Major
+from utils.models import Country, State
 from position.models import JobPosition
 
 
@@ -78,6 +79,10 @@ class Profile(models.Model):
         Company, on_delete=models.SET_NULL, null=True, blank=True)
     job_position = models.ForeignKey(
         JobPosition, on_delete=models.SET_NULL, null=True, blank=True)
+    country = models.ForeignKey(
+        Country, on_delete=models.SET_NULL, null=True, blank=True)
+    state = models.ForeignKey(
+        State, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 @receiver(post_save, sender=User)
