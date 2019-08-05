@@ -33,7 +33,7 @@ urlpatterns = [
     path('api/colleges/', include('college.urls')),
     path('api/positions/', include('position.urls')),
     path('api/reviews/', include('review.urls')),
-    path('api/agreements/', include('utils.urls')),
+    path('api/', include('utils.urls')),
     re_path(r'^auth/', include('rest_framework_social_oauth2.urls')),
 ]
 

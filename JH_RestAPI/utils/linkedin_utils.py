@@ -44,12 +44,13 @@ def parse_job_detail(body):
       log(traceback.format_exception(None, e, e.__traceback__), 'e')  
       return '{}','{}','{}'
 
+
 def get_access_token_with_code(code):
     try:
-        post_data = {'grant_type': 'authorization_code', 'code': code}
-        post_data['redirect_uri'] = 'http://localhost:8080/action-linkedin-oauth2'
-        post_data['client_id'] = os.environ['JOBHAX_LINKEDIN_CLIENT_KEY']
-        post_data['client_secret'] = os.environ['JOBHAX_LINKEDIN_CLIENT_SECRET']
+        post_data = {'grant_type': 'authorization_code', 'code': code,
+                     'redirect_uri': 'http://localhost:8080/action-linkedin-oauth2',
+                     'client_id': os.environ['JOBHAX_LINKEDIN_CLIENT_KEY'],
+                     'client_secret': os.environ['JOBHAX_LINKEDIN_CLIENT_SECRET']}
         log(post_data, 'e')
         response = requests.post('https://www.linkedin.com/uas/oauth2/accessToken',
                                  data=post_data, headers={'content-type': 'application/x-www-form-urlencoded'})

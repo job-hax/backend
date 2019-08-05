@@ -6,6 +6,9 @@ from django.urls import reverse
 from utils import views
 
 urlpatterns = [
-    path('', views.agreements),
+    path('agreements/', views.agreements),
+    path('countries/', views.countries),
+    path('countries/<int:country_pk>/states/',
+        views.states),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
