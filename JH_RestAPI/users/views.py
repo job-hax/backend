@@ -453,12 +453,12 @@ def link_social_account(request):
     provider = body['provider']
     post_data['backend'] = provider
     if provider == 'linkedin-oauth2':
-        if request.user.social_auth.get(provider='linkedin-oauth2') is None:
+        if request.user.social_auth.filter(provider='linkedin-oauth2').count() == 0:
             post_data['token'] = get_access_token_with_code(body['token'])
         else:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.account_already_linked), safe=False)
     else:
-        if request.user.social_auth.get(provider='google-oauth2') is None:
+        if request.user.social_auth.filter(provider='google-oauth2').count() == 0:
             post_data['token'] = body['token']
         else:
             return JsonResponse(
