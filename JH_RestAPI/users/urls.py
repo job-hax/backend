@@ -19,6 +19,7 @@ urlpatterns = [
          name='generate_activation_code'),
     path('change_password', views.change_password, name='change_password'),
     path('update_profile', views.update_profile, name='update_profile'),
+    path('update_user_profile_and_type', views.update_user_profile_and_type, name='update_user_profile_and_type'),
     path('update_profile_photo', views.update_profile_photo,
          name='update_profile_photo'),
     path('get_employment_statuses', views.get_employment_statuses,

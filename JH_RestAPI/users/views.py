@@ -429,7 +429,7 @@ def update_user_profile_and_type(request):
             jc = jc[0]
         profile.company = jc
 
-    if 'country_id' is not None and 'state_id' is not None:
+    if 'country_id' in body and 'state_id' in body:
         state = State.objects.get(pk=body['state_id'])
         if state.country.id != body['country_id']:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
