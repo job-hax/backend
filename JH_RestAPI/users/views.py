@@ -105,7 +105,6 @@ def register(request):
                         code = ResponseCodes.success
                         profile = Profile.objects.get(
                             user=user)
-                        jsonres['first_login'] = profile.first_login
                         jsonres['user_type'] = profile.user_type
                     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
                 else:
@@ -129,7 +128,6 @@ def register(request):
                         code = ResponseCodes.success
                         user = AccessToken.objects.get(token=jsonres['access_token']).user
                         profile = Profile.objects.get(user=user)
-                        jsonres['first_login'] = profile.first_login
                         jsonres['user_type'] = profile.user_type
                         user.approved = True
                         user.save()
@@ -291,9 +289,7 @@ def login(request):
         code = ResponseCodes.success
         profile = Profile.objects.get(
             user=user)
-        jsonres['first_login'] = profile.first_login
         jsonres['user_type'] = profile.user_type
-        profile.first_login = False
         profile.save()
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
@@ -524,9 +520,7 @@ def auth_social_user(request):
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=jsonres['access_token']).user
         profile = Profile.objects.get(user=user)
-        jsonres['first_login'] = profile.first_login
         jsonres['user_type'] = profile.user_type
-        profile.first_login = False
         profile.save()
         user.approved = True
         user.save()

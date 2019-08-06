@@ -69,7 +69,6 @@ class Profile(models.Model):
     profile_photo_custom = models.FileField(blank=True, null=True)
     emp_status = models.ForeignKey(
         EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)
-    first_login = models.BooleanField(default=True, null=False)
     college = models.ForeignKey(
         College, on_delete=models.SET_NULL, null=True, blank=True)
     major = models.ForeignKey(
