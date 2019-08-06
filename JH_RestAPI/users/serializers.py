@@ -49,9 +49,21 @@ class ProfileSerializer(serializers.ModelSerializer):
   state = StateSerializer(read_only=True)
   job_position = JobPositionSerializer(read_only=True)
   dob = serializers.DateField(format="%Y-%m-%d")
+  is_google_linked = serializers.SerializerMethodField()
+  is_linkedin_linked = serializers.SerializerMethodField()
+
+  def get_is_google_linked(self, obj):
+    if obj.user.social_auth.filter(provider='google-oauth2').count() == 0:
+      return False
+    return True
+
+  def get_is_linkedin_linked(self, obj):
+    if obj.user.social_auth.filter(provider='google-oauth2').count() == 0:
+      return False
+    return True
 
   def create(self, validated_data):
-        return Profile.objects.create(**validated_data)
+      return Profile.objects.create(**validated_data)
 
   class Meta:
     model = Profile
