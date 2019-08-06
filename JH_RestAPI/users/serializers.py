@@ -58,7 +58,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     return True
 
   def get_is_linkedin_linked(self, obj):
-    if obj.user.social_auth.filter(provider='google-oauth2').count() == 0:
+    if obj.user.social_auth.filter(provider='linkedin-oauth2').count() == 0:
       return False
     return True
 
