@@ -492,7 +492,10 @@ def link_social_account(request):
             profile.synching = True
             profile.save()
             scheduleFetcher(request.user.id)
+        profile = Profile.objects.get(user=request.user)
+        return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
+
 
 @require_POST
 @csrf_exempt
