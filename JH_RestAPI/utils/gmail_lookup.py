@@ -10,15 +10,14 @@ from bs4 import BeautifulSoup as bs
 from googleapiclient import errors
 from googleapiclient.discovery import build
 
-from company.models import Company
+from company.utils import get_or_create_company
 from jobapps.models import ApplicationStatus
 from jobapps.models import GoogleMail
 from jobapps.models import JobApplication
 from jobapps.models import Source
 from jobapps.models import StatusHistory
-from position.models import JobPosition
+from position.utils import get_or_insert_position
 from users.models import Profile
-from utils.clearbit_company_checker import get_company_detail
 from utils.logger import log
 from .gmail_utils import convert_time
 from .gmail_utils import find_nth
@@ -249,32 +248,9 @@ def get_email_detail(service, user_id, msg_id, user, source):
 
         inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
         if inserted_before.count() == 0 and job_title != '' and company != '':
-            # jt is current dummy job title in the db
-            jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-            if jt.count() == 0:
-                jt = JobPosition(job_title=job_title)
-                jt.save()
-            else:
-                jt = jt[0]
+            jt = get_or_insert_position(job_title)
 
-                # check if the company details already exists in the db
-            cd = get_company_detail(company)
-            if cd is None:
-                company_title = company
-            else:
-                company_title = cd['name']
-            jc = Company.objects.all().filter(cb_name__iexact=company_title)
-            if jc.count() == 0:
-                # if company doesnt exist save it
-                if cd is None:
-                    jc = Company(company=company, company_logo=image_url, cb_name=company, cb_company_logo=None,
-                                 cb_domain=None)
-                else:
-                    jc = Company(company=company, company_logo=image_url, cb_name=cd['name'],
-                                 cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-                jc.save()
-            else:
-                jc = jc[0]
+            jc = get_or_create_company(company)
 
             if ApplicationStatus.objects.filter(default=True).count() == 0:
                 status = ApplicationStatus(value='Applied', default=True)

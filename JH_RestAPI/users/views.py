@@ -18,13 +18,12 @@ from rest_framework.parsers import JSONParser
 from social_django.models import UserSocialAuth
 
 from college.models import College
-from company.models import Company
+from company.utils import get_or_create_company
 from jobapps.models import GoogleMail
 from jobapps.serializers import GoogleMailSerializer
 from major.utils import insert_or_update_major
-from position.models import JobPosition
+from position.utils import get_or_insert_position
 from utils import utils
-from utils.clearbit_company_checker import get_company_detail
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from utils.gmail_lookup import fetch_job_applications
@@ -37,8 +36,9 @@ from .models import Profile
 from .serializers import EmploymentStatusSerializer, EmploymentAuthSerializer
 from .serializers import ProfileSerializer
 
+User = get_user_model()
 
-# Create your views here.
+
 @require_POST
 @csrf_exempt
 def register(request):
@@ -73,7 +73,6 @@ def register(request):
     # Check if passwords match
     if password == password2:
         # Check username
-        User = get_user_model()
         if User.objects.filter(username__iexact=username).exists():
             success = False
             code = ResponseCodes.username_exists
@@ -148,7 +147,6 @@ def register(request):
 @require_GET
 @csrf_exempt
 def check_credentials(request):
-    User = get_user_model()
     email = request.GET.get('email')
     username = request.GET.get('username')
     error_code = ResponseCodes.invalid_parameters
@@ -169,7 +167,6 @@ def check_credentials(request):
 @csrf_exempt
 def activate_user(request):
     try:
-        User = get_user_model()
         user = User.objects.filter(activation_key=request.GET.get('code'))
         if user.count() == 0:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
@@ -228,7 +225,6 @@ def forgot_password(request):
                             safe=False)
 
     username = body['username']
-    User = get_user_model()
     try:
         user = User.objects.get(
             Q(username__iexact=username) | Q(email__iexact=username))
@@ -248,7 +244,6 @@ def forgot_password(request):
 @csrf_exempt
 def check_forgot_password(request):
     try:
-        User = get_user_model()
         user = User.objects.filter(forgot_password_key=request.GET.get('code'))
         if user.count() == 0:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
@@ -271,7 +266,6 @@ def reset_password(request):
     body = JSONParser().parse(request)
     password = body['password']
     code = body['code']
-    User = get_user_model()
     user = User.objects.filter(forgot_password_key=code)
     if user.count() == 0:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_credentials),
@@ -374,7 +368,6 @@ def update_profile(request):
                             safe=False)
 
     user = request.user
-    User = get_user_model()
     profile = Profile.objects.get(user=user)
     if 'password' in body:
         user.set_password(body['password'])
@@ -411,35 +404,10 @@ def update_profile(request):
         profile.grad_year = body['grad_year']
     if 'job_title' in body:
         job_title = body['job_title']
-        # jt is current dummy job title in the db
-        jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-        if jt is None or len(jt) == 0:
-            jt = JobPosition(job_title=job_title)
-            jt.save()
-        else:
-            jt = jt[0]
-        profile.job_position = jt
+        profile.job_position = get_or_insert_position(job_title)
     if 'company' in body:
         company = body['company']
-        # check if the company details already exists in the db
-        cd = get_company_detail(company)
-        if cd is None:
-            company_title = company
-        else:
-            company_title = cd['name']
-        jc = Company.objects.all().filter(cb_name__iexact=company_title)
-        if jc is None or len(jc) == 0:
-            # if company doesnt exist save it
-            if cd is None:
-                jc = Company(company=company, company_logo=None,
-                             cb_name=company, cb_company_logo=None, cb_domain=None)
-            else:
-                jc = Company(company=company, company_logo=None,
-                             cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-            jc.save()
-        else:
-            jc = jc[0]
-        profile.company = jc
+        profile.company = get_or_create_company(company)
 
     if 'country_id' in body and 'state_id' in body:
         state = State.objects.get(pk=body['state_id'])
@@ -555,7 +523,6 @@ def auth_social_user(request):
 
 @background(schedule=1)
 def schedule_fetcher(user_id):
-    User = get_user_model()
     user = User.objects.get(pk=user_id)
     if user.social_auth.filter(provider='google-oauth2'):
         profile = Profile.objects.get(user=user)

@@ -5,11 +5,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 
-from company.models import Company
-from position.models import JobPosition
+from company.utils import get_or_create_company
+from position.utils import get_or_insert_position
 from users.models import Profile
 from utils import utils
-from utils.clearbit_company_checker import get_company_detail
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from utils.logger import log
@@ -332,31 +331,10 @@ def add_jobapp(request):
     applicationdate = body['application_date']
     status = int(body['status_id'])
     source = body['source']
-    # jt is current dummy job title in the db
-    jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-    if jt is None or len(jt) == 0:
-        jt = JobPosition(job_title=job_title)
-        jt.save()
-    else:
-        jt = jt[0]
-    # check if the company details already exists in the db
-    cd = get_company_detail(company)
-    if cd is None:
-        company_title = company
-    else:
-        company_title = cd['name']
-    jc = Company.objects.all().filter(cb_name__iexact=company_title)
-    if jc is None or len(jc) == 0:
-        # if company doesnt exist save it
-        if cd is None:
-            jc = Company(company=company, company_logo=None,
-                         cb_name=company, cb_company_logo=None, cb_domain=None)
-        else:
-            jc = Company(company=company, company_logo=None,
-                         cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-        jc.save()
-    else:
-        jc = jc[0]
+
+    jt = get_or_insert_position(job_title)
+
+    jc = get_or_create_company(company)
 
     if Source.objects.filter(value__iexact=source).count() == 0:
         source = Source.objects.create(value=source)
@@ -402,35 +380,10 @@ def edit_jobapp(request):
         user_job_app.applyDate = applicationdate
 
     if job_title is not None:
-        # jt is current dummy job title in the db
-        jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-        if jt is None or len(jt) == 0:
-            jt = JobPosition(job_title=job_title)
-            jt.save()
-        else:
-            jt = jt[0]
-        user_job_app.position = jt
+        user_job_app.position = get_or_insert_position(job_title)
 
     if company is not None:
-        # check if the company details already exists in the db
-        cd = get_company_detail(company)
-        if cd is None:
-            company_title = company
-        else:
-            company_title = cd['name']
-        jc = Company.objects.all().filter(cb_name__iexact=company_title)
-        if jc is None or len(jc) == 0:
-            # if company doesnt exist save it
-            if cd is None:
-                jc = Company(company=company, company_logo=None,
-                             cb_name=company, cb_company_logo=None, cb_domain=None)
-            else:
-                jc = Company(company=company, company_logo=None,
-                             cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-            jc.save()
-        else:
-            jc = jc[0]
-        user_job_app.companyObject = jc
+        user_job_app.companyObject = get_or_create_company(company)
 
     if source is not None:
         if Source.objects.filter(value__iexact=source).count() == 0:
@@ -470,35 +423,10 @@ def update_contact(request):
                 contact.description = description
             job_title = body.get('job_title')
             if job_title is not None:
-                # jt is current dummy job title in the db
-                jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-                if jt is None or len(jt) == 0:
-                    jt = JobPosition(job_title=job_title)
-                    jt.save()
-                else:
-                    jt = jt[0]
-                contact.position = jt
+                contact.position = get_or_insert_position(job_title)
             company = body.get('company')
             if company is not None:
-                # check if the company details already exists in the db
-                cd = get_company_detail(company)
-                if cd is None:
-                    company_title = company
-                else:
-                    company_title = cd['name']
-                jc = Company.objects.all().filter(cb_name__iexact=company_title)
-                if jc is None or len(jc) == 0:
-                    # if company doesnt exist save it
-                    if cd is None:
-                        jc = Company(company=company, company_logo=None,
-                                     cb_name=company, cb_company_logo=None, cb_domain=None)
-                    else:
-                        jc = Company(company=company, company_logo=None,
-                                     cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-                    jc.save()
-                else:
-                    jc = jc[0]
-                contact.company = jc
+                contact.company = get_or_create_company(company)
 
             contact.update_date = datetime.now()
             contact.save()
@@ -556,33 +484,11 @@ def add_contact(request):
             jt = None
             jc = None
             if job_title is not None:
-                # jt is current dummy job title in the db
-                jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-                if jt is None or len(jt) == 0:
-                    jt = JobPosition(job_title=job_title)
-                    jt.save()
-                else:
-                    jt = jt[0]
+                jt = get_or_insert_position(job_title)
+
             company = body.get('company')
             if company is not None:
-                # check if the company details already exists in the db
-                cd = get_company_detail(company)
-                if cd is None:
-                    company_title = company
-                else:
-                    company_title = cd['name']
-                jc = Company.objects.all().filter(cb_name__iexact=company_title)
-                if jc is None or len(jc) == 0:
-                    # if company doesnt exist save it
-                    if cd is None:
-                        jc = Company(company=company, company_logo=None,
-                                     cb_name=company, cb_company_logo=None, cb_domain=None)
-                    else:
-                        jc = Company(company=company, company_logo=None,
-                                     cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-                    jc.save()
-                else:
-                    jc = jc[0]
+                jc = get_or_create_company(company)
 
             contact = Contact(
                 job_post=user_job_app, name=name, phone_number=phone_number, linkedin_url=linkedin_url,
