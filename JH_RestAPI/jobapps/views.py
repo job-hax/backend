@@ -419,9 +419,15 @@ def update_contact(request):
     try:
         contact = Contact.objects.get(pk=contact_id)
         if contact.job_post.user == request.user:
-            name = body.get('name')
-            if name is not None:
-                contact.name = name
+            first_name = body.get('first_name')
+            if first_name is not None:
+                contact.first_name = first_name
+            last_name = body.get('last_name')
+            if last_name is not None:
+                contact.last_name = last_name
+            email = body.get('email')
+            if email is not None:
+                contact.email = email
             phone_number = body.get('phone_number')
             if phone_number is not None:
                 contact.phone_number = phone_number
