@@ -372,19 +372,8 @@ def update_profile(request):
         if EmploymentStatus.objects.filter(pk=body['emp_status_id']).count() > 0:
             profile.emp_status = EmploymentStatus.objects.get(
                 pk=body['emp_status_id'])
-
-    user.save()
-    profile.save()
-    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
-
-
-@csrf_exempt
-@api_view(["POST"])
-def update_user_profile_and_type(request):
-    body = request.data
-    user = request.user
-    profile = Profile.objects.get(user=user)
-    profile.user_type = body['user_type']
+    if 'user_type' in body:
+        profile.user_type = body['user_type']
     if 'college_id' in body:
         if College.objects.filter(pk=body['college_id']).count() > 0:
             profile.college = College.objects.get(
@@ -434,6 +423,7 @@ def update_user_profile_and_type(request):
         profile.country = country
         profile.state = state
 
+    user.save()
     profile.save()
     return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
 
