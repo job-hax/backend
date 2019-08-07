@@ -10,6 +10,7 @@ from company.models import Company
 from college.models import College, Major
 from utils.models import Country, State
 from position.models import JobPosition
+from enum import IntEnum
 
 
 class EmploymentStatus(models.Model):
@@ -89,6 +90,23 @@ class Profile(models.Model):
         Country, on_delete=models.SET_NULL, null=True, blank=True)
     state = models.ForeignKey(
         State, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class UserTypes(IntEnum):
+        none = 0
+        public = 1
+        student = 2
+        alumni = 3
+        career_service = 4
+
+
+    def is_student(self):
+        return self.user_type == 2
+
+    def is_alumni(self):
+        return self.user_type == 3
+
+    def is_career_service(self):
+        return self.user_type == 4
 
 
 @receiver(post_save, sender=User)

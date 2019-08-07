@@ -18,6 +18,9 @@ class Country(models.Model):
     region = models.CharField(max_length=200, blank=True)
     subregion = models.CharField(max_length=200, blank=True)
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         ordering = ['name']
 
@@ -28,6 +31,9 @@ class State(models.Model):
     code = models.CharField(max_length=20, blank=True)
     name = models.CharField(max_length=200, blank=True)
     subdivision = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         ordering = ['name']

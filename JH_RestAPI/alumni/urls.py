@@ -1,12 +1,11 @@
 from django.urls import path
+from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
+from django.urls import reverse
 
-from college import views
+from alumni import views
 
 urlpatterns = [
-    path('', views.get_colleges),
-    path('majors', views.get_majors),
-    path('college_majors',
-         views.college_majors),
+    path('', views.alumni),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
