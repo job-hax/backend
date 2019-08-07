@@ -1,15 +1,12 @@
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.template import RequestContext
-from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from utils.generic_json_creator import create_response
 from .models import Poll, Item, Vote
 from .serializers import PollSerializer, VoteSerializer
 from django.db.models import Q
 from utils.error_codes import ResponseCodes
+
 
 @csrf_exempt
 @api_view(["POST"])
@@ -38,12 +35,14 @@ def vote(request, poll_pk):
 
     return JsonResponse(create_response(data=None), safe=False)
 
+
 @csrf_exempt
 @api_view(["GET"])
 def polls(request):
     poll = Poll.objects.filter(~Q(vote__user=request.user))
-    slist = PollSerializer(instance=poll, many=True).data
-    return JsonResponse(create_response(data=slist), safe= False)
+    list = PollSerializer(instance=poll, many=True).data
+    return JsonResponse(create_response(data=list), safe= False)
+
 
 @csrf_exempt
 @api_view(["GET"])

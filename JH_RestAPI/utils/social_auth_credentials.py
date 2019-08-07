@@ -10,6 +10,7 @@ from googleapiclient import discovery
 
 from social_django.utils import load_strategy
 
+
 class Credentials(GoogleCredentials):
     """Google auth credentials using python social auth under the hood"""
 

@@ -6,6 +6,7 @@ import traceback
 import os
 import json
 
+
 def parse_job_detail(body):
   """Parse html body and get job posting details
   Args:

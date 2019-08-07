@@ -14,7 +14,7 @@ from JH_RestAPI import pagination
 
 @csrf_exempt
 @api_view(["GET"])
-def get_companies(request):
+def companies(request):
     q = request.GET.get('q')
     if q is None:
         companies = Company.objects.all()
@@ -29,7 +29,7 @@ def get_companies(request):
 
 @csrf_exempt
 @api_view(["GET"])
-def get_company_positions(request, company_pk):
+def positions(request, company_pk):
     company = Company.objects.get(pk=company_pk)
     queryset = JobApplication.objects.filter(companyObject=company)
     positions = set()

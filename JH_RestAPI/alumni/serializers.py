@@ -8,27 +8,28 @@ from utils.serializers import CountrySerializer, StateSerializer
 
 
 class AlumniSerializer(serializers.ModelSerializer):
-  first_name = serializers.SerializerMethodField()
-  last_name = serializers.SerializerMethodField()
-  email = serializers.SerializerMethodField()
-  college = CollegeSerializer(read_only=True)
-  major = MajorSerializer(read_only=True)
-  company = CompanyBasicsSerializer(read_only=True)
-  country = CountrySerializer(read_only=True)
-  state = StateSerializer(read_only=True)
-  job_position = JobPositionSerializer(read_only=True)
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    college = CollegeSerializer(read_only=True)
+    major = MajorSerializer(read_only=True)
+    company = CompanyBasicsSerializer(read_only=True)
+    country = CountrySerializer(read_only=True)
+    state = StateSerializer(read_only=True)
+    job_position = JobPositionSerializer(read_only=True)
 
-  def get_first_name(self, obj):
-    return obj.user.first_name
+    def get_first_name(self, obj):
+        return obj.user.first_name
 
-  def get_last_name(self, obj):
-    return obj.user.last_name
+    def get_last_name(self, obj):
+        return obj.user.last_name
 
-  def get_email(self, obj):
-    return obj.user.email
+    def get_email(obj):
+        return obj.user.email
 
-  class Meta:
-    model = Profile
-    fields = ('id', 'first_name', 'last_name', 'email', 'college', 'major', 'company', 'country', 'state', 'job_position', 'phone_number',\
-              'profile_photo_social', 'profile_photo_custom', 'grad_year')
-
+    class Meta:
+        model = Profile
+        fields = (
+            'id', 'first_name', 'last_name', 'email', 'college', 'major', 'company', 'country', 'state', 'job_position',
+            'phone_number', \
+            'profile_photo_social', 'profile_photo_custom', 'grad_year')

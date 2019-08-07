@@ -6,6 +6,7 @@ from utils.generic_json_creator import create_response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 
+
 @csrf_exempt
 @api_view(["GET"])
 def notifications(request):

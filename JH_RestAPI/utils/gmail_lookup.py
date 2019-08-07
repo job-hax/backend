@@ -1,7 +1,5 @@
 from __future__ import print_function
 from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
 from googleapiclient import errors
 from users.models import Profile
 import string
@@ -21,10 +19,10 @@ from position.models import JobPosition
 from company.models import Company
 from utils.clearbit_company_checker import get_company_detail
 import base64
-from .gmail_utils import convertTime
-from .gmail_utils import removeHtmlTags
+from .gmail_utils import convert_time
+from .gmail_utils import remove_html_tags
 from .gmail_utils import find_nth
-from .gmail_utils import unicodetoascii
+from .gmail_utils import unicode_to_ascii
 from utils.logger import log
 
 
@@ -60,7 +58,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
             elif header['name'] == 'Date':
                 date = header['value']
                 original_date = header['value']
-                date = convertTime(str(date))
+                date = convert_time(str(date))
         if 'parts' not in message['payload']:
             if message['payload']['mimeType'] == 'text/html' and int(message['payload']['body']['size']) > 0:
                 mail_body = str(base64.urlsafe_b64decode(
@@ -126,7 +124,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 if 'Role: ' in mail_body and 'Salary' in mail_body:
                     job_title = mail_body[mail_body.index(
                         'Role: ') + 6: mail_body.index('Salary')]
-                    job_title = removeHtmlTags(job_title)
+                    job_title = remove_html_tags(job_title)
                 if 'interview with ' in mail_body and '. Interested?' in mail_body:
                     company = mail_body[mail_body.index(
                         'interview with ') + 15: mail_body.index('. Interested?')]
@@ -233,7 +231,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
             elif 'application for ' in mail_body and ', and we are d' in mail_body:
                 job_title = mail_body[mail_body.index(
                     'application for ') + 16:mail_body.index(', and we are d')]
-                job_title = str(unicodetoascii(job_title))
+                job_title = str(unicode_to_ascii(job_title))
             elif 'application for our ' in mail_body and ' opening' in mail_body:
                 job_title = mail_body[mail_body.index(
                     "application for our ") + 20:mail_body.index(" opening")]
@@ -336,7 +334,7 @@ def get_emails_with_custom_query(service, user_id, query=''):
         log('An error occurred: %s' % error, error)
 
 
-def fetchJobApplications(user):
+def fetch_job_applications(user):
     time_string = ''
     # checks user last update time and add it as a query parameter
     profile = Profile.objects.get(user=user)

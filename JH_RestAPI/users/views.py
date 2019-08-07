@@ -11,7 +11,7 @@ from .models import EmploymentStatus, EmploymentAuth
 from .models import Feedback
 from jobapps.models import GoogleMail
 from jobapps.serializers import GoogleMailSerializer
-from utils.gmail_lookup import fetchJobApplications
+from utils.gmail_lookup import fetch_job_applications
 from background_task import background
 from social_django.models import UserSocialAuth
 from rest_framework.parsers import JSONParser
@@ -531,7 +531,7 @@ def schedule_fetcher(user_id):
         profile = Profile.objects.get(user=user)
         profile.synching = True
         profile.save()
-        fetchJobApplications(user)
+        fetch_job_applications(user)
 
 
 @csrf_exempt

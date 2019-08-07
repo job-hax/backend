@@ -5,10 +5,8 @@ from django.utils.encoding import python_2_unicode_compatible
 
 import datetime
 from django.db import models
-from django.conf import settings
 from django.utils.translation import gettext as _
 from django.db.models.manager import Manager
-from JH_RestAPI import settings
 from django.contrib.auth import get_user_model
 
 
@@ -78,6 +76,7 @@ class Vote(models.Model):
         verbose_name_plural = _('votes')
 
     def __str__(self):
+        User = get_user_model()
         if isinstance(User, str):
             User = get_user_model()
         else:

@@ -1,4 +1,3 @@
-from django.db import models
 from .models import Agreement, Country, State
 from rest_framework import serializers
 

@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from .models import College
 from users.models import Profile
 from .serializers import CollegeSerializer
+from major.serializers import MajorSerializer
 from JH_RestAPI import pagination
 
 

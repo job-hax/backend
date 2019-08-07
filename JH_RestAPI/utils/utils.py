@@ -1,14 +1,10 @@
 import hashlib
 import datetime
 from django.utils.crypto import get_random_string
-from django.urls import reverse
-from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse
 from django.core.mail import EmailMessage
 from django.conf import settings
-from django.http import JsonResponse
 import requests
 import json
-from utils.generic_json_creator import create_response
 from utils.logger import log
 from utils.error_codes import ResponseCodes
 import os

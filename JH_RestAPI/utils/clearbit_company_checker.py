@@ -3,6 +3,7 @@ from utils.logger import log
 import os
 import traceback
 
+
 def get_company_detail(name):
     try:
         token = os.environ['JOBHAX_CLEARBIT_KEY']
