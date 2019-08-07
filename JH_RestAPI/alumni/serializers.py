@@ -25,7 +25,7 @@ class AlumniSerializer(serializers.ModelSerializer):
     def get_last_name(self, obj):
         return obj.user.last_name
 
-    def get_email(obj):
+    def get_email(self, obj):
         return obj.user.email
 
     class Meta:

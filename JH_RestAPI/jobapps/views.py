@@ -15,6 +15,8 @@ from utils.logger import log
 from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
 from .models import JobApplicationNote
 from .models import Source
+from users.models import Profile
+from alumni.serializers import AlumniSerializer
 from .serializers import ApplicationStatusSerializer
 from .serializers import JobApplicationNoteSerializer
 from .serializers import JobApplicationSerializer, ContactSerializer
@@ -96,19 +98,27 @@ def get_contacts(request):
     jobapp_id = request.GET.get('jobapp_id')
     success = True
     code = ResponseCodes.success
-    slist = []
+    data = {}
     if jobapp_id is None:
         success = False
         code = ResponseCodes.invalid_parameters
     else:
         contacts = Contact.objects.filter(job_post__pk=jobapp_id)
-        try:
-            slist = ContactSerializer(instance=contacts, many=True).data
-        except Exception as e:
-            log(traceback.format_exception(None, e, e.__traceback__), 'e')
-            success = False
-            code = ResponseCodes.record_not_found
-    return JsonResponse(create_response(data=slist, success=success, error_code=code), safe=False)
+        list = ContactSerializer(instance=contacts, many=True).data
+
+        data['contacts'] = list
+
+        user_profile = Profile.objects.get(user=request.user)
+        if user_profile.user_type < int(Profile.UserTypes.student):
+            alumni = []
+        else:
+            jobapp = JobApplication.objects.get(pk=jobapp_id)
+            alumni_list = Profile.objects.filter(college=user_profile.college, company=jobapp.companyObject, user_type=int(Profile.UserTypes.alumni))
+            print(alumni_list)
+            alumni = AlumniSerializer(
+                instance=alumni_list, many=True, context={'user': request.user}).data
+        data['alumni'] = alumni
+    return JsonResponse(create_response(data=data, success=success, error_code=code), safe=False)
 
 
 @csrf_exempt
@@ -470,8 +480,9 @@ def add_contact(request):
     body = request.data
 
     jobapp_id = body.get('jobapp_id')
-    name = body.get('name')
-    if jobapp_id is None or name is None:
+    first_name = body.get('first_name')
+    last_name = body.get('last_name')
+    if jobapp_id is None or first_name is None or last_name is None:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                             safe=False)
     try:
@@ -480,6 +491,7 @@ def add_contact(request):
             phone_number = body.get('phone_number')
             linkedin_url = body.get('linkedin_url')
             description = body.get('description')
+            email = body.get('email')
             job_title = body.get('job_title')
             jt = None
             jc = None
@@ -491,8 +503,8 @@ def add_contact(request):
                 jc = get_or_create_company(company)
 
             contact = Contact(
-                job_post=user_job_app, name=name, phone_number=phone_number, linkedin_url=linkedin_url,
-                description=description,
+                job_post=user_job_app, first_name=first_name, last_name=last_name, phone_number=phone_number, linkedin_url=linkedin_url,
+                description=description, email=email,
                 position=jt, company=jc)
             contact.save()
             data = ContactSerializer(

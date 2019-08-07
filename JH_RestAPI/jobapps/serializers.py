@@ -126,5 +126,5 @@ class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = (
-            'id', 'name', 'phone_number', 'linkedin_url', 'description', 'created_date', 'update_date', 'position',
-            'company')
+            'id', 'first_name', 'last_name', 'phone_number', 'linkedin_url', 'description', 'created_date', 'update_date', 'position',
+            'company', 'email')
