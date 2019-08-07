@@ -1,7 +1,6 @@
-from django.shortcuts import render
-
+from enum import Enum
 from blog.models import Blog
-from . import models
+from blog.models import Vote
 from .serializers import BlogSerializer
 from .serializers import BlogSnippetSerializer
 from django.http import JsonResponse
@@ -10,11 +9,16 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from users.models import Profile
 from utils.error_codes import ResponseCodes
-from utils.logger import log
 from JH_RestAPI import pagination
 from utils import utils
 import uuid
 from datetime import datetime
+
+
+class ActionType(Enum):
+    upvote = 0
+    downvote = 1
+    view = 2
 
 
 @csrf_exempt
@@ -23,9 +27,9 @@ def blogs(request):
     if request.method == "GET":
         mine = request.GET.get('mine')
         if mine is None:
-            queryset = models.Blog.objects.all()
+            queryset = Blog.objects.all()
         else:
-            queryset = models.Blog.objects.filter(publisher_profile__user=request.user)
+            queryset = Blog.objects.filter(publisher_profile__user=request.user)
         paginator = pagination.CustomPagination()
         blogs = paginator.paginate_queryset(queryset, request)
         serialized_blogs = BlogSnippetSerializer(
@@ -72,68 +76,46 @@ def blogs(request):
 @csrf_exempt
 @api_view(["GET"])
 def blog(request, blog_pk):
-    try:
-        blog = models.Blog.objects.get(pk=blog_pk)
-    except:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.blog_couldnt_found), safe=False)
+    blog = Blog.objects.get(pk=blog_pk)
     return JsonResponse(create_response(BlogSerializer(instance=blog, many=False, context={'user': request.user}).data), safe=False)
+
+
+def do_action(request, blog_pk, type):
+    body = request.data
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'],
+                                                            'blog_stats') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
+                            safe=False)
+
+    blog = Blog.objects.get(pk=blog_pk)
+    if type == ActionType.view:
+        blog.view_count = blog.view_count + 1
+        blog.save()
+    else:
+        vote, new = Vote.objects.get_or_create(user=request.user, blog=blog)
+        if type == ActionType.upvote:
+            vote.vote_type = True
+        elif type == ActionType.downvote:
+            vote.vote_type = False
+        vote.save()
+    return JsonResponse(
+        create_response(data=BlogSnippetSerializer(instance=blog, many=False, context={'user': request.user}).data),
+        safe=False)
 
 
 @csrf_exempt
 @api_view(["POST"])
 def upvote(request, blog_pk):
-    body = request.data
-    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'blog_stats') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
-
-    try:
-        blog = models.Blog.objects.get(pk=blog_pk)
-        vote = models.Vote.objects.filter(user=request.user, blog=blog)
-        if len(vote) == 0:
-            vote = models.Vote(user=request.user, blog=blog, vote_type=True)
-        else:
-            vote = vote[0]
-            vote.vote_type = True
-        vote.save()
-        return JsonResponse(create_response(data=BlogSnippetSerializer(instance=blog, many=False, context={'user': request.user}).data), safe=False)
-    except Exception as e:
-        log(e, 'e')
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.blog_couldnt_found), safe=False)
+    return do_action(request, blog_pk, ActionType.upvote)
 
 
 @csrf_exempt
 @api_view(["POST"])
 def downvote(request, blog_pk):
-    body = request.data
-    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'blog_stats') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
-
-    try:
-        blog = models.Blog.objects.get(pk=blog_pk)
-        vote = models.Vote.objects.filter(user=request.user, blog=blog)
-        if len(vote) == 0:
-            vote = models.Vote(user=request.user, blog=blog, vote_type=False)
-        else:
-            vote = vote[0]
-            vote.vote_type = False
-        vote.save()
-        return JsonResponse(create_response(data=BlogSnippetSerializer(instance=blog, many=False, context={'user': request.user}).data), safe=False)
-    except Exception as e:
-        log(e, 'e')
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.blog_couldnt_found), safe=False)
+    return do_action(request, blog_pk, ActionType.downvote)
 
 
 @csrf_exempt
 @api_view(["POST"])
 def view(request, blog_pk):
-    body = request.data
-    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'blog_stats') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
-
-    try:
-        blog = models.Blog.objects.get(pk=blog_pk)
-        blog.view_count = blog.view_count+1
-        blog.save()
-        return JsonResponse(create_response(data=None), safe=False)
-    except:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.blog_couldnt_found), safe=False)
+    return do_action(request, blog_pk, ActionType.view)
