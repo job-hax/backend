@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import College, Major
+from .models import College
 
 
 class CollegeSerializer(serializers.ModelSerializer):
@@ -9,14 +9,4 @@ class CollegeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = College
-        fields = '__all__'
-
-
-class MajorSerializer(serializers.ModelSerializer):
-
-    def create(self, validated_data):
-        return Major.objects.create(**validated_data)
-
-    class Meta:
-        model = Major
         fields = '__all__'

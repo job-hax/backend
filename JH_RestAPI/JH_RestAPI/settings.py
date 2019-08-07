@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'social_django',
     'rest_framework_social_oauth2',
     'users',
+    'alumni',
+    'major',
     'college',
     'jobapps',
     'metrics',

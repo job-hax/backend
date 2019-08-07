@@ -23,7 +23,7 @@ from college.models import College
 from company.models import Company
 from position.models import JobPosition
 from utils.models import Country, State
-from college.utils import insert_or_update_major
+from major.utils import insert_or_update_major
 import traceback
 from django.contrib.auth import get_user_model
 from datetime import datetime

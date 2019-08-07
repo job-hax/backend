@@ -7,7 +7,8 @@ from django.core.validators import RegexValidator
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from company.models import Company
-from college.models import College, Major
+from college.models import College
+from major.models import Major
 from utils.models import Country, State
 from position.models import JobPosition
 from enum import IntEnum
