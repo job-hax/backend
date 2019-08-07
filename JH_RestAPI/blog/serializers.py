@@ -1,10 +1,11 @@
 from rest_framework import serializers
 from . import models
 import pytz
+from users.serializers import ProfileSerializer
 
 
 class BlogSerializer(serializers.ModelSerializer):
-
+    publisher_profile = ProfileSerializer(read_only=True)
     upvote = serializers.SerializerMethodField()
     downvote = serializers.SerializerMethodField()
     voted = serializers.SerializerMethodField()
@@ -32,8 +33,8 @@ class BlogSerializer(serializers.ModelSerializer):
         return voted
 
     class Meta:
-        fields = ('id', 'title', 'author_name', 'author_image', 'content', 'image',
-                  'is_html', 'created_at', 'view_count', 'upvote', 'downvote', 'voted')
+        fields = ('id', 'publisher_profile', 'title', 'content', 'header_image',
+                'created_at', 'view_count', 'upvote', 'downvote', 'voted', 'is_published')
         model = models.Blog
 
 
@@ -66,6 +67,6 @@ class BlogSnippetSerializer(serializers.ModelSerializer):
         return voted
 
     class Meta:
-        fields = ('id', 'title', 'author_name', 'author_image', 'snippet',
-                  'image', 'created_at', 'view_count', 'upvote', 'downvote', 'voted')
+        fields = ('id','publisher_profile', 'title', 'snippet',
+                  'header_image', 'created_at', 'view_count', 'upvote', 'downvote', 'voted', 'is_published')
         model = models.Blog

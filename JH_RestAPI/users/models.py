@@ -98,6 +98,8 @@ class Profile(models.Model):
         alumni = 3
         career_service = 4
 
+    def __str__(self):
+        return self.user.username
 
     def is_student(self):
         return self.user_type == 2

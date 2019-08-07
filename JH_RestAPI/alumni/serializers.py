@@ -4,7 +4,6 @@ from college.serializers import CollegeSerializer, MajorSerializer
 from company.serializers import CompanyBasicsSerializer
 from position.serializers import JobPositionSerializer
 from utils.serializers import CountrySerializer, StateSerializer
-from users.serializers import UserSerializer, EmploymentStatusSerializer
 
 
 class AlumniSerializer(serializers.ModelSerializer):
