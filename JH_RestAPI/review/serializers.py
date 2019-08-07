@@ -1,8 +1,9 @@
-from .models import Review, CompanyEmploymentAuth
+import pytz
 from rest_framework import serializers
+
 from jobapps.serializers import SourceTypeSerializer
 from users.serializers import EmploymentAuthSerializer, EmploymentStatusSerializer
-import pytz
+from .models import Review, CompanyEmploymentAuth
 
 
 class CompanyEmploymentAuthSerializer(serializers.ModelSerializer):

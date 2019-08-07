@@ -1,5 +1,7 @@
 from django.contrib import admin
+
 from .models import Agreement, Country
+
 
 # Register your models here.
 @admin.register(Agreement)

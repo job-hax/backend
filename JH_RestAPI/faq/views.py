@@ -1,8 +1,9 @@
 from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+
 from utils.generic_json_creator import create_response
 from .models import Faq
 from .serializers import FaqSerializer
-from django.views.decorators.http import require_GET
 
 
 @require_GET

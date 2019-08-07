@@ -1,11 +1,12 @@
 from django.db.models import Q
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
+
+from JH_RestAPI import pagination
+from users.models import Profile
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
-from django.http import JsonResponse
-from users.models import Profile
-from JH_RestAPI import pagination
 from .serializers import AlumniSerializer
 
 

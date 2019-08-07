@@ -1,19 +1,18 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-from jobapps.models import JobApplication
-from jobapps.models import ApplicationStatus
-from users.models import Profile
-from jobapps.models import Source
-from django.views.decorators.http import require_GET
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
-from django.db.models import Q
-from django.db.models import F
-from django.db.models import Count
-from utils.generic_json_creator import create_response
 import datetime
+
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
+from django.db.models import Count
+from django.db.models import F
+from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+
+from jobapps.models import ApplicationStatus
+from jobapps.models import JobApplication
+from jobapps.models import Source
+from utils.generic_json_creator import create_response
 
 
 @csrf_exempt

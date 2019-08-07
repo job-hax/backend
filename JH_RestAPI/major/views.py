@@ -1,10 +1,12 @@
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
+
+from JH_RestAPI import pagination
 from utils.generic_json_creator import create_response
-from django.http import JsonResponse
 from .models import Major
 from .serializers import MajorSerializer
-from JH_RestAPI import pagination
+
 
 # Create your views here.
 

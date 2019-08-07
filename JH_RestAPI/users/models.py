@@ -1,17 +1,19 @@
+from enum import IntEnum
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import UserManager
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import UserManager
-from django.core.validators import RegexValidator
-from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator
-from company.models import Company
+
 from college.models import College
+from company.models import Company
 from major.models import Major
-from utils.models import Country, State
 from position.models import JobPosition
-from enum import IntEnum
+from utils.models import Country, State
 
 
 class EmploymentStatus(models.Model):

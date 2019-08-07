@@ -1,12 +1,14 @@
-from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
-from jobapps.models import SourceType
-from company.models import Company
-from position.models import JobPosition
-from users.models import EmploymentStatus
-from users.models import EmploymentAuth
 from datetime import datetime
+
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+
+from company.models import Company
+from jobapps.models import SourceType
+from position.models import JobPosition
+from users.models import EmploymentAuth
+from users.models import EmploymentStatus
 
 User = get_user_model()
 

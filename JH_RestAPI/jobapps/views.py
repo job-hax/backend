@@ -1,24 +1,26 @@
+import traceback
+from datetime import datetime
+
 from django.http import JsonResponse
-from utils.generic_json_creator import create_response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
-from .models import Source
-from .models import JobApplicationNote
-from users.models import Profile
-from position.models import JobPosition
+
 from company.models import Company
-from utils.clearbit_company_checker import get_company_detail
-from .serializers import JobApplicationSerializer, ContactSerializer
-from .serializers import ApplicationStatusSerializer
-from .serializers import StatusHistorySerializer
-from .serializers import JobApplicationNoteSerializer
-from .serializers import SourceSerializer
-from utils.logger import log
-from datetime import datetime
-from utils.error_codes import ResponseCodes
-import traceback
+from position.models import JobPosition
+from users.models import Profile
 from utils import utils
+from utils.clearbit_company_checker import get_company_detail
+from utils.error_codes import ResponseCodes
+from utils.generic_json_creator import create_response
+from utils.logger import log
+from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
+from .models import JobApplicationNote
+from .models import Source
+from .serializers import ApplicationStatusSerializer
+from .serializers import JobApplicationNoteSerializer
+from .serializers import JobApplicationSerializer, ContactSerializer
+from .serializers import SourceSerializer
+from .serializers import StatusHistorySerializer
 
 
 @csrf_exempt

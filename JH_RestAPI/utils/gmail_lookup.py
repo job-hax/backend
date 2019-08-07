@@ -1,29 +1,30 @@
 from __future__ import print_function
-from googleapiclient.discovery import build
-from googleapiclient import errors
-from users.models import Profile
-import string
-from datetime import datetime
-import requests
-import traceback
-from bs4 import BeautifulSoup as bs
 
-from .social_auth_credentials import Credentials
-
-from jobapps.models import JobApplication
-from jobapps.models import GoogleMail
-from jobapps.models import ApplicationStatus
-from jobapps.models import StatusHistory
-from jobapps.models import Source
-from position.models import JobPosition
-from company.models import Company
-from utils.clearbit_company_checker import get_company_detail
 import base64
-from .gmail_utils import convert_time
-from .gmail_utils import remove_html_tags
-from .gmail_utils import find_nth
-from .gmail_utils import unicode_to_ascii
+import string
+import traceback
+from datetime import datetime
+
+import requests
+from bs4 import BeautifulSoup as bs
+from googleapiclient import errors
+from googleapiclient.discovery import build
+
+from company.models import Company
+from jobapps.models import ApplicationStatus
+from jobapps.models import GoogleMail
+from jobapps.models import JobApplication
+from jobapps.models import Source
+from jobapps.models import StatusHistory
+from position.models import JobPosition
+from users.models import Profile
+from utils.clearbit_company_checker import get_company_detail
 from utils.logger import log
+from .gmail_utils import convert_time
+from .gmail_utils import find_nth
+from .gmail_utils import remove_html_tags
+from .gmail_utils import unicode_to_ascii
+from .social_auth_credentials import Credentials
 
 
 def get_email_detail(service, user_id, msg_id, user, source):

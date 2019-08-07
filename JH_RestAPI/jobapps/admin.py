@@ -1,6 +1,8 @@
 from django.contrib import admin
-from .models import JobApplication, ApplicationStatus, Source, GoogleMail, SourceType, Contact
+
 from utils.export_csv import ExportCsv
+from .models import JobApplication, ApplicationStatus, Source, GoogleMail, SourceType, Contact
+
 
 # Register your models here.
 @admin.register(JobApplication)

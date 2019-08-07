@@ -1,6 +1,8 @@
 from django.contrib import admin
-from .models import JobPosition
+
 from utils.export_csv import ExportCsv
+from .models import JobPosition
+
 
 # Register your models here.
 @admin.register(JobPosition)

@@ -1,7 +1,8 @@
-from rest_framework import serializers
-from .models import Company
-from review.models import Review, CompanyEmploymentAuth
 from django.db.models import Count
+from rest_framework import serializers
+
+from review.models import Review, CompanyEmploymentAuth
+from .models import Company
 
 
 class CompanyBasicsSerializer(serializers.ModelSerializer):

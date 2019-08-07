@@ -1,7 +1,9 @@
-import requests
-from utils.logger import log
 import os
 import traceback
+
+import requests
+
+from utils.logger import log
 
 
 def get_company_detail(name):

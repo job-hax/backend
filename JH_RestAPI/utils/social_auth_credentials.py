@@ -1,13 +1,9 @@
 # github.com/python-social-auth/social-core/issues/125
 from datetime import datetime
 
-from requests import exceptions as requests_errors
-
 from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials as GoogleCredentials
-
-from googleapiclient import discovery
-
+from requests import exceptions as requests_errors
 from social_django.utils import load_strategy
 
 

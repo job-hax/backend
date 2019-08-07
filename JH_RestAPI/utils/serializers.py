@@ -1,5 +1,6 @@
-from .models import Agreement, Country, State
 from rest_framework import serializers
+
+from .models import Agreement, Country, State
 
 
 class AgreementSerializer(serializers.ModelSerializer):

@@ -1,11 +1,13 @@
-from django.db import models
 from datetime import datetime
-from position.models import JobPosition
-from company.models import Company
-from users.models import EmploymentStatus
-from users.models import EmploymentAuth
+
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
+from django.db import models
+
+from company.models import Company
+from position.models import JobPosition
+from users.models import EmploymentAuth
+from users.models import EmploymentStatus
 
 User = get_user_model()
 

@@ -1,19 +1,20 @@
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
-from utils.error_codes import ResponseCodes
-from utils.generic_json_creator import create_response
+from django.db.models import Q
 from django.http import JsonResponse
-from jobapps.models import JobApplication, SourceType
-from jobapps.serializers import SourceSerializer
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+
 from company.models import Company
+from company.serializers import CompanySerializer
+from jobapps.models import SourceType
+from jobapps.serializers import SourceSerializer
 from position.models import JobPosition
 from users.models import EmploymentAuth, EmploymentStatus
-from .serializers import ReviewSerializer
-from company.serializers import CompanySerializer
-from .models import Review, CompanyEmploymentAuth
-from django.db.models import Q
 from utils import utils
+from utils.error_codes import ResponseCodes
+from utils.generic_json_creator import create_response
+from .models import Review, CompanyEmploymentAuth
+from .serializers import ReviewSerializer
 
 
 @csrf_exempt

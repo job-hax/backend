@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
+
 from utils.clearbit_company_checker import get_company_detail
 
 

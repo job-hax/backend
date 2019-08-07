@@ -1,9 +1,10 @@
 from rest_framework import serializers
-from users.models import Profile
+
 from college.serializers import CollegeSerializer
-from major.serializers import MajorSerializer
 from company.serializers import CompanyBasicsSerializer
+from major.serializers import MajorSerializer
 from position.serializers import JobPositionSerializer
+from users.models import Profile
 from utils.serializers import CountrySerializer, StateSerializer
 
 

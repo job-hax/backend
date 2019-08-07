@@ -1,10 +1,12 @@
+import json
+import os
+import traceback
+
 import requests
 from bs4 import BeautifulSoup as bs
-from .gmail_utils import find_nth
+
 from utils.logger import log
-import traceback
-import os
-import json
+from .gmail_utils import find_nth
 
 
 def parse_job_detail(body):

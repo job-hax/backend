@@ -1,39 +1,41 @@
-from django.http import JsonResponse
-import requests
 import json
-from utils.generic_json_creator import create_response
-from django.views.decorators.http import require_GET, require_POST
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
-from django.db.models import Q
-from .models import Profile
-from .models import EmploymentStatus, EmploymentAuth
-from .models import Feedback
-from jobapps.models import GoogleMail
-from jobapps.serializers import GoogleMailSerializer
-from utils.gmail_lookup import fetch_job_applications
+import traceback
+import uuid
+from datetime import datetime
+
+import requests
 from background_task import background
-from social_django.models import UserSocialAuth
+from django.contrib.auth import authenticate
+from django.contrib.auth import get_user_model
+from django.db.models import Q
+from django.http import JsonResponse
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
+from oauth2_provider.models import AccessToken
+from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
-from utils.logger import log
-from utils.error_codes import ResponseCodes
-from .serializers import ProfileSerializer
-from .serializers import EmploymentStatusSerializer, EmploymentAuthSerializer
+from social_django.models import UserSocialAuth
+
 from college.models import College
 from company.models import Company
-from position.models import JobPosition
-from utils.models import Country, State
+from jobapps.models import GoogleMail
+from jobapps.serializers import GoogleMailSerializer
 from major.utils import insert_or_update_major
-import traceback
-from django.contrib.auth import get_user_model
-from datetime import datetime
-from oauth2_provider.models import AccessToken
-from django.contrib.auth import authenticate
+from position.models import JobPosition
 from utils import utils
-from django.utils import timezone
-import uuid
-from utils.linkedin_utils import get_access_token_with_code
 from utils.clearbit_company_checker import get_company_detail
+from utils.error_codes import ResponseCodes
+from utils.generic_json_creator import create_response
+from utils.gmail_lookup import fetch_job_applications
+from utils.linkedin_utils import get_access_token_with_code
+from utils.logger import log
+from utils.models import Country, State
+from .models import EmploymentStatus, EmploymentAuth
+from .models import Feedback
+from .models import Profile
+from .serializers import EmploymentStatusSerializer, EmploymentAuthSerializer
+from .serializers import ProfileSerializer
 
 
 # Create your views here.

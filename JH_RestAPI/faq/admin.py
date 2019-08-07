@@ -1,7 +1,6 @@
 from django.contrib import admin
-from .models import *
-from django.utils.translation import gettext as _
 
+from .models import *
 
 '''class FaqItemInline(admin.TabularInline):
     model = Item

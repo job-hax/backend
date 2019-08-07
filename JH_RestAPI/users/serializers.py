@@ -1,11 +1,12 @@
-from .models import Profile, EmploymentStatus, EmploymentAuth
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
+
 from college.serializers import CollegeSerializer
-from major.serializers import MajorSerializer
 from company.serializers import CompanyBasicsSerializer
+from major.serializers import MajorSerializer
 from position.serializers import JobPositionSerializer
 from utils.serializers import CountrySerializer, StateSerializer
+from .models import Profile, EmploymentStatus, EmploymentAuth
 
 User = get_user_model()
 

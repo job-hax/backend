@@ -1,13 +1,14 @@
-from .models import ApplicationStatus
-from .models import JobApplication
-from .models import GoogleMail
-from .models import StatusHistory
-from .models import Source, Contact
-from .models import JobApplicationNote, SourceType
-from rest_framework import serializers
-from position.serializers import JobPositionSerializer
-from company.serializers import CompanySerializer
 import pytz
+from rest_framework import serializers
+
+from company.serializers import CompanySerializer
+from position.serializers import JobPositionSerializer
+from .models import ApplicationStatus
+from .models import GoogleMail
+from .models import JobApplication
+from .models import JobApplicationNote, SourceType
+from .models import Source, Contact
+from .models import StatusHistory
 
 
 class ApplicationStatusSerializer(serializers.ModelSerializer):

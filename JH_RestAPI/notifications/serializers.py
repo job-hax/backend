@@ -1,6 +1,7 @@
-from rest_framework import serializers
-from . import models
 import pytz
+from rest_framework import serializers
+
+from . import models
 
 
 class NotificationSerializer(serializers.ModelSerializer):

@@ -1,7 +1,8 @@
+import pytz
+from rest_framework import serializers
+
 from .models import Faq
 from .models import Item
-from rest_framework import serializers
-import pytz
 
 
 class ItemSerializer(serializers.ModelSerializer):
