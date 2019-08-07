@@ -10,7 +10,8 @@ class Migration(migrations.Migration):
 
     def populate_data(apps, schema_editor):
         College = apps.get_model('college', 'College')
-        with urllib.request.urlopen("https://raw.githubusercontent.com/Hipo/university-domains-list/master/world_universities_and_domains.json") as json_file:
+        with urllib.request.urlopen(
+                "https://raw.githubusercontent.com/Hipo/university-domains-list/master/world_universities_and_domains.json") as json_file:
             data = json.load(json_file)
             for d in data:
                 name = d['name']
@@ -25,9 +26,11 @@ class Migration(migrations.Migration):
                     web_pages.append(w)
                 for domain in d['domains']:
                     domains.append(domain)
-                college = College.objects.create(web_pages=web_pages,domains=domains,name=name,alpha_two_code=alpha_two_code,state_province=state_province,country=country)
+                college = College.objects.create(web_pages=web_pages, domains=domains, name=name,
+                                                 alpha_two_code=alpha_two_code, state_province=state_province,
+                                                 country=country)
                 college.save()
-                
+
     dependencies = [
         ('college', '0001_initial'),
     ]

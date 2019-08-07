@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('blog', '0009_auto_20190807_0459'),
     ]
@@ -14,6 +13,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='blog',
             name='header_image',
-            field=models.FileField(blank=True, null=True, storage=django.core.files.storage.FileSystemStorage(location='/Users/hellsayenci/Documents/web_projects/JobHax/JobHaxBackend/JH_RestAPI/media/blog'), upload_to=''),
+            field=models.FileField(blank=True, null=True, storage=django.core.files.storage.FileSystemStorage(
+                location='/Users/hellsayenci/Documents/web_projects/JobHax/JobHaxBackend/JH_RestAPI/media/blog'),
+                                   upload_to=''),
         ),
     ]

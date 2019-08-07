@@ -7,4 +7,4 @@ from .models import JobPosition
 # Register your models here.
 @admin.register(JobPosition)
 class JobPositionAdmin(admin.ModelAdmin, ExportCsv):
-    actions = ["export_as_csv"]  
+    actions = ["export_as_csv"]

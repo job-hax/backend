@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
@@ -26,7 +25,7 @@ SECRET_KEY = '&d&5*(y9+fk!x$+48^k=-&uy-+gcm9crt+xc_*)l94f#xk7*qk'
 DEBUG = True
 
 # can change the ip for local testing
-ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0','localhost', '10.0.0.75']
+ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'localhost', '10.0.0.75']
 SITE_URL = 'jobhax.com'
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -88,7 +87,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'JH_RestAPI.pagination.CustomPagination',
     'PAGE_SIZE': 30,
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated', ),
+        'rest_framework.permissions.IsAuthenticated',),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.FormParser',
@@ -127,7 +126,7 @@ SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY = os.environ['JOBHAX_LINKEDIN_CLIENT_KEY']
 SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET = os.environ['JOBHAX_LINKEDIN_CLIENT_SECRET']
 SOCIAL_AUTH_LINKEDIN_OAUTH2_SCOPE = ['r_emailaddress', 'r_liteprofile']
 SOCIAL_AUTH_LINKEDIN_OAUTH2_FIELD_SELECTORS = [
-'emailAddress'
+    'emailAddress'
 ]
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:8080/action-linkedin-oauth2'
 
@@ -182,7 +181,6 @@ LOGGING = {
 
 WSGI_APPLICATION = 'JH_RestAPI.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
@@ -195,7 +193,6 @@ DATABASES = {
         'HOST': 'localhost'
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -215,7 +212,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
@@ -228,7 +224,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/

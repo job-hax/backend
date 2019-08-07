@@ -33,7 +33,7 @@ class Credentials(GoogleCredentials):
             refresh_token = data['refresh_token']
         except:
             refresh_token = ''
-            pass    
+            pass
         token_uri = backend.refresh_token_url()
         client_id, client_secret = backend.get_key_and_secret()
         scopes = backend.get_scope()
@@ -45,7 +45,7 @@ class Credentials(GoogleCredentials):
         )
         self.usa = usa
         # Needed for self.expired() check
-        #self.expiry = self._parse_expiry(data)
+        # self.expiry = self._parse_expiry(data)
 
     def refresh(self, request):
         """Refreshes the access token.
@@ -66,4 +66,4 @@ class Credentials(GoogleCredentials):
         data = usa.extra_data
         self.token = data['access_token']
         self._refresh_token = data['refresh_token']
-        #self.expiry = self._parse_expiry(data)
+        # self.expiry = self._parse_expiry(data)

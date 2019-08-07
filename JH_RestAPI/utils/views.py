@@ -13,14 +13,14 @@ def agreements(request):
     response = {}
     for s in slist:
         response[s['key']] = s
-    return JsonResponse(create_response(data=response), safe= False)
+    return JsonResponse(create_response(data=response), safe=False)
 
 
 @require_GET
 def countries(request):
     countries = Country.objects.all()
     slist = CountrySerializer(instance=countries, many=True).data
-    return JsonResponse(create_response(data=slist), safe= False)
+    return JsonResponse(create_response(data=slist), safe=False)
 
 
 @require_GET

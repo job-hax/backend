@@ -15,7 +15,8 @@ from .serializers import AlumniSerializer
 def alumni(request):
     user_profile = Profile.objects.get(user=request.user)
     if user_profile.user_type < int(Profile.UserTypes.student):
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                            safe=False)
     alumni_list = Profile.objects.filter(user_type=int(Profile.UserTypes.alumni), college__pk=user_profile.college.id)
 
     q = request.GET.get('q')
@@ -39,4 +40,3 @@ def alumni(request):
     serialized_alumni = AlumniSerializer(
         instance=alumni_list, many=True, context={'user': request.user}).data
     return JsonResponse(create_response(data=serialized_alumni, paginator=paginator), safe=False)
-

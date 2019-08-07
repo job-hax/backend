@@ -6,6 +6,6 @@ from company import views
 urlpatterns = [
     path('', views.companies),
     path('<int:company_pk>/positions/',
-        views.positions),
+         views.positions),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

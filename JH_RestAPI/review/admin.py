@@ -8,7 +8,7 @@ from .models import Review, CompanyEmploymentAuth
 class ReviewAdmin(admin.ModelAdmin, ExportCsv):
     list_display = ("company", "position", "user", 'created_date', "is_published")
     list_filter = ("company", "position", "user", 'created_date', "is_published")
-    actions = ["export_as_csv"] 
+    actions = ["export_as_csv"]
 
 
-admin.site.register(CompanyEmploymentAuth)    
+admin.site.register(CompanyEmploymentAuth)

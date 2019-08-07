@@ -11,7 +11,8 @@ class Migration(migrations.Migration):
     def populate_data(apps, schema_editor):
         Country = apps.get_model('utils', 'Country')
         State = apps.get_model('utils', 'State')
-        with urllib.request.urlopen("https://raw.githubusercontent.com/stefanbinder/countries-states/master/countries.json") as json_file:
+        with urllib.request.urlopen(
+                "https://raw.githubusercontent.com/stefanbinder/countries-states/master/countries.json") as json_file:
             data = json.load(json_file)
             for d in data:
                 code2 = d['code2']
@@ -20,7 +21,8 @@ class Migration(migrations.Migration):
                 capital = d['capital']
                 region = d['region']
                 subregion = d['subregion']
-                country = Country.objects.create(code2=code2,code3=code3,name=name,capital=capital,region=region,subregion=subregion)
+                country = Country.objects.create(code2=code2, code3=code3, name=name, capital=capital, region=region,
+                                                 subregion=subregion)
                 country.save()
                 for w in d['states']:
                     code = w['code']
@@ -32,7 +34,7 @@ class Migration(migrations.Migration):
                         subdivision = ''
                     state = State.objects.create(country=country, code=code, name=name, subdivision=subdivision)
                     state.save()
-                
+
     dependencies = [
         ('utils', '0003_remove_country_states'),
     ]

@@ -22,5 +22,5 @@ def majors(request):
     paginator = pagination.CustomPagination()
     majors = paginator.paginate_queryset(majors, request)
     serialized_majors = MajorSerializer(
-        instance=majors, many=True,).data
+        instance=majors, many=True, ).data
     return JsonResponse(create_response(data=serialized_majors, paginator=paginator), safe=False)

@@ -13,32 +13,34 @@ class Migration(migrations.Migration):
         JobPosition = apps.get_model('position', 'JobPosition')
         Company = apps.get_model('company', 'Company')
         for c in JobApplication.objects.all():
-            #jt is current dummy job title in the db
+            # jt is current dummy job title in the db
             jt = JobPosition.objects.all().filter(job_title=c.jobTitle)
             if jt is None or len(jt) == 0:
                 jt = JobPosition(job_title=c.jobTitle)
                 jt.save()
                 c.position = jt
             else:
-                c.position = jt[0]    
-            #try to get company detail from clear bit    
+                c.position = jt[0]
+                # try to get company detail from clear bit
             cd = get_company_detail(c.company)
             if cd is None:
                 company_title = c.company
             else:
-                company_title = cd['name']    
-            #check if the company details already exists in the db   
+                company_title = cd['name']
+                # check if the company details already exists in the db
             jc = Company.objects.all().filter(cb_name=company_title)
             if jc is None or len(jc) == 0:
-                #if company doesnt exist save it
+                # if company doesnt exist save it
                 if cd is None:
-                    jc = Company(company=c.company, company_logo=c.companyLogo, cb_name=c.company, cb_company_logo=c.companyLogo, cb_domain=None)
-                else:    
-                    jc = Company(company=c.company, company_logo=c.companyLogo, cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-                jc.save()    
-                c.companyObject = jc    
+                    jc = Company(company=c.company, company_logo=c.companyLogo, cb_name=c.company,
+                                 cb_company_logo=c.companyLogo, cb_domain=None)
+                else:
+                    jc = Company(company=c.company, company_logo=c.companyLogo, cb_name=cd['name'],
+                                 cb_company_logo=cd['logo'], cb_domain=cd['domain'])
+                jc.save()
+                c.companyObject = jc
             else:
-                c.companyObject = jc[0]    
+                c.companyObject = jc[0]
             c.save()
 
     dependencies = [

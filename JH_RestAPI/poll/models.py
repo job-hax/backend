@@ -11,7 +11,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import gettext as _
 
 User = get_user_model()
-    
+
 
 class PublishedManager(Manager):
     def get_query_set(self):
@@ -37,6 +37,7 @@ class Poll(models.Model):
 
     def get_vote_count(self):
         return Vote.objects.filter(poll=self).count()
+
     vote_count = property(fget=get_vote_count)
 
     def get_cookie_name(self):
@@ -59,6 +60,7 @@ class Item(models.Model):
 
     def get_vote_count(self):
         return Vote.objects.filter(item=self).count()
+
     vote_count = property(fget=get_vote_count)
 
 

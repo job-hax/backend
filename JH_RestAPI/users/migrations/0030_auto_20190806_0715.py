@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('users', '0029_remove_profile_first_login'),
     ]
@@ -13,6 +12,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='profile',
             name='user_type',
-            field=models.IntegerField(choices=[(0, 'NONE'), (1, 'PUBLIC'), (2, 'STUDENT'), (3, 'ALUMNI'), (4, 'CAREER SERVICE')], default=0),
+            field=models.IntegerField(
+                choices=[(0, 'NONE'), (1, 'PUBLIC'), (2, 'STUDENT'), (3, 'ALUMNI'), (4, 'CAREER SERVICE')], default=0),
         ),
     ]

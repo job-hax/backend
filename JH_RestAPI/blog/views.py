@@ -79,7 +79,8 @@ def blogs(request):
 @api_view(["GET"])
 def blog(request, blog_pk):
     blog = Blog.objects.get(pk=blog_pk)
-    return JsonResponse(create_response(BlogSerializer(instance=blog, many=False, context={'user': request.user}).data), safe=False)
+    return JsonResponse(create_response(BlogSerializer(instance=blog, many=False, context={'user': request.user}).data),
+                        safe=False)
 
 
 def do_action(request, blog_pk, type):

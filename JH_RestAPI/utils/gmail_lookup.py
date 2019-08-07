@@ -153,7 +153,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 if 'updates from' in mail_body and '</b>' in mail_body:
                     c_start_index = mail_body.index('updates from') + 16
                     c_end_index = mail_body[c_start_index: (
-                        c_start_index + 100)].index('</b>')
+                            c_start_index + 100)].index('</b>')
                     company = mail_body[c_start_index: c_start_index + c_end_index]
                 image_url = None
         elif source == 'glassdoor':
@@ -217,7 +217,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
                         ' position of ') + 13:first_parag.index('. We')]
                 elif 'application for the ' in first_parag and ', ' + company in first_parag:
                     job_title = first_parag[
-                        first_parag.index('application for the ') + 20:first_parag.index(', ' + company)]
+                                first_parag.index('application for the ') + 20:first_parag.index(', ' + company)]
         elif source == 'greenhouse.io':
             pass
         elif source == 'lever.co':

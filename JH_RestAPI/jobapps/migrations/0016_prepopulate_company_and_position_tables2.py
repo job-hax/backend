@@ -9,14 +9,14 @@ class Migration(migrations.Migration):
 
     def populate_data(apps, schema_editor):
         Company = apps.get_model('company', 'Company')
-        for c in Company.objects.all():  
-            cd = get_company_detail(c.company)  
+        for c in Company.objects.all():
+            cd = get_company_detail(c.company)
             if cd is not None:
-                c.cb_name=cd['name']
-                c.cb_company_logo=cd['logo']
-                c.cb_domain=cd['domain']
+                c.cb_name = cd['name']
+                c.cb_company_logo = cd['logo']
+                c.cb_domain = cd['domain']
                 c.save()
-                
+
     dependencies = [
         ('jobapps', '0015_auto_20190422_2356'),
     ]

@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('jobapps', '0025_delete_jobpostdetail'),
     ]
@@ -14,26 +13,31 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='jobapplication',
             name='app_source',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='jobapplication_source', to='jobapps.Source'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    related_name='jobapplication_source', to='jobapps.Source'),
         ),
         migrations.AlterField(
             model_name='jobapplication',
             name='applicationStatus',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='jobapplication_applicationStatus', to='jobapps.ApplicationStatus'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    related_name='jobapplication_applicationStatus', to='jobapps.ApplicationStatus'),
         ),
         migrations.AlterField(
             model_name='jobapplication',
             name='companyObject',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='jobapplication_company', to='company.Company'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    related_name='jobapplication_company', to='company.Company'),
         ),
         migrations.AlterField(
             model_name='jobapplication',
             name='position',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='jobapplication_position', to='position.JobPosition'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    related_name='jobapplication_position', to='position.JobPosition'),
         ),
         migrations.AlterField(
             model_name='statushistory',
             name='applicationStatus',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='statushistory_applicationStatus', to='jobapps.ApplicationStatus'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    related_name='statushistory_applicationStatus', to='jobapps.ApplicationStatus'),
         ),
     ]

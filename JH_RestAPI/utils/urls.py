@@ -7,6 +7,6 @@ urlpatterns = [
     path('agreements/', views.agreements),
     path('countries/', views.countries),
     path('countries/<int:country_pk>/states/',
-        views.states),
+         views.states),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

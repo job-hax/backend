@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('users', '0030_auto_20190806_0715'),
     ]
@@ -14,6 +13,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='profile',
             name='profile_photo_custom',
-            field=models.FileField(blank=True, null=True, storage=django.core.files.storage.FileSystemStorage(location='/Users/hellsayenci/Documents/web_projects/JobHax/JobHaxBackend/JH_RestAPI/media/user'), upload_to=''),
+            field=models.FileField(blank=True, null=True, storage=django.core.files.storage.FileSystemStorage(
+                location='/Users/hellsayenci/Documents/web_projects/JobHax/JobHaxBackend/JH_RestAPI/media/user'),
+                                   upload_to=''),
         ),
     ]

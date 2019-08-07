@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('jobapps', '0011_auto_20190210_1053'),
     ]
@@ -20,7 +19,8 @@ class Migration(migrations.Migration):
                 ('description', models.TextField(blank=True, null=True)),
                 ('created_date', models.DateTimeField(blank=True, default=datetime.datetime.now)),
                 ('update_date', models.DateTimeField(blank=True, null=True)),
-                ('job_post', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='jobapps.JobApplication')),
+                ('job_post', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                               to='jobapps.JobApplication')),
             ],
         ),
     ]

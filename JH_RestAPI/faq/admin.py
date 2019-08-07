@@ -10,6 +10,7 @@ from .models import *
 
 class FaqAdmin(admin.ModelAdmin):
     list_display = ('title', 'is_published')
-    #inlines = [FaqItemInline,]
+    # inlines = [FaqItemInline,]
+
 
 admin.site.register(Faq, FaqAdmin)

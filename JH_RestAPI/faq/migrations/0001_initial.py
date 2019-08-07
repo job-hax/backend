@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -33,7 +32,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('value', models.CharField(max_length=250, verbose_name='value')),
                 ('position', models.SmallIntegerField(default=0, verbose_name='position')),
-                ('faq', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='faq.Faq')),
+                ('faq',
+                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='faq.Faq')),
             ],
             options={
                 'verbose_name': 'items',

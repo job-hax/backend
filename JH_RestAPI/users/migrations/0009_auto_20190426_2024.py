@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('users', '0008_feedback'),
     ]
@@ -14,6 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='feedback',
             name='star',
-            field=models.IntegerField(blank=True, null=True, validators=[django.core.validators.MaxValueValidator(5), django.core.validators.MinValueValidator(0)]),
+            field=models.IntegerField(blank=True, null=True, validators=[django.core.validators.MaxValueValidator(5),
+                                                                         django.core.validators.MinValueValidator(0)]),
         ),
     ]

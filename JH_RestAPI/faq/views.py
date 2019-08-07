@@ -10,4 +10,4 @@ from .serializers import FaqSerializer
 def faqs(request):
     faq = Faq.objects.filter(is_published=True)
     list = FaqSerializer(instance=faq, many=True).data
-    return JsonResponse(create_response(data=list), safe= False)
+    return JsonResponse(create_response(data=list), safe=False)

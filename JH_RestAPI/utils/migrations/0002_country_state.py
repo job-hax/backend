@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('utils', '0001_initial'),
     ]
@@ -22,7 +21,9 @@ class Migration(migrations.Migration):
                 ('capital', models.CharField(blank=True, max_length=200)),
                 ('region', models.CharField(blank=True, max_length=200)),
                 ('subregion', models.CharField(blank=True, max_length=200)),
-                ('states', django.contrib.postgres.fields.ArrayField(base_field=django.contrib.postgres.fields.jsonb.JSONField(), size=None)),
+                ('states',
+                 django.contrib.postgres.fields.ArrayField(base_field=django.contrib.postgres.fields.jsonb.JSONField(),
+                                                           size=None)),
             ],
             options={
                 'ordering': ['name'],
@@ -35,7 +36,8 @@ class Migration(migrations.Migration):
                 ('code', models.CharField(blank=True, max_length=20)),
                 ('name', models.CharField(blank=True, max_length=200)),
                 ('subdivision', models.CharField(blank=True, max_length=200)),
-                ('country', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='utils.Country')),
+                ('country', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                              to='utils.Country')),
             ],
             options={
                 'ordering': ['name'],

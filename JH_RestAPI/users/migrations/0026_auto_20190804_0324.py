@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('college', '0004_auto_20190804_0034'),
         ('company', '0002_auto_20190429_2110'),
@@ -17,12 +16,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='profile',
             name='college',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='college.College'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    to='college.College'),
         ),
         migrations.AddField(
             model_name='profile',
             name='company',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='company.Company'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    to='company.Company'),
         ),
         migrations.AddField(
             model_name='profile',
@@ -32,11 +33,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='profile',
             name='job_position',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='position.JobPosition'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    to='position.JobPosition'),
         ),
         migrations.AddField(
             model_name='profile',
             name='major',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='college.Major'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                    to='college.Major'),
         ),
     ]

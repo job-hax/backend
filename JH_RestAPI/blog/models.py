@@ -10,7 +10,7 @@ class Blog(models.Model):
         Profile, on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=50)
     snippet = models.CharField(null=True, max_length=400, validators=[
-                               MinLengthValidator(250)])
+        MinLengthValidator(250)])
     header_image = models.FileField(blank=True, null=True)
     view_count = models.IntegerField(default=0)
     content = models.TextField()

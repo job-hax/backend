@@ -34,7 +34,7 @@ def get_jobapps(request):
         user_job_apps = JobApplication.objects.filter(
             user_id=request.user.id, isDeleted=False).order_by('-applyDate')
     joblist = JobApplicationSerializer(instance=user_job_apps, many=True, context={
-                                       'user': request.user}).data
+        'user': request.user}).data
     return JsonResponse(create_response(data=joblist), safe=False)
 
 
@@ -49,7 +49,7 @@ def get_new_jobapps(request):
     time = datetime.fromtimestamp(int(timestamp))
     user_job_apps = JobApplication.objects.filter(created__gte=time)
     joblist = JobApplicationSerializer(instance=user_job_apps, many=True, context={
-                                       'user': request.user}).data
+        'user': request.user}).data
     response = {'data': joblist, 'synching': profile.synching}
     return JsonResponse(create_response(data=response), safe=False)
 
@@ -139,8 +139,10 @@ def get_jobapp_notes(request):
 @api_view(["POST"])
 def update_jobapp_note(request):
     body = request.data
-    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'jobapp_note') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'],
+                                                            'jobapp_note') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
+                            safe=False)
 
     jobapp_note_id = body['jobapp_note_id']
     description = body['description']
@@ -199,8 +201,10 @@ def delete_jobapp_note(request):
 @api_view(["POST"])
 def add_jobapp_note(request):
     body = request.data
-    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'jobapp_note') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'],
+                                                            'jobapp_note') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
+                            safe=False)
 
     jobapp_id = body['jobapp_id']
     description = body['description']
@@ -261,8 +265,9 @@ def update_jobapp(request):
                     else:
                         new_status = ApplicationStatus.objects.filter(pk=status_id)
                         if new_status.count() == 0:
-                            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
-                                                safe=False)
+                            return JsonResponse(
+                                create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                                safe=False)
                         else:
                             if rejected is None:
                                 user_job_app.applicationStatus = new_status[0]
@@ -276,7 +281,7 @@ def update_jobapp(request):
                         user_job_app.rejected_date = datetime.now()
                     user_job_app.updated_date = datetime.now()
                     user_job_app.save()
-                #else:
+                # else:
                 #    success = False
                 #    code = ResponseCodes.record_not_found
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
@@ -307,7 +312,7 @@ def delete_jobapp(request):
                     user_job_app.deleted_date = datetime.now()
                     user_job_app.isDeleted = True
                     user_job_app.save()
-                #else:
+                # else:
                 #    success = False
                 #    code = ResponseCodes.record_not_found
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
@@ -317,8 +322,10 @@ def delete_jobapp(request):
 @api_view(["POST"])
 def add_jobapp(request):
     body = request.data
-    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'add_job') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'],
+                                                            'add_job') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
+                            safe=False)
 
     job_title = body['job_title']
     company = body['company']
@@ -332,7 +339,7 @@ def add_jobapp(request):
         jt.save()
     else:
         jt = jt[0]
-     # check if the company details already exists in the db
+    # check if the company details already exists in the db
     cd = get_company_detail(company)
     if cd is None:
         company_title = company
@@ -360,7 +367,9 @@ def add_jobapp(request):
                           msgId='', app_source=source, user=request.user)
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
     japp.save()
-    return JsonResponse(create_response(data=JobApplicationSerializer(instance=japp, many=False, context={'user': request.user}).data), safe=False)
+    return JsonResponse(
+        create_response(data=JobApplicationSerializer(instance=japp, many=False, context={'user': request.user}).data),
+        safe=False)
 
 
 @csrf_exempt
@@ -369,7 +378,8 @@ def edit_jobapp(request):
     body = request.data
     jobapp_id = body.get('jobapp_id')
     if jobapp_id is None:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                            safe=False)
     user_job_app = JobApplication.objects.filter(pk=jobapp_id)
     if user_job_app.count() == 0:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
@@ -389,7 +399,7 @@ def edit_jobapp(request):
     source = body.get('source')
 
     if applicationdate is not None:
-        user_job_app.applyDate =applicationdate
+        user_job_app.applyDate = applicationdate
 
     if job_title is not None:
         # jt is current dummy job title in the db
@@ -430,7 +440,9 @@ def edit_jobapp(request):
         user_job_app.app_source = source
     user_job_app.updated_date = datetime.now()
     user_job_app.save()
-    return JsonResponse(create_response(data=JobApplicationSerializer(instance=user_job_app, many=False, context={'user': request.user}).data), safe=False)
+    return JsonResponse(create_response(
+        data=JobApplicationSerializer(instance=user_job_app, many=False, context={'user': request.user}).data),
+                        safe=False)
 
 
 @csrf_exempt
@@ -532,7 +544,8 @@ def add_contact(request):
     jobapp_id = body.get('jobapp_id')
     name = body.get('name')
     if jobapp_id is None or name is None:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                            safe=False)
     try:
         user_job_app = JobApplication.objects.get(pk=jobapp_id)
         if user_job_app.user == request.user:
@@ -572,14 +585,16 @@ def add_contact(request):
                     jc = jc[0]
 
             contact = Contact(
-                job_post=user_job_app, name=name, phone_number=phone_number, linkedin_url=linkedin_url,description=description,
+                job_post=user_job_app, name=name, phone_number=phone_number, linkedin_url=linkedin_url,
+                description=description,
                 position=jt, company=jc)
             contact.save()
             data = ContactSerializer(
                 instance=contact, many=False).data
             return JsonResponse(create_response(data=data), safe=False)
         else:
-            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                                safe=False)
     except Exception as e:
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),

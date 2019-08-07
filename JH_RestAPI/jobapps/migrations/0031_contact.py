@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('company', '0002_auto_20190429_2110'),
         ('position', '0003_auto_20190510_2037'),
@@ -21,14 +20,20 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50)),
-                ('phone_number', models.CharField(blank=True, max_length=17, validators=[django.core.validators.RegexValidator(message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.", regex='^\\+?1?\\d{9,15}$')])),
+                ('phone_number', models.CharField(blank=True, max_length=17, validators=[
+                    django.core.validators.RegexValidator(
+                        message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.",
+                        regex='^\\+?1?\\d{9,15}$')])),
                 ('linkedin_url', models.CharField(max_length=100)),
                 ('description', models.TextField(blank=True, null=True)),
                 ('created_date', models.DateTimeField(blank=True, default=datetime.datetime.now)),
                 ('update_date', models.DateTimeField(blank=True, default=datetime.datetime.now, null=True)),
-                ('company', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='contact_company', to='company.Company')),
-                ('job_post', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='jobapps.JobApplication')),
-                ('position', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='contact_position', to='position.JobPosition')),
+                ('company', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                              related_name='contact_company', to='company.Company')),
+                ('job_post', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                               to='jobapps.JobApplication')),
+                ('position', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL,
+                                               related_name='contact_position', to='position.JobPosition')),
             ],
         ),
     ]

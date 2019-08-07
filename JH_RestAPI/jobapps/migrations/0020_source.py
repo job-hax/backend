@@ -9,21 +9,28 @@ class Migration(migrations.Migration):
     def migrate_sources(apps, schema_editor):
         Source = apps.get_model('jobapps', 'Source')
         JobApplication = apps.get_model('jobapps', 'JobApplication')
-        #Create parselable sources to DB
-        linkedIn = Source.objects.create(value='LinkedIn', gmail_key='from:jobs-listings@linkedin.com AND subject:You applied for', system=True)
-        hired = Source.objects.create(value='Hired.com', gmail_key='from:reply@hired.com AND subject:Interview Request', system=True)
-        indeed = Source.objects.create(value='Indeed', gmail_key='from:indeedapply@indeed.com AND subject:Indeed Application', system=True)
-        vettery = Source.objects.create(value='Vettery', gmail_key='from:@connect.vettery.com AND subject:Interview Request', system=True)
-            
+        # Create parselable sources to DB
+        linkedIn = Source.objects.create(value='LinkedIn',
+                                         gmail_key='from:jobs-listings@linkedin.com AND subject:You applied for',
+                                         system=True)
+        hired = Source.objects.create(value='Hired.com', gmail_key='from:reply@hired.com AND subject:Interview Request',
+                                      system=True)
+        indeed = Source.objects.create(value='Indeed',
+                                       gmail_key='from:indeedapply@indeed.com AND subject:Indeed Application',
+                                       system=True)
+        vettery = Source.objects.create(value='Vettery',
+                                        gmail_key='from:@connect.vettery.com AND subject:Interview Request',
+                                        system=True)
+
         for c in JobApplication.objects.all():
             if c.source == 'LinkedIn':
                 c.app_source = linkedIn
             if c.source == 'Hired.com':
-                c.app_source = hired   
+                c.app_source = hired
             if c.source == 'Indeed':
-                c.app_source = indeed  
+                c.app_source = indeed
             if c.source == 'Vettery':
-                c.app_source = vettery     
+                c.app_source = vettery
             c.save()
 
     dependencies = [
@@ -43,7 +50,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='jobapplication',
             name='app_source',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='jobapplication_source', to='jobapps.Source'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING,
+                                    related_name='jobapplication_source', to='jobapps.Source'),
         ),
         migrations.RunPython(migrate_sources, reverse_code=migrations.RunPython.noop)
     ]

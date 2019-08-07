@@ -6,8 +6,8 @@ from poll import views
 urlpatterns = [
     path('', views.polls),
     path('<int:poll_pk>/vote/',
-        views.vote),
+         views.vote),
     path('<int:poll_pk>/result/',
-        views.result),
+         views.result),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

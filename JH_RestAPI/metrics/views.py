@@ -441,12 +441,13 @@ def agg_detailed(request):
                         data[j] = count[0]['count']
                 serie['data'] = data
                 serie['type'] = "line"
-                #serie['stack'] = 'Source'
+                # serie['stack'] = 'Source'
                 item['graph']['series'].append(serie)
 
             total = 0
             for idx, month in enumerate(months):
-                apps = JobApplication.objects.filter(applyDate__year=month.year, applyDate__month=month.month, isDeleted=False)
+                apps = JobApplication.objects.filter(applyDate__year=month.year, applyDate__month=month.month,
+                                                     isDeleted=False)
                 item['list']['data'].append(
                     {'id': months_string[idx] + ' ' + str(month.year), 'value': apps.count()})
                 total += apps.count()
@@ -644,7 +645,8 @@ def agg_generic(request):
             item['value'] = total_user_count
             total_application = JobApplication.objects.all().count()
             total_average = total_application / total_user_count
-            item['description'] = 'Average ' + str(round(total_average, 2)) + ' & ' + 'Total ' + str(total_application) + ' Jobs'
+            item['description'] = 'Average ' + str(round(total_average, 2)) + ' & ' + 'Total ' + str(
+                total_application) + ' Jobs'
 
             today = datetime.date.today() + relativedelta(days=+1)
             last_year = datetime.date.today() + relativedelta(years=-2)
@@ -669,7 +671,7 @@ def agg_generic(request):
                     if j == 0:
                         data[j] = count[0]['count']
                     else:
-                        data[j] = data[j-1] + count[0]['count']
+                        data[j] = data[j - 1] + count[0]['count']
             serie['data'] = data
             item['graph']['series'].append(serie)
         response.append(item)

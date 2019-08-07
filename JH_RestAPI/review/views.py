@@ -1,4 +1,3 @@
-from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -22,17 +21,21 @@ from .serializers import ReviewSerializer
 def add_or_update_review(request):
     body = request.data
     user = request.user
-    if 'recaptcha_token' in body and utils.verify_recaptcha(user, body['recaptcha_token'], 'review') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(user, body['recaptcha_token'],
+                                                            'review') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
+                            safe=False)
 
     if 'company_id' not in body or 'position_id' not in body:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                            safe=False)
     company = Company.objects.get(pk=body['company_id'])
     position = JobPosition.objects.get(pk=body['position_id'])
     if 'review_id' in body:
         review = Review.objects.get(pk=body['review_id'])
         if review.user.pk != user.pk:
-            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                                safe=False)
     else:
         review = Review()
     review.company = company
@@ -82,7 +85,7 @@ def add_or_update_review(request):
     response = {}
     response['review'] = ReviewSerializer(instance=review, many=False).data
     response['company'] = CompanySerializer(instance=company, many=False, context={
-                                            'user': request.user, 'position': position}).data
+        'user': request.user, 'position': position}).data
     return JsonResponse(create_response(data=response), safe=False)
 
 
@@ -96,10 +99,12 @@ def get_reviews(request):
     if review_id is not None:
         reviews = Review.objects.filter(pk=review_id, user=request.user)
         if reviews.count() == 0:
-            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                                safe=False)
         return JsonResponse(create_response(data=ReviewSerializer(instance=reviews[0], many=False).data), safe=False)
     elif company_id is None and position_id is None:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                            safe=False)
     if company_id is None:
         reviews = Review.objects.filter(Q(is_published=True) | Q(
             user=request.user), position__pk=position_id)
@@ -114,7 +119,8 @@ def get_reviews(request):
             reviews = Review.objects.filter(
                 user=request.user, position__pk=position_id, company__pk=company_id)
             if reviews.count() > 0:
-                return JsonResponse(create_response(data=ReviewSerializer(instance=reviews[0], many=False).data), safe=False)
+                return JsonResponse(create_response(data=ReviewSerializer(instance=reviews[0], many=False).data),
+                                    safe=False)
             else:
                 return JsonResponse(create_response(data=None), safe=False)
     return JsonResponse(create_response(data=ReviewSerializer(instance=reviews, many=True).data), safe=False)

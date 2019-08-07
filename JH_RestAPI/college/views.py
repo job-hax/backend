@@ -23,7 +23,7 @@ def colleges(request):
     paginator = pagination.CustomPagination()
     colleges = paginator.paginate_queryset(colleges, request)
     serialized_colleges = CollegeSerializer(
-        instance=colleges, many=True,).data
+        instance=colleges, many=True, ).data
     return JsonResponse(create_response(data=serialized_colleges, paginator=paginator), safe=False)
 
 

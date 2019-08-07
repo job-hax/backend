@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('jobapps', '0001_initial'),
@@ -20,8 +19,10 @@ class Migration(migrations.Migration):
                 ('subject', models.CharField(max_length=200)),
                 ('body', models.TextField(blank=True, null=True)),
                 ('date', models.CharField(max_length=50)),
-                ('job_post', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='jobapps.JobApplication')),
-                ('user', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('job_post', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                               to='jobapps.JobApplication')),
+                ('user', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE,
+                                           to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]
