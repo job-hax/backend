@@ -489,9 +489,8 @@ def link_social_account(request):
         if provider == 'google-oauth2':
             profile = Profile.objects.get(user=request.user)
             profile.is_gmail_read_ok = True
-            profile.synching = True
             profile.save()
-            scheduleFetcher(request.user.id)
+            schedule_fetcher(request.user.id)
         profile = Profile.objects.get(user=request.user)
         return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
@@ -529,17 +528,19 @@ def auth_social_user(request):
         user.save()
         if provider == 'google-oauth2':
             profile.is_gmail_read_ok = True
-            profile.synching = True
             profile.save()
-            scheduleFetcher(user.id)
+            schedule_fetcher(user.id)
     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
 
 
 @background(schedule=1)
-def scheduleFetcher(user_id):
+def schedule_fetcher(user_id):
     User = get_user_model()
     user = User.objects.get(pk=user_id)
     if user.social_auth.filter(provider='google-oauth2'):
+        profile = Profile.objects.get(user=user)
+        profile.synching = True
+        profile.save()
         fetchJobApplications(user)
 
 
@@ -553,10 +554,9 @@ def sync_user_emails(request):
     # refs. https://medium.com/@robinttt333/running-background-tasks-in-django-f4c1d3f6f06e
     # https://django-background-tasks.readthedocs.io/en/latest/
     # https://stackoverflow.com/questions/41205607/how-to-activate-the-process-queue-in-django-background-tasks
-    # scheduleFetcher.now(request.user.id)
-    profile.synching = True
+    # schedule_fetcher.now(request.user.id)
     profile.save()
-    scheduleFetcher(request.user.id)
+    schedule_fetcher(request.user.id)
     return JsonResponse(create_response(data=None), safe=False)
 
 
@@ -617,9 +617,8 @@ def update_gmail_token(request):
             profile.save()
             code = ResponseCodes.success
             profile = Profile.objects.get(user=request.user)
-            profile.synching = True
             profile.save()
-            scheduleFetcher(request.user.id)
+            schedule_fetcher(request.user.id)
         else:
             success = False
             code = ResponseCodes.user_profile_not_found
