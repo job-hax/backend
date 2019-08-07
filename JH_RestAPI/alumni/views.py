@@ -22,6 +22,7 @@ def alumni(request):
     q = request.GET.get('q')
     year = request.GET.get('year')
     major_id = request.GET.get('major_id')
+    company_id = request.GET.get('company_id')
     country_id = request.GET.get('country_id')
     state_id = request.GET.get('state_id')
     if q is not None and len(q) > 3:
@@ -30,6 +31,8 @@ def alumni(request):
         alumni_list = alumni_list.filter(grad_year__gte=year)
     if major_id is not None:
         alumni_list = alumni_list.filter(major__pk=major_id)
+    if company_id is not None:
+        alumni_list = alumni_list.filter(company__pk=company_id)
     if country_id is not None:
         alumni_list = alumni_list.filter(country__pk=country_id)
     if state_id is not None:
