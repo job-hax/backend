@@ -7,5 +7,7 @@ urlpatterns = [
     path('', views.colleges),
     path('majors',
          views.majors),
+    path('companies',
+         views.companies),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
