@@ -1,12 +1,8 @@
-import json
 from utils.error_codes import ResponseCodes
 
 
 def create_response(data=None, success=True, paginator=None, error_code=ResponseCodes.success):
-    response = {}
-    response['success'] = success
-    response['error_code'] = int(error_code.value)
-    response['error_message'] = get_error_message(error_code)
+    response = {'success': success, 'error_code': int(error_code.value), 'error_message': get_error_message(error_code)}
     if paginator is not None:
         response['pagination'] = {}
         response['pagination']['current_page'] = paginator.page.number
@@ -60,6 +56,10 @@ def get_error_message(error_code):
         return 'Blog could not be found...'
     elif error_code == ResponseCodes.invalid_username:
         return 'Invalid username...'
+    elif error_code == ResponseCodes.account_already_linked:
+        return 'Account already linked...'
+    elif error_code == ResponseCodes.not_supported_user:
+        return 'User not supported for this action...'
     elif error_code == ResponseCodes.verify_recaptcha_failed:
         return 'You didn\'t pass reCAPTCHA challenge! You\'ll need to sigin again!'
     return 'Unknown error'

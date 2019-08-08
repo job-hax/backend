@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('jobapps', '0014_prepopulate_company_and_position_tables'),
     ]

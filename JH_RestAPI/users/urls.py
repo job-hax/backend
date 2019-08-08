@@ -1,7 +1,5 @@
 from django.urls import path
-from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
-from django.urls import reverse
 
 from users import views
 
@@ -9,6 +7,7 @@ urlpatterns = [
     path('register', views.register, name='register'),
     path('login', views.login, name='login'),
     path('logout', views.logout, name='logout'),
+    path('check_credentials', views.check_credentials, name='check_credentials'),
     path('activate', views.activate_user, name='activate'),
     path('forgot_password', views.forgot_password, name='forgot_password'),
     path('check_forgot_password', views.check_forgot_password,
@@ -25,6 +24,7 @@ urlpatterns = [
     path('get_employment_auths', views.get_employment_auths,
          name='get_employment_auths'),
     path('auth_social_user', views.auth_social_user, name='auth_social_user'),
+    path('link_social_account', views.link_social_account, name='link_social_account'),
     path('get_profile', views.get_profile, name='get_profile'),
     path('refresh_token', views.refresh_token, name='refresh_token'),
     path('sync_user_emails', views.sync_user_emails, name='sync_user_emails'),

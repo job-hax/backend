@@ -16,12 +16,14 @@ initdb /usr/local/var/postgres
 pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
 ```
 
-3. Add the variables below to your environment variables (all optional but you need to add them to use these features):
+3. Add the variables below to your environment variables (all optional except LinkedIn keys but you need to add them to use these features):
 ```
 export JOBHAX_CLEARBIT_KEY=/*key*/ # to get/verify company logo&name from ClearBit API.
 export EMAIL_HOST_USER=/*test@gmail.com*/ # to send activation or reset password email to the user (should be Google Mail)
 export EMAIL_HOST_PASSWORD=/*password*/  # to send activation or reset password email to the user
 export JOBHAX_RECAPTCHA_SECRET=/*recaptcha_secret*/ # to verify recaptcha token coming from the user request
+export JOBHAX_LINKEDIN_CLIENT_KEY=/*linkedin application client_id*/ #to generate access_token from linkedin
+export JOBHAX_LINKEDIN_CLIENT_SECRET=/*linkedin application client_secret*/ #to generate access_token from linkedin
 ```
 [How to add variables to your Environment Variables](https://medium.com/@himanshuagarwal1395/setting-up-environment-variables-in-macos-sierra-f5978369b255)
 

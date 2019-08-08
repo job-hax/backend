@@ -1,19 +1,18 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-from jobapps.models import JobApplication
-from jobapps.models import ApplicationStatus
-from users.models import Profile
-from jobapps.models import Source
-from django.views.decorators.http import require_GET
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
-from django.db.models import Q
-from django.db.models import F
-from django.db.models import Count
-from utils.generic_json_creator import create_response
 import datetime
+
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
+from django.db.models import Count
+from django.db.models import F
+from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+
+from jobapps.models import ApplicationStatus
+from jobapps.models import JobApplication
+from jobapps.models import Source
+from utils.generic_json_creator import create_response
 
 
 @csrf_exempt
@@ -442,12 +441,13 @@ def agg_detailed(request):
                         data[j] = count[0]['count']
                 serie['data'] = data
                 serie['type'] = "line"
-                #serie['stack'] = 'Source'
+                # serie['stack'] = 'Source'
                 item['graph']['series'].append(serie)
 
             total = 0
             for idx, month in enumerate(months):
-                apps = JobApplication.objects.filter(applyDate__year=month.year, applyDate__month=month.month, isDeleted=False)
+                apps = JobApplication.objects.filter(applyDate__year=month.year, applyDate__month=month.month,
+                                                     isDeleted=False)
                 item['list']['data'].append(
                     {'id': months_string[idx] + ' ' + str(month.year), 'value': apps.count()})
                 total += apps.count()
@@ -645,7 +645,8 @@ def agg_generic(request):
             item['value'] = total_user_count
             total_application = JobApplication.objects.all().count()
             total_average = total_application / total_user_count
-            item['description'] = 'Average ' + str(round(total_average, 2)) + ' & ' + 'Total ' + str(total_application) + ' Jobs'
+            item['description'] = 'Average ' + str(round(total_average, 2)) + ' & ' + 'Total ' + str(
+                total_application) + ' Jobs'
 
             today = datetime.date.today() + relativedelta(days=+1)
             last_year = datetime.date.today() + relativedelta(years=-2)
@@ -670,7 +671,7 @@ def agg_generic(request):
                     if j == 0:
                         data[j] = count[0]['count']
                     else:
-                        data[j] = data[j-1] + count[0]['count']
+                        data[j] = data[j - 1] + count[0]['count']
             serie['data'] = data
             item['graph']['series'].append(serie)
         response.append(item)

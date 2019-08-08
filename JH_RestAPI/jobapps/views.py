@@ -1,24 +1,27 @@
+import traceback
+from datetime import datetime
+
 from django.http import JsonResponse
-from utils.generic_json_creator import create_response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
-from .models import Source
-from .models import JobApplicationNote
+
+from company.utils import get_or_create_company
+from position.utils import get_or_insert_position
 from users.models import Profile
-from position.models import JobPosition
-from company.models import Company
-from utils.clearbit_company_checker import get_company_detail
-from .serializers import JobApplicationSerializer, ContactSerializer
-from .serializers import ApplicationStatusSerializer
-from .serializers import StatusHistorySerializer
-from .serializers import JobApplicationNoteSerializer
-from .serializers import SourceSerializer
-from utils.logger import log
-from datetime import datetime
-from utils.error_codes import ResponseCodes
-import traceback
 from utils import utils
+from utils.error_codes import ResponseCodes
+from utils.generic_json_creator import create_response
+from utils.logger import log
+from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
+from .models import JobApplicationNote
+from .models import Source
+from users.models import Profile
+from alumni.serializers import AlumniSerializer
+from .serializers import ApplicationStatusSerializer
+from .serializers import JobApplicationNoteSerializer
+from .serializers import JobApplicationSerializer, ContactSerializer
+from .serializers import SourceSerializer
+from .serializers import StatusHistorySerializer
 
 
 @csrf_exempt
@@ -32,7 +35,7 @@ def get_jobapps(request):
         user_job_apps = JobApplication.objects.filter(
             user_id=request.user.id, isDeleted=False).order_by('-applyDate')
     joblist = JobApplicationSerializer(instance=user_job_apps, many=True, context={
-                                       'user': request.user}).data
+        'user': request.user}).data
     return JsonResponse(create_response(data=joblist), safe=False)
 
 
@@ -40,13 +43,14 @@ def get_jobapps(request):
 @api_view(["GET"])
 def get_new_jobapps(request):
     timestamp = request.GET.get('timestamp')
+    timestamp = int(timestamp) / 1000
     if timestamp is None:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters))
     profile = Profile.objects.get(user=request.user)
     time = datetime.fromtimestamp(int(timestamp))
     user_job_apps = JobApplication.objects.filter(created__gte=time)
     joblist = JobApplicationSerializer(instance=user_job_apps, many=True, context={
-                                       'user': request.user}).data
+        'user': request.user}).data
     response = {'data': joblist, 'synching': profile.synching}
     return JsonResponse(create_response(data=response), safe=False)
 
@@ -94,19 +98,27 @@ def get_contacts(request):
     jobapp_id = request.GET.get('jobapp_id')
     success = True
     code = ResponseCodes.success
-    slist = []
+    data = {}
     if jobapp_id is None:
         success = False
         code = ResponseCodes.invalid_parameters
     else:
         contacts = Contact.objects.filter(job_post__pk=jobapp_id)
-        try:
-            slist = ContactSerializer(instance=contacts, many=True).data
-        except Exception as e:
-            log(traceback.format_exception(None, e, e.__traceback__), 'e')
-            success = False
-            code = ResponseCodes.record_not_found
-    return JsonResponse(create_response(data=slist, success=success, error_code=code), safe=False)
+        list = ContactSerializer(instance=contacts, many=True).data
+
+        data['contacts'] = list
+
+        user_profile = Profile.objects.get(user=request.user)
+        if user_profile.user_type < int(Profile.UserTypes.student):
+            alumni = []
+        else:
+            jobapp = JobApplication.objects.get(pk=jobapp_id)
+            alumni_list = Profile.objects.filter(college=user_profile.college, company=jobapp.companyObject, user_type=int(Profile.UserTypes.alumni))
+            print(alumni_list)
+            alumni = AlumniSerializer(
+                instance=alumni_list, many=True, context={'user': request.user}).data
+        data['alumni'] = alumni
+    return JsonResponse(create_response(data=data, success=success, error_code=code), safe=False)
 
 
 @csrf_exempt
@@ -136,8 +148,10 @@ def get_jobapp_notes(request):
 @api_view(["POST"])
 def update_jobapp_note(request):
     body = request.data
-    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'jobapp_note') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'],
+                                                            'jobapp_note') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
+                            safe=False)
 
     jobapp_note_id = body['jobapp_note_id']
     description = body['description']
@@ -196,8 +210,10 @@ def delete_jobapp_note(request):
 @api_view(["POST"])
 def add_jobapp_note(request):
     body = request.data
-    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'jobapp_note') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'],
+                                                            'jobapp_note') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
+                            safe=False)
 
     jobapp_id = body['jobapp_id']
     description = body['description']
@@ -232,46 +248,51 @@ def update_jobapp(request):
     body = request.data
     status_id = body.get('status_id')
     rejected = body.get('rejected')
-    jobapp_id = body.get('jobapp_id')
+    jobapp_ids = []
+    if 'jobapp_ids' in body:
+        jobapp_ids = body['jobapp_ids']
+    if 'jobapp_id' in body:
+        jobapp_ids.append(body['jobapp_id'])
     success = True
     code = ResponseCodes.success
-    if jobapp_id is None:
+    if len(jobapp_ids) == 0:
         success = False
         code = ResponseCodes.record_not_found
     elif rejected is None and status_id is None:
         success = False
         code = ResponseCodes.record_not_found
     else:
-        user_job_app = JobApplication.objects.filter(pk=jobapp_id)
-        if len(user_job_app) == 0:
+        user_job_apps = JobApplication.objects.filter(pk__in=jobapp_ids)
+        if user_job_apps.count() == 0:
             success = False
             code = ResponseCodes.record_not_found
         else:
-            user_job_app = user_job_app[0]
-            if user_job_app.user == request.user:
-                if status_id is None:
-                    user_job_app.isRejected = rejected
-                else:
-                    new_status = ApplicationStatus.objects.filter(pk=status_id)
-                    if len(new_status) == 0:
-                        success = False
-                        code = ResponseCodes.record_not_found
+            for user_job_app in user_job_apps:
+                if user_job_app.user == request.user:
+                    if status_id is None:
+                        user_job_app.isRejected = rejected
                     else:
-                        if rejected is None:
-                            user_job_app.applicationStatus = new_status[0]
+                        new_status = ApplicationStatus.objects.filter(pk=status_id)
+                        if new_status.count() == 0:
+                            return JsonResponse(
+                                create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                                safe=False)
                         else:
-                            user_job_app.applicationStatus = new_status[0]
-                            user_job_app.isRejected = rejected
-                        status_history = StatusHistory(
-                            job_post=user_job_app, applicationStatus=new_status[0])
-                        status_history.save()
-                if rejected is not None:
-                    user_job_app.rejected_date = datetime.now()
-                user_job_app.updated_date = datetime.now()
-                user_job_app.save()
-            else:
-                success = False
-                code = ResponseCodes.record_not_found
+                            if rejected is None:
+                                user_job_app.applicationStatus = new_status[0]
+                            else:
+                                user_job_app.applicationStatus = new_status[0]
+                                user_job_app.isRejected = rejected
+                            status_history = StatusHistory(
+                                job_post=user_job_app, applicationStatus=new_status[0])
+                            status_history.save()
+                    if rejected is not None:
+                        user_job_app.rejected_date = datetime.now()
+                    user_job_app.updated_date = datetime.now()
+                    user_job_app.save()
+                # else:
+                #    success = False
+                #    code = ResponseCodes.record_not_found
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
 
 
@@ -279,26 +300,30 @@ def update_jobapp(request):
 @api_view(["POST"])
 def delete_jobapp(request):
     body = request.data
-    jobapp_id = body['jobapp_id']
+    jobapp_ids = []
+    if 'jobapp_ids' in body:
+        jobapp_ids = body['jobapp_ids']
+    if 'jobapp_id' in body:
+        jobapp_ids.append(body['jobapp_id'])
     success = True
     code = ResponseCodes.success
-    if jobapp_id is None:
+    if len(jobapp_ids) == 0:
         success = False
         code = ResponseCodes.record_not_found
     else:
-        user_job_app = JobApplication.objects.filter(pk=jobapp_id)
-        if len(user_job_app) == 0:
+        user_job_apps = JobApplication.objects.filter(pk__in=jobapp_ids)
+        if user_job_apps.count() == 0:
             success = False
             code = ResponseCodes.record_not_found
         else:
-            user_job_app = user_job_app[0]
-            if user_job_app.user == request.user:
-                user_job_app.deleted_date = datetime.now()
-                user_job_app.isDeleted = True
-                user_job_app.save()
-            else:
-                success = False
-                code = ResponseCodes.record_not_found
+            for user_job_app in user_job_apps:
+                if user_job_app.user == request.user:
+                    user_job_app.deleted_date = datetime.now()
+                    user_job_app.isDeleted = True
+                    user_job_app.save()
+                # else:
+                #    success = False
+                #    code = ResponseCodes.record_not_found
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
 
 
@@ -306,39 +331,20 @@ def delete_jobapp(request):
 @api_view(["POST"])
 def add_jobapp(request):
     body = request.data
-    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'], 'add_job') == ResponseCodes.verify_recaptcha_failed:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed), safe=False)
+    if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'],
+                                                            'add_job') == ResponseCodes.verify_recaptcha_failed:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
+                            safe=False)
 
     job_title = body['job_title']
     company = body['company']
     applicationdate = body['application_date']
     status = int(body['status_id'])
     source = body['source']
-    # jt is current dummy job title in the db
-    jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-    if jt is None or len(jt) == 0:
-        jt = JobPosition(job_title=job_title)
-        jt.save()
-    else:
-        jt = jt[0]
-     # check if the company details already exists in the db
-    cd = get_company_detail(company)
-    if cd is None:
-        company_title = company
-    else:
-        company_title = cd['name']
-    jc = Company.objects.all().filter(cb_name__iexact=company_title)
-    if jc is None or len(jc) == 0:
-        # if company doesnt exist save it
-        if cd is None:
-            jc = Company(company=company, company_logo=None,
-                         cb_name=company, cb_company_logo=None, cb_domain=None)
-        else:
-            jc = Company(company=company, company_logo=None,
-                         cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-        jc.save()
-    else:
-        jc = jc[0]
+
+    jt = get_or_insert_position(job_title)
+
+    jc = get_or_create_company(company)
 
     if Source.objects.filter(value__iexact=source).count() == 0:
         source = Source.objects.create(value=source)
@@ -349,7 +355,9 @@ def add_jobapp(request):
                           msgId='', app_source=source, user=request.user)
     japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
     japp.save()
-    return JsonResponse(create_response(data=JobApplicationSerializer(instance=japp, many=False, context={'user': request.user}).data), safe=False)
+    return JsonResponse(
+        create_response(data=JobApplicationSerializer(instance=japp, many=False, context={'user': request.user}).data),
+        safe=False)
 
 
 @csrf_exempt
@@ -358,7 +366,8 @@ def edit_jobapp(request):
     body = request.data
     jobapp_id = body.get('jobapp_id')
     if jobapp_id is None:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                            safe=False)
     user_job_app = JobApplication.objects.filter(pk=jobapp_id)
     if user_job_app.count() == 0:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
@@ -378,38 +387,13 @@ def edit_jobapp(request):
     source = body.get('source')
 
     if applicationdate is not None:
-        user_job_app.applyDate =applicationdate
+        user_job_app.applyDate = applicationdate
 
     if job_title is not None:
-        # jt is current dummy job title in the db
-        jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-        if jt is None or len(jt) == 0:
-            jt = JobPosition(job_title=job_title)
-            jt.save()
-        else:
-            jt = jt[0]
-        user_job_app.position = jt
+        user_job_app.position = get_or_insert_position(job_title)
 
     if company is not None:
-        # check if the company details already exists in the db
-        cd = get_company_detail(company)
-        if cd is None:
-            company_title = company
-        else:
-            company_title = cd['name']
-        jc = Company.objects.all().filter(cb_name__iexact=company_title)
-        if jc is None or len(jc) == 0:
-            # if company doesnt exist save it
-            if cd is None:
-                jc = Company(company=company, company_logo=None,
-                             cb_name=company, cb_company_logo=None, cb_domain=None)
-            else:
-                jc = Company(company=company, company_logo=None,
-                             cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-            jc.save()
-        else:
-            jc = jc[0]
-        user_job_app.companyObject = jc
+        user_job_app.companyObject = get_or_create_company(company)
 
     if source is not None:
         if Source.objects.filter(value__iexact=source).count() == 0:
@@ -419,7 +403,9 @@ def edit_jobapp(request):
         user_job_app.app_source = source
     user_job_app.updated_date = datetime.now()
     user_job_app.save()
-    return JsonResponse(create_response(data=JobApplicationSerializer(instance=user_job_app, many=False, context={'user': request.user}).data), safe=False)
+    return JsonResponse(create_response(
+        data=JobApplicationSerializer(instance=user_job_app, many=False, context={'user': request.user}).data),
+                        safe=False)
 
 
 @csrf_exempt
@@ -433,9 +419,15 @@ def update_contact(request):
     try:
         contact = Contact.objects.get(pk=contact_id)
         if contact.job_post.user == request.user:
-            name = body.get('name')
-            if name is not None:
-                contact.name = name
+            first_name = body.get('first_name')
+            if first_name is not None:
+                contact.first_name = first_name
+            last_name = body.get('last_name')
+            if last_name is not None:
+                contact.last_name = last_name
+            email = body.get('email')
+            if email is not None:
+                contact.email = email
             phone_number = body.get('phone_number')
             if phone_number is not None:
                 contact.phone_number = phone_number
@@ -447,35 +439,10 @@ def update_contact(request):
                 contact.description = description
             job_title = body.get('job_title')
             if job_title is not None:
-                # jt is current dummy job title in the db
-                jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-                if jt is None or len(jt) == 0:
-                    jt = JobPosition(job_title=job_title)
-                    jt.save()
-                else:
-                    jt = jt[0]
-                contact.position = jt
+                contact.position = get_or_insert_position(job_title)
             company = body.get('company')
             if company is not None:
-                # check if the company details already exists in the db
-                cd = get_company_detail(company)
-                if cd is None:
-                    company_title = company
-                else:
-                    company_title = cd['name']
-                jc = Company.objects.all().filter(cb_name__iexact=company_title)
-                if jc is None or len(jc) == 0:
-                    # if company doesnt exist save it
-                    if cd is None:
-                        jc = Company(company=company, company_logo=None,
-                                     cb_name=company, cb_company_logo=None, cb_domain=None)
-                    else:
-                        jc = Company(company=company, company_logo=None,
-                                     cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-                    jc.save()
-                else:
-                    jc = jc[0]
-                contact.company = jc
+                contact.company = get_or_create_company(company)
 
             contact.update_date = datetime.now()
             contact.save()
@@ -519,56 +486,39 @@ def add_contact(request):
     body = request.data
 
     jobapp_id = body.get('jobapp_id')
-    name = body.get('name')
-    if jobapp_id is None or name is None:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+    first_name = body.get('first_name')
+    last_name = body.get('last_name')
+    if jobapp_id is None or first_name is None or last_name is None:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                            safe=False)
     try:
         user_job_app = JobApplication.objects.get(pk=jobapp_id)
         if user_job_app.user == request.user:
             phone_number = body.get('phone_number')
             linkedin_url = body.get('linkedin_url')
             description = body.get('description')
+            email = body.get('email')
             job_title = body.get('job_title')
             jt = None
             jc = None
             if job_title is not None:
-                # jt is current dummy job title in the db
-                jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-                if jt is None or len(jt) == 0:
-                    jt = JobPosition(job_title=job_title)
-                    jt.save()
-                else:
-                    jt = jt[0]
+                jt = get_or_insert_position(job_title)
+
             company = body.get('company')
             if company is not None:
-                # check if the company details already exists in the db
-                cd = get_company_detail(company)
-                if cd is None:
-                    company_title = company
-                else:
-                    company_title = cd['name']
-                jc = Company.objects.all().filter(cb_name__iexact=company_title)
-                if jc is None or len(jc) == 0:
-                    # if company doesnt exist save it
-                    if cd is None:
-                        jc = Company(company=company, company_logo=None,
-                                     cb_name=company, cb_company_logo=None, cb_domain=None)
-                    else:
-                        jc = Company(company=company, company_logo=None,
-                                     cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-                    jc.save()
-                else:
-                    jc = jc[0]
+                jc = get_or_create_company(company)
 
             contact = Contact(
-                job_post=user_job_app, name=name, phone_number=phone_number, linkedin_url=linkedin_url,description=description,
+                job_post=user_job_app, first_name=first_name, last_name=last_name, phone_number=phone_number, linkedin_url=linkedin_url,
+                description=description, email=email,
                 position=jt, company=jc)
             contact.save()
             data = ContactSerializer(
                 instance=contact, many=False).data
             return JsonResponse(create_response(data=data), safe=False)
         else:
-            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                                safe=False)
     except Exception as e:
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),

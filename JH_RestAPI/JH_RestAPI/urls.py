@@ -13,12 +13,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls import include
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
-from django.conf.urls import include
 from django.urls import re_path
-from django.conf import settings
-from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,11 +30,15 @@ urlpatterns = [
     path('api/blogs/', include('blog.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/companies/', include('company.urls')),
+    path('api/events/', include('event.urls')),
+    path('api/colleges/', include('college.urls')),
+    path('api/majors/', include('major.urls')),
+    path('api/alumni/', include('alumni.urls')),
     path('api/positions/', include('position.urls')),
     path('api/reviews/', include('review.urls')),
-    path('api/agreements/', include('utils.urls')),
+    path('api/', include('utils.urls')),
     re_path(r'^auth/', include('rest_framework_social_oauth2.urls')),
 ]
 
 if settings.DEBUG:
-  urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

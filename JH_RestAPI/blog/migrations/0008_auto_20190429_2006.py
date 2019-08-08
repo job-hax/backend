@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('blog', '0007_auto_20190429_2002'),
     ]
@@ -14,6 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='blog',
             name='snippet',
-            field=models.CharField(max_length=400, null=True, validators=[django.core.validators.MinLengthValidator(250)]),
+            field=models.CharField(max_length=400, null=True,
+                                   validators=[django.core.validators.MinLengthValidator(250)]),
         ),
     ]

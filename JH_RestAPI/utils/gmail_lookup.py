@@ -1,31 +1,29 @@
 from __future__ import print_function
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
-from googleapiclient import errors
-from users.models import Profile
-import string
-from datetime import datetime
-import requests
-import traceback
-from bs4 import BeautifulSoup as bs
 
-from .social_auth_credentials import Credentials
-
-from jobapps.models import JobApplication
-from jobapps.models import GoogleMail
-from jobapps.models import ApplicationStatus
-from jobapps.models import StatusHistory
-from jobapps.models import Source
-from position.models import JobPosition
-from company.models import Company
-from utils.clearbit_company_checker import get_company_detail
 import base64
-from .gmail_utils import convertTime
-from .gmail_utils import removeHtmlTags
-from .gmail_utils import find_nth
-from .gmail_utils import unicodetoascii
+import string
+import traceback
+from datetime import datetime
+
+import requests
+from bs4 import BeautifulSoup as bs
+from googleapiclient import errors
+from googleapiclient.discovery import build
+
+from company.utils import get_or_create_company
+from jobapps.models import ApplicationStatus
+from jobapps.models import GoogleMail
+from jobapps.models import JobApplication
+from jobapps.models import Source
+from jobapps.models import StatusHistory
+from position.utils import get_or_insert_position
+from users.models import Profile
 from utils.logger import log
+from .gmail_utils import convert_time
+from .gmail_utils import find_nth
+from .gmail_utils import remove_html_tags
+from .gmail_utils import unicode_to_ascii
+from .social_auth_credentials import Credentials
 
 
 def get_email_detail(service, user_id, msg_id, user, source):
@@ -60,7 +58,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
             elif header['name'] == 'Date':
                 date = header['value']
                 original_date = header['value']
-                date = convertTime(str(date))
+                date = convert_time(str(date))
         if 'parts' not in message['payload']:
             if message['payload']['mimeType'] == 'text/html' and int(message['payload']['body']['size']) > 0:
                 mail_body = str(base64.urlsafe_b64decode(
@@ -126,7 +124,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 if 'Role: ' in mail_body and 'Salary' in mail_body:
                     job_title = mail_body[mail_body.index(
                         'Role: ') + 6: mail_body.index('Salary')]
-                    job_title = removeHtmlTags(job_title)
+                    job_title = remove_html_tags(job_title)
                 if 'interview with ' in mail_body and '. Interested?' in mail_body:
                     company = mail_body[mail_body.index(
                         'interview with ') + 15: mail_body.index('. Interested?')]
@@ -154,7 +152,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 if 'updates from' in mail_body and '</b>' in mail_body:
                     c_start_index = mail_body.index('updates from') + 16
                     c_end_index = mail_body[c_start_index: (
-                        c_start_index + 100)].index('</b>')
+                            c_start_index + 100)].index('</b>')
                     company = mail_body[c_start_index: c_start_index + c_end_index]
                 image_url = None
         elif source == 'glassdoor':
@@ -218,7 +216,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
                         ' position of ') + 13:first_parag.index('. We')]
                 elif 'application for the ' in first_parag and ', ' + company in first_parag:
                     job_title = first_parag[
-                        first_parag.index('application for the ') + 20:first_parag.index(', ' + company)]
+                                first_parag.index('application for the ') + 20:first_parag.index(', ' + company)]
         elif source == 'greenhouse.io':
             pass
         elif source == 'lever.co':
@@ -233,7 +231,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
             elif 'application for ' in mail_body and ', and we are d' in mail_body:
                 job_title = mail_body[mail_body.index(
                     'application for ') + 16:mail_body.index(', and we are d')]
-                job_title = str(unicodetoascii(job_title))
+                job_title = str(unicode_to_ascii(job_title))
             elif 'application for our ' in mail_body and ' opening' in mail_body:
                 job_title = mail_body[mail_body.index(
                     "application for our ") + 20:mail_body.index(" opening")]
@@ -250,32 +248,9 @@ def get_email_detail(service, user_id, msg_id, user, source):
 
         inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
         if inserted_before.count() == 0 and job_title != '' and company != '':
-            # jt is current dummy job title in the db
-            jt = JobPosition.objects.all().filter(job_title__iexact=job_title)
-            if jt.count() == 0:
-                jt = JobPosition(job_title=job_title)
-                jt.save()
-            else:
-                jt = jt[0]
+            jt = get_or_insert_position(job_title)
 
-                # check if the company details already exists in the db
-            cd = get_company_detail(company)
-            if cd is None:
-                company_title = company
-            else:
-                company_title = cd['name']
-            jc = Company.objects.all().filter(cb_name__iexact=company_title)
-            if jc.count() == 0:
-                # if company doesnt exist save it
-                if cd is None:
-                    jc = Company(company=company, company_logo=image_url, cb_name=company, cb_company_logo=None,
-                                 cb_domain=None)
-                else:
-                    jc = Company(company=company, company_logo=image_url, cb_name=cd['name'],
-                                 cb_company_logo=cd['logo'], cb_domain=cd['domain'])
-                jc.save()
-            else:
-                jc = jc[0]
+            jc = get_or_create_company(company)
 
             if ApplicationStatus.objects.filter(default=True).count() == 0:
                 status = ApplicationStatus(value='Applied', default=True)
@@ -336,7 +311,7 @@ def get_emails_with_custom_query(service, user_id, query=''):
         log('An error occurred: %s' % error, error)
 
 
-def fetchJobApplications(user):
+def fetch_job_applications(user):
     time_string = ''
     # checks user last update time and add it as a query parameter
     profile = Profile.objects.get(user=user)

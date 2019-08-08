@@ -1,17 +1,15 @@
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
-from utils.error_codes import ResponseCodes
-from utils.generic_json_creator import create_response
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+
+from utils.generic_json_creator import create_response
 from .models import JobPosition
 from .serializers import JobPositionSerializer
-from JH_RestAPI import pagination
 
 
 @csrf_exempt
 @api_view(["GET"])
-def get_positions(request):
+def positions(request):
     q = request.GET.get('q')
     if q is None:
         positions = JobPosition.objects.all()

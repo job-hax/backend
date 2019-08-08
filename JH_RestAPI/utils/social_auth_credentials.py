@@ -1,14 +1,11 @@
 # github.com/python-social-auth/social-core/issues/125
 from datetime import datetime
 
-from requests import exceptions as requests_errors
-
 from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials as GoogleCredentials
-
-from googleapiclient import discovery
-
+from requests import exceptions as requests_errors
 from social_django.utils import load_strategy
+
 
 class Credentials(GoogleCredentials):
     """Google auth credentials using python social auth under the hood"""
@@ -36,7 +33,7 @@ class Credentials(GoogleCredentials):
             refresh_token = data['refresh_token']
         except:
             refresh_token = ''
-            pass    
+            pass
         token_uri = backend.refresh_token_url()
         client_id, client_secret = backend.get_key_and_secret()
         scopes = backend.get_scope()
@@ -48,7 +45,7 @@ class Credentials(GoogleCredentials):
         )
         self.usa = usa
         # Needed for self.expired() check
-        #self.expiry = self._parse_expiry(data)
+        # self.expiry = self._parse_expiry(data)
 
     def refresh(self, request):
         """Refreshes the access token.
@@ -69,4 +66,4 @@ class Credentials(GoogleCredentials):
         data = usa.extra_data
         self.token = data['access_token']
         self._refresh_token = data['refresh_token']
-        #self.expiry = self._parse_expiry(data)
+        # self.expiry = self._parse_expiry(data)

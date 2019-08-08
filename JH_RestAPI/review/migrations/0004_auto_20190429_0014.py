@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('review', '0003_auto_20190426_2324'),
     ]
@@ -14,6 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='review',
             name='overall_interview_experience',
-            field=models.IntegerField(blank=True, null=True, validators=[django.core.validators.MaxValueValidator(5), django.core.validators.MinValueValidator(0)]),
+            field=models.IntegerField(blank=True, null=True, validators=[django.core.validators.MaxValueValidator(5),
+                                                                         django.core.validators.MinValueValidator(0)]),
         ),
     ]

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('jobapps', '0010_auto_20190210_1051'),
     ]

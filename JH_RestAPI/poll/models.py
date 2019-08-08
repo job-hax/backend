@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-from django.utils.encoding import python_2_unicode_compatible
 
 import datetime
-from django.db import models
-from django.conf import settings
-from django.utils.translation import gettext as _
-from django.db.models.manager import Manager
-from JH_RestAPI import settings
-from django.contrib.auth import get_user_model
 
+from django.contrib.auth import get_user_model
+from django.db import models
+from django.db.models.manager import Manager
+from django.utils.encoding import python_2_unicode_compatible
+from django.utils.translation import gettext as _
 
 User = get_user_model()
-    
+
 
 class PublishedManager(Manager):
     def get_query_set(self):
@@ -39,6 +37,7 @@ class Poll(models.Model):
 
     def get_vote_count(self):
         return Vote.objects.filter(poll=self).count()
+
     vote_count = property(fget=get_vote_count)
 
     def get_cookie_name(self):
@@ -61,6 +60,7 @@ class Item(models.Model):
 
     def get_vote_count(self):
         return Vote.objects.filter(item=self).count()
+
     vote_count = property(fget=get_vote_count)
 
 
@@ -78,6 +78,7 @@ class Vote(models.Model):
         verbose_name_plural = _('votes')
 
     def __str__(self):
+        User = get_user_model()
         if isinstance(User, str):
             User = get_user_model()
         else:

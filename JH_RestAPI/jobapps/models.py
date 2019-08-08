@@ -1,11 +1,13 @@
-from django.db import models
 from datetime import datetime
-from position.models import JobPosition
-from company.models import Company
-from users.models import EmploymentStatus
-from users.models import EmploymentAuth
+
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
+from django.db import models
+
+from company.models import Company
+from position.models import JobPosition
+from users.models import EmploymentAuth
+from users.models import EmploymentStatus
 
 User = get_user_model()
 
@@ -95,7 +97,9 @@ class SourceType(models.Model):
 class Contact(models.Model):
     job_post = models.ForeignKey(
         JobApplication, on_delete=models.CASCADE, null=True, blank=True)
-    name = models.CharField(max_length=50)
+    first_name = models.CharField(max_length=50, null=True, blank=True)
+    last_name = models.CharField(max_length=50, null=True, blank=True)
+    email = models.CharField(max_length=150, null=True, blank=True)
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,15}$',
         message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")

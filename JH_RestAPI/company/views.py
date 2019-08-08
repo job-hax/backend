@@ -1,20 +1,18 @@
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
-from utils.error_codes import ResponseCodes
-from utils.generic_json_creator import create_response
 from django.http import JsonResponse
-from .models import Company
-from position.models import JobPosition
-from jobapps.models import JobApplication
-from .serializers import CompanySerializer
-from position.serializers import JobPositionSerializer
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+
 from JH_RestAPI import pagination
+from jobapps.models import JobApplication
+from position.serializers import JobPositionSerializer
+from utils.generic_json_creator import create_response
+from .models import Company
+from .serializers import CompanySerializer
 
 
 @csrf_exempt
 @api_view(["GET"])
-def get_companies(request):
+def companies(request):
     q = request.GET.get('q')
     if q is None:
         companies = Company.objects.all()
@@ -29,7 +27,7 @@ def get_companies(request):
 
 @csrf_exempt
 @api_view(["GET"])
-def get_company_positions(request, company_pk):
+def positions(request, company_pk):
     company = Company.objects.get(pk=company_pk)
     queryset = JobApplication.objects.filter(companyObject=company)
     positions = set()

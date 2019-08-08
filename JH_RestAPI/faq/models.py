@@ -1,6 +1,4 @@
 from django.db import models
-from django.db.models.manager import Manager
-import datetime
 from django.utils.translation import gettext as _
 
 
@@ -18,6 +16,7 @@ class Faq(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class Item(models.Model):
     faq = models.ForeignKey(Faq, related_name='items', on_delete=models.CASCADE)

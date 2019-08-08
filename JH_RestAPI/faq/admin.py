@@ -1,7 +1,6 @@
 from django.contrib import admin
-from .models import *
-from django.utils.translation import gettext as _
 
+from .models import *
 
 '''class FaqItemInline(admin.TabularInline):
     model = Item
@@ -11,6 +10,7 @@ from django.utils.translation import gettext as _
 
 class FaqAdmin(admin.ModelAdmin):
     list_display = ('title', 'is_published')
-    #inlines = [FaqItemInline,]
+    # inlines = [FaqItemInline,]
+
 
 admin.site.register(Faq, FaqAdmin)
