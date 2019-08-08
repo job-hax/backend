@@ -29,7 +29,7 @@ def blogs(request):
     if request.method == "GET":
         mine = request.GET.get('mine')
         if mine is None:
-            queryset = Blog.objects.all()
+            queryset = Blog.objects.filter(is_published=True)
         else:
             queryset = Blog.objects.filter(publisher_profile__user=request.user)
         paginator = pagination.CustomPagination()
@@ -45,7 +45,7 @@ def blogs(request):
 
         title = body['title']
         content = body['content']
-        snippet = content[:130] + '...'
+        snippet = body['snippet'][:130] + '...'
         publisher_profile = Profile.objects.get(user=request.user)
 
         blog = Blog(title=title, snippet=snippet, content=content, publisher_profile=publisher_profile)
@@ -59,7 +59,7 @@ def blogs(request):
             blog.title = body['title']
         if 'content' in body:
             blog.content = body['content']
-            blog.snippet = body['content'][:130] + '...'
+            blog.snippet = body['snippet'][:130] + '...'
         if 'header_image' in body:
             file = body['header_image']
             ext = file.name.split('.')[-1]

@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/blogs/', include('blog.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/companies/', include('company.urls')),
+    path('api/events/', include('event.urls')),
     path('api/colleges/', include('college.urls')),
     path('api/majors/', include('major.urls')),
     path('api/alumni/', include('alumni.urls')),

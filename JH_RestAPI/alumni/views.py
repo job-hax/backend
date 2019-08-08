@@ -26,7 +26,7 @@ def alumni(request):
     position_id = request.GET.get('position_id')
     country_id = request.GET.get('country_id')
     state_id = request.GET.get('state_id')
-    if q is not None and len(q) > 3:
+    if q is not None:
         alumni_list = alumni_list.filter(Q(user__first_name__icontains=q) | Q(user__last_name__icontains=q))
     if year is not None:
         alumni_list = alumni_list.filter(grad_year=year)

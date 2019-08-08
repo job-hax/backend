@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
+from django.conf import settings
 from college.serializers import CollegeSerializer
 from company.serializers import CompanyBasicsSerializer
 from major.serializers import MajorSerializer
@@ -12,12 +12,22 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    profile_photo = serializers.SerializerMethodField()
+
+    def get_profile_photo(self, obj):
+        profile = Profile.objects.get(user=obj)
+        if profile.profile_photo_custom.name:
+            return settings.MEDIA_URL + profile.profile_photo_custom.name
+        elif profile.profile_photo_social is not None:
+            return profile.profile_photo_social
+        return None
+
     def create(self, validated_data):
         return User.objects.create(**validated_data)
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'date_joined')
+        fields = ('username', 'first_name', 'profile_photo', 'last_name', 'email', 'date_joined')
 
 
 class EmploymentStatusSerializer(serializers.ModelSerializer):
