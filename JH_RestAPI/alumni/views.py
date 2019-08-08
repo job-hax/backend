@@ -23,16 +23,19 @@ def alumni(request):
     year = request.GET.get('year')
     major_id = request.GET.get('major_id')
     company_id = request.GET.get('company_id')
+    position_id = request.GET.get('position_id')
     country_id = request.GET.get('country_id')
     state_id = request.GET.get('state_id')
     if q is not None and len(q) > 3:
         alumni_list = alumni_list.filter(Q(user__first_name__icontains=q) | Q(user__last_name__icontains=q))
     if year is not None:
-        alumni_list = alumni_list.filter(grad_year__gte=year)
+        alumni_list = alumni_list.filter(grad_year=year)
     if major_id is not None:
         alumni_list = alumni_list.filter(major__pk=major_id)
     if company_id is not None:
         alumni_list = alumni_list.filter(company__pk=company_id)
+    if position_id is not None:
+        alumni_list = alumni_list.filter(job_position__pk=position_id)
     if country_id is not None:
         alumni_list = alumni_list.filter(country__pk=country_id)
     if state_id is not None:

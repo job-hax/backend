@@ -11,6 +11,7 @@ from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from .models import College
 from .serializers import CollegeSerializer
+from position.serializers import JobPositionSerializer
 
 
 @csrf_exempt
@@ -62,3 +63,21 @@ def companies(request):
     serialized_companies = CompanyBasicsSerializer(
         instance=data, many=True, ).data
     return JsonResponse(create_response(data=serialized_companies), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def positions(request):
+    user_profile = Profile.objects.get(user=request.user)
+    if user_profile.user_type < int(Profile.UserTypes.student):
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                            safe=False)
+    college = College.objects.get(pk=user_profile.college.pk)
+    alumni = Profile.objects.filter(~Q(major=None), college=college)
+    data = []
+    for a in alumni:
+        data.append(a.job_position)
+    data = set(data)
+    serialized_positions = JobPositionSerializer(
+        instance=data, many=True, ).data
+    return JsonResponse(create_response(data=serialized_positions), safe=False)

@@ -32,5 +32,4 @@ class AlumniSerializer(serializers.ModelSerializer):
         model = Profile
         fields = (
             'id', 'first_name', 'last_name', 'email', 'college', 'major', 'company', 'country', 'state', 'job_position',
-            'phone_number', \
             'profile_photo_social', 'profile_photo_custom', 'grad_year')
