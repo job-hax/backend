@@ -114,7 +114,6 @@ def get_contacts(request):
         else:
             jobapp = JobApplication.objects.get(pk=jobapp_id)
             alumni_list = Profile.objects.filter(college=user_profile.college, company=jobapp.companyObject, user_type=int(Profile.UserTypes.alumni))
-            print(alumni_list)
             alumni = AlumniSerializer(
                 instance=alumni_list, many=True, context={'user': request.user}).data
         data['alumni'] = alumni
