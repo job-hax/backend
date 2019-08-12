@@ -25,7 +25,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def get_username(self, obj):
         username = 'Anonymous'
-        if not obj.anonymous:
+        if not obj.anonymous and obj.user is not None:
             username = obj.user.username
         return username
 
