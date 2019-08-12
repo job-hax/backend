@@ -7,6 +7,7 @@ from jobapps.models import JobApplication
 from position.serializers import JobPositionSerializer
 from utils.generic_json_creator import create_response
 from .models import Company
+from review.models import Review
 from .serializers import CompanySerializer
 
 
@@ -14,10 +15,17 @@ from .serializers import CompanySerializer
 @api_view(["GET"])
 def companies(request):
     q = request.GET.get('q')
-    if q is None:
-        companies = Company.objects.all()
-    else:
-        companies = Company.objects.filter(company__icontains=q)
+    has_review = request.GET.get('hasReview')
+    mine = request.GET.get('mine')
+    companies = Company.objects.all()
+    if has_review is not None:
+        companies_has_review = Review.objects.order_by('company__id').distinct('company__id')
+        companies = Company.objects.all().filter(id__in=[r.company.id for r in companies_has_review])
+    if mine is not None:
+        users_companies = JobApplication.objects.filter(user=request.user, isDeleted=False)
+        companies = companies.filter(id__in=[j.companyObject.id for j in users_companies])
+    if q is not None:
+        companies = companies.filter(company__icontains=q)
     paginator = pagination.CustomPagination()
     companies = paginator.paginate_queryset(companies, request)
     serialized_companies = CompanySerializer(
