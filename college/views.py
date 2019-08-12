@@ -40,7 +40,8 @@ def majors(request):
     alumni = Profile.objects.filter(~Q(major=None), college=college)
     data = []
     for a in alumni:
-        data.append(a.major)
+        if a.major is not None:
+            data.append(a.major)
     data = set(data)
     serialized_majors = MajorSerializer(
         instance=data, many=True, ).data
@@ -58,7 +59,8 @@ def companies(request):
     alumni = Profile.objects.filter(~Q(major=None), college=college)
     data = []
     for a in alumni:
-        data.append(a.company)
+        if a.company is not None:
+            data.append(a.company)
     data = set(data)
     serialized_companies = CompanyBasicsSerializer(
         instance=data, many=True, ).data
@@ -76,7 +78,8 @@ def positions(request):
     alumni = Profile.objects.filter(~Q(major=None), college=college)
     data = []
     for a in alumni:
-        data.append(a.job_position)
+        if a.job_position is not None:
+            data.append(a.job_position)
     data = set(data)
     serialized_positions = JobPositionSerializer(
         instance=data, many=True, ).data
