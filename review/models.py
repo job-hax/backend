@@ -14,8 +14,8 @@ User = get_user_model()
 
 
 class Review(models.Model):
-    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
-    position = models.ForeignKey(JobPosition, on_delete=models.SET_NULL, null=True, blank=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True)
+    position = models.ForeignKey(JobPosition, on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     pros = models.TextField(null=True, blank=True)
     cons = models.TextField(null=True, blank=True)
