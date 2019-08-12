@@ -19,7 +19,6 @@ from social_django.models import UserSocialAuth
 
 from college.models import College
 from company.utils import get_or_create_company
-from jobapps.models import GoogleMail
 from jobapps.serializers import GoogleMailSerializer
 from major.utils import insert_or_update_major
 from position.utils import get_or_insert_position
@@ -30,6 +29,10 @@ from utils.gmail_lookup import fetch_job_applications
 from utils.linkedin_utils import get_access_token_with_code
 from utils.logger import log
 from utils.models import Country, State
+from jobapps.models import JobApplication, GoogleMail
+from event.models import Event, EventAttendee
+from poll.models import Vote
+from review.models import Review
 from .models import EmploymentStatus, EmploymentAuth
 from .models import Feedback
 from .models import Profile
@@ -455,11 +458,16 @@ def link_social_account(request):
         success = False
         code = ResponseCodes.invalid_credentials
     else:
-        success = True
-        code = ResponseCodes.success
         social_user = UserSocialAuth.objects.get(extra_data__icontains=post_data['token'])
 
+
         if social_user.user.email != request.user.email:
+            JobApplication.objects.filter(user=social_user.user).update(user=request.user)
+            GoogleMail.objects.filter(user=social_user.user).update(user=request.user)
+            Event.objects.filter(host_user=social_user.user).update(host_user=request.user)
+            EventAttendee.objects.filter(user=social_user.user).update(user=request.user)
+            Vote.objects.filter(user=social_user.user).update(user=request.user)
+            Review.objects.filter(user=social_user.user).update(user=request.user)
             social_user.user.delete()
 
         social_user.user = request.user
