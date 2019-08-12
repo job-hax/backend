@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
 
 from utils.generic_json_creator import create_response
 from .models import Agreement, Country, State
@@ -17,6 +18,7 @@ def agreements(request):
 
 
 @require_GET
+@csrf_exempt
 def countries(request):
     countries = Country.objects.all()
     slist = CountrySerializer(instance=countries, many=True).data
@@ -24,6 +26,7 @@ def countries(request):
 
 
 @require_GET
+@csrf_exempt
 def states(request, country_pk):
     states = State.objects.filter(country__pk=country_pk)
     slist = StateSerializer(instance=states, many=True).data
