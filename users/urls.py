@@ -32,6 +32,7 @@ urlpatterns = [
     path('get_user_google_mails', views.get_user_google_mails,
          name='get_user_google_mails'),
     path('feedback', views.feedback, name='feedback'),
+    path('delete_user', views.delete_user, name='delete_user'),
     path('verify_recaptcha', views.verify_recaptcha, name='verify_recaptcha'),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
