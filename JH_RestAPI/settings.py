@@ -129,7 +129,10 @@ SOCIAL_AUTH_LINKEDIN_OAUTH2_SCOPE = ['r_emailaddress', 'r_liteprofile']
 SOCIAL_AUTH_LINKEDIN_OAUTH2_FIELD_SELECTORS = [
     'emailAddress'
 ]
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:8080/action-linkedin-oauth2'
+if DEBUG:
+    SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://localhost:8080/action-linkedin-oauth2'
+else:
+    SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'https://' + SITE_URL + '/action-linkedin-oauth2'
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
