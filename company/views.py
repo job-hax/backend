@@ -36,9 +36,14 @@ def companies(request):
 @csrf_exempt
 @api_view(["GET"])
 def positions(request, company_pk):
+    has_review = request.GET.get('hasReview')
     company = Company.objects.get(pk=company_pk)
     queryset = JobApplication.objects.filter(companyObject=company)
+    if has_review is not None:
+        positions_has_review = Review.objects.filter(company=company).order_by('position__id').distinct('position__id')
+        queryset = queryset.filter(position__id__in=[r.position.id for r in positions_has_review])
     positions = set()
     for q in queryset:
-        positions.add(q.position)
+        if q is not None:
+            positions.add(q.position)
     return JsonResponse(create_response(data=JobPositionSerializer(instance=positions, many=True).data), safe=False)
