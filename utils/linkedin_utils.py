@@ -1,6 +1,7 @@
 import json
 import os
 import traceback
+from django.conf import settings
 
 import requests
 from bs4 import BeautifulSoup as bs
@@ -50,8 +51,12 @@ def parse_job_detail(body):
 
 def get_access_token_with_code(code):
     try:
+        if settings.DEBUG:
+            redirect_uri = 'http://localhost:8080/action-linkedin-oauth2'
+        else:
+            redirect_uri = 'https://' + settings.SITE_URL + '/action-linkedin-oauth2'
         post_data = {'grant_type': 'authorization_code', 'code': code,
-                     'redirect_uri': 'http://localhost:8080/action-linkedin-oauth2',
+                     'redirect_uri': redirect_uri,
                      'client_id': os.environ['JOBHAX_LINKEDIN_CLIENT_KEY'],
                      'client_secret': os.environ['JOBHAX_LINKEDIN_CLIENT_SECRET']}
         log(post_data, 'e')
