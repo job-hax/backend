@@ -597,6 +597,13 @@ def get_employment_auths(request):
     return JsonResponse(create_response(data=EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)
 
 
+@csrf_exempt
+@api_view(["DELETE"])
+def delete_user(request):
+    request.user.delete()
+    return JsonResponse(create_response(data=None), safe=False)
+
+
 @api_view(["POST"])
 @csrf_exempt
 def update_gmail_token(request):
