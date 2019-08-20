@@ -136,3 +136,4 @@ class Feedback(models.Model):
         MaxValueValidator(5),
         MinValueValidator(0)
     ], null=True, blank=True)
+    created_date = models.DateTimeField(null=True, blank=True, auto_now_add=True)
