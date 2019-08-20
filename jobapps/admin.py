@@ -8,9 +8,9 @@ from .models import JobApplication, ApplicationStatus, Source, GoogleMail, Sourc
 @admin.register(JobApplication)
 class CompanyAdmin(admin.ModelAdmin, ExportCsv):
     list_display = ("user", "applicationStatus", "position",
-                    'companyObject', 'app_source', 'isDeleted', 'created')
+                    'companyObject', 'app_source', 'isDeleted', 'applyDate')
     list_filter = ("user", "applicationStatus", "position",
-                   'companyObject', 'app_source', 'created')
+                   'companyObject', 'app_source', 'applyDate')
     actions = ["export_as_csv"]
 
 

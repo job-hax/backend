@@ -46,8 +46,10 @@ def events(request):
             event.location_lon = body['location_lon']
         if 'location_address' in body:
             event.location_address = body['location_address']
-        if 'event_date' in body:
-            event.event_date = body['event_date']
+        if 'event_date_start' in body:
+            event.event_date_start = body['event_date_start']
+        if 'event_date_end' in body:
+            event.event_date_end = body['event_date_end']
         if 'event_type_id' in body:
             event.event_type = EventType.objects.get(pk=body['event_type_id'])
         if 'spot_count' in body:
@@ -84,7 +86,7 @@ def event(request, event_pk):
 
 
 @csrf_exempt
-@api_view(["GET"])
+@api_view(["POST"])
 def attend(request, event_pk):
     obj = Event.objects.get(pk=event_pk)
     attendance = EventAttendee()
@@ -95,7 +97,7 @@ def attend(request, event_pk):
 
 
 @csrf_exempt
-@api_view(["GET"])
+@api_view(["POST"])
 def leave(request, event_pk):
     event_attendance = EventAttendee.objects.filter(user=request.user, event__pk=event_pk)
     if event_attendance.count() > 0:

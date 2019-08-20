@@ -4,8 +4,8 @@ from .models import Event, EventType
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ("title", "event_date", "host_user")
-    list_filter = ("title", "event_date", "host_user")
+    list_display = ("title", "event_date_start", "event_date_end", "host_user")
+    list_filter = ("title", "event_date_start", "event_date_end", "host_user")
 
 
 admin.site.register(EventType)
