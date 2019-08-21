@@ -29,6 +29,7 @@ class EventAttendeeSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     host_user = UserSerializer(read_only=True)
     spot_count = serializers.SerializerMethodField()
+    attendee_count = serializers.SerializerMethodField()
     attended = serializers.SerializerMethodField()
     attendee_list = serializers.SerializerMethodField()
     event_type = serializers.SerializerMethodField()
@@ -55,6 +56,9 @@ class EventSerializer(serializers.ModelSerializer):
             return None
         return int(obj.spot_count) - EventAttendee.objects.filter(event=obj).count()
 
+    def get_attendee_count(self, obj):
+        return EventAttendee.objects.filter(event=obj).count()
+
     def create(self, validated_data):
         return Event.objects.create(**validated_data)
 
@@ -66,6 +70,7 @@ class EventSerializer(serializers.ModelSerializer):
 class EventSimpleSerializer(serializers.ModelSerializer):
     host_user = UserSerializer(read_only=True)
     spot_count = serializers.SerializerMethodField()
+    attendee_count = serializers.SerializerMethodField()
     attended = serializers.SerializerMethodField()
     event_type = serializers.SerializerMethodField()
 
@@ -75,7 +80,7 @@ class EventSimpleSerializer(serializers.ModelSerializer):
         return obj.date.astimezone(pytz.timezone('US/Pacific'))
 
     def get_event_type(self, obj):
-        return EventTypeSerializer(instance=obj, many=False).data
+        return EventTypeSerializer(instance=obj.event_type, many=False).data
 
     def get_attended(self, obj):
         if EventAttendee.objects.filter(event=obj, user=self.context.get('user')).count() == 0:
@@ -86,9 +91,12 @@ class EventSimpleSerializer(serializers.ModelSerializer):
         if obj.spot_count is None:
             return None
 
+    def get_attendee_count(self, obj):
+        return EventAttendee.objects.filter(event=obj).count()
+
     def create(self, validated_data):
         return Event.objects.create(**validated_data)
 
     class Meta:
         model = Event
-        exclude = 'details'
+        exclude = ['details']

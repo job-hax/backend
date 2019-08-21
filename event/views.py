@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 
 from JH_RestAPI import pagination
 from event.models import Event, EventType, EventAttendee
-from event.serializers import EventSerializer, EventTypeSerializer
+from event.serializers import EventSerializer, EventSimpleSerializer, EventTypeSerializer
 from users.models import Profile
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
@@ -20,7 +20,7 @@ def events(request):
         queryset = Event.objects.filter(is_published=True)
         paginator = pagination.CustomPagination()
         event_list = paginator.paginate_queryset(queryset, request)
-        serialized_events = EventSerializer(
+        serialized_events = EventSimpleSerializer(
             instance=event_list, many=True, context={'user': request.user, 'detailed': False}).data
         return JsonResponse(create_response(data=serialized_events, paginator=paginator), safe=False)
     elif request.method == "POST":
