@@ -48,21 +48,21 @@ class SourceSerializer(serializers.ModelSerializer):
 
 
 class JobApplicationSerializer(serializers.ModelSerializer):
-    applicationStatus = ApplicationStatusSerializer(read_only=True)
+    application_status = ApplicationStatusSerializer(read_only=True)
     position = JobPositionSerializer(read_only=True)
-    companyObject = serializers.SerializerMethodField()
+    company_object = serializers.SerializerMethodField()
     app_source = SourceSerializer(read_only=True)
     editable = serializers.SerializerMethodField()
 
     def get_editable(self, obj):
-        if obj.msgId is not None and obj.msgId != '':
+        if obj.msg_id is not None and obj.msg_id != '':
             return False
         return True
 
-    def get_companyObject(self, obj):
+    def get_company_object(self, obj):
         context = self.context
         context['position'] = obj.position
-        return CompanySerializer(instance=obj.companyObject, many=False, context=context).data
+        return CompanySerializer(instance=obj.company_object, many=False, context=context).data
 
     def create(self, validated_data):
         return JobApplication.objects.create(**validated_data)
@@ -70,7 +70,7 @@ class JobApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobApplication
         fields = (
-            'id', 'editable', 'applicationStatus', 'position', 'companyObject', 'applyDate', 'app_source', 'isRejected')
+            'id', 'editable', 'application_status', 'position', 'company_object', 'apply_date', 'app_source', 'is_rejected')
 
 
 class JobApplicationNoteSerializer(serializers.ModelSerializer):
@@ -96,14 +96,14 @@ class JobApplicationNoteSerializer(serializers.ModelSerializer):
 
 
 class StatusHistorySerializer(serializers.ModelSerializer):
-    applicationStatus = ApplicationStatusSerializer(read_only=True)
+    application_status = ApplicationStatusSerializer(read_only=True)
 
     def create(self, validated_data):
         return StatusHistory.objects.create(**validated_data)
 
     class Meta:
         model = StatusHistory
-        fields = ('applicationStatus', 'update_date')
+        fields = ('application_status', 'update_date')
 
 
 class ContactSerializer(serializers.ModelSerializer):

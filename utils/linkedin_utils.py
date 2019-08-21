@@ -20,30 +20,30 @@ def parse_job_detail(body):
     try:
         link = body[find_nth(body, 'https://www.linkedin.com/comm/jobs/view/', 1): find_nth(body, '?trk', 1)]
         url = requests.get(link)
-        htmltext = url.text
-        s = find_nth(htmltext, '<code id="viewJobMetaTagModule">', 1)
-        e = htmltext.rfind('--></code>') + 10
-        plainData = htmltext[s: e]
-        plainData = plainData.replace('<!--', '')
-        plainData = plainData.replace('-->', '')
-        soup = bs(plainData, "html.parser")
+        html_text = url.text
+        s = find_nth(html_text, '<code id="viewJobMetaTagModule">', 1)
+        e = html_text.rfind('--></code>') + 10
+        plain_data = html_text[s: e]
+        plain_data = plain_data.replace('<!--', '')
+        plain_data = plain_data.replace('-->', '')
+        soup = bs(plain_data, "html.parser")
         try:
-            posterInformation = soup.find('code', id='posterInformationModule')
-            posterInformationJSON = posterInformation.getText()
+            poster_information = soup.find('code', id='posterInformationModule')
+            poster_information_json = poster_information.getText()
         except:
-            posterInformationJSON = '{}'
+            poster_information_json = '{}'
         try:
-            decoratedJobPosting = soup.find('code', id='decoratedJobPostingModule')
-            decoratedJobPostingJSON = decoratedJobPosting.getText()
+            decorated_job_posting = soup.find('code', id='decoratedJobPostingModule')
+            decorated_job_posting_json = decorated_job_posting.getText()
         except:
-            decoratedJobPostingJSON = '{}'
+            decorated_job_posting_json = '{}'
         try:
-            topCardV2 = soup.find('code', id='topCardV2Module')
-            topCardV2JSON = topCardV2.getText()
+            top_card_v2 = soup.find('code', id='topCardV2Module')
+            top_card_v2_json = top_card_v2.getText()
         except:
-            topCardV2JSON = '{}'
+            top_card_v2_json = '{}'
 
-        return posterInformationJSON, decoratedJobPostingJSON, topCardV2JSON
+        return poster_information_json, decorated_job_posting_json, top_card_v2_json
     except Exception as e:
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
         return '{}', '{}', '{}'
@@ -57,14 +57,14 @@ def get_access_token_with_code(code):
             redirect_uri = 'https://' + settings.SITE_URL + '/action-linkedin-oauth2'
         post_data = {'grant_type': 'authorization_code', 'code': code,
                      'redirect_uri': redirect_uri,
-                     'client_id': os.environ['JOBHAX_LINKEDIN_CLIENT_KEY'],
-                     'client_secret': os.environ['JOBHAX_LINKEDIN_CLIENT_SECRET']}
+                     'client_id': os.environ.get('JOBHAX_LINKEDIN_CLIENT_KEY', ''),
+                     'client_secret': os.environ.get('JOBHAX_LINKEDIN_CLIENT_SECRET', '')}
         log(post_data, 'e')
         response = requests.post('https://www.linkedin.com/uas/oauth2/accessToken',
                                  data=post_data, headers={'content-type': 'application/x-www-form-urlencoded'})
-        jsonres = json.loads(response.text)
-        log(jsonres, 'e')
-        return jsonres['access_token']
+        json_res = json.loads(response.text)
+        log(json_res, 'e')
+        return json_res['access_token']
     except Exception as e:
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
         return None

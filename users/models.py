@@ -46,9 +46,6 @@ class User(AbstractUser):
         swappable = 'AUTH_USER_MODEL'
 
 
-# Create your models here.
-
-
 class Profile(models.Model):
     User = get_user_model()
     user = models.OneToOneField(User, on_delete=models.CASCADE)

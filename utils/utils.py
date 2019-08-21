@@ -83,21 +83,15 @@ def send_email(email, activation_key, action):
 
 
 def verify_recaptcha(email, token, action):
-    try:
-        secret = os.environ['JOBHAX_RECAPTCHA_SECRET']
-    except Exception as e:
-        log(traceback.format_exception(None, e, e.__traceback__), 'e')
-        return ResponseCodes.success
-    post_data = {}
-    post_data['secret'] = secret
-    post_data['response'] = token
+    secret = os.environ.get('JOBHAX_RECAPTCHA_SECRET', '')
+    post_data = {'secret': secret, 'response': token}
     response = requests.post('https://www.google.com/recaptcha/api/siteverify',
                              data=post_data, headers={'content-type': 'application/x-www-form-urlencoded'})
-    jsonres = json.loads(response.text)
-    if jsonres['success'] == True and jsonres['action'] == action and jsonres['score'] > 0.5:
+    json_res = json.loads(response.text)
+    if json_res['success'] == True and json_res['action'] == action and json_res['score'] > 0.5:
         return ResponseCodes.success
     else:
-        log(jsonres, "e")
+        log(json_res, "e")
         # if email is not None:
         #    send_email(email, "", "warning")
         return ResponseCodes.verify_recaptcha_failed

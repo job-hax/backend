@@ -2,8 +2,6 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
-# Create your models here.
-
 class College(models.Model):
     web_pages = ArrayField(models.TextField(null=True, blank=True))
     domains = ArrayField(models.TextField(null=True, blank=True))
