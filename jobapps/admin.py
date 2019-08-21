@@ -7,10 +7,10 @@ from .models import JobApplication, ApplicationStatus, Source, GoogleMail, Sourc
 # Register your models here.
 @admin.register(JobApplication)
 class CompanyAdmin(admin.ModelAdmin, ExportCsv):
-    list_display = ("user", "applicationStatus", "position",
-                    'companyObject', 'app_source', 'isDeleted', 'applyDate')
-    list_filter = ("user", "applicationStatus", "position",
-                   'companyObject', 'app_source', 'applyDate')
+    list_display = ("user", "application_status", "position",
+                    'company_object', 'app_source', 'is_deleted', 'apply_date')
+    list_filter = ("user", "application_status", "position",
+                   'company_object', 'app_source', 'apply_date')
     actions = ["export_as_csv"]
 
 

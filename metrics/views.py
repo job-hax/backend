@@ -19,7 +19,7 @@ from utils.generic_json_creator import create_response
 @api_view(["GET"])
 def generic(request):
     response = []
-    total_jobs_applied = JobApplication.objects.filter(user=request.user, isDeleted=False)
+    total_jobs_applied = JobApplication.objects.filter(user=request.user, is_deleted=False)
     for graph in range(4):
         item = {}
         if graph == 0:
@@ -32,13 +32,13 @@ def generic(request):
                 item['value'] = '0%'
             else:
                 item['value'] = str(round(total_jobs_applied.filter(
-                    applicationStatus__value='PHONE SCREEN').count() / total_jobs_applied.count() * 100, 2)) + '%'
+                    application_status__value='PHONE SCREEN').count() / total_jobs_applied.count() * 100, 2)) + '%'
             item['description'] = '13% INCREASE from last month'
-            statuses = total_jobs_applied.filter(~Q(applicationStatus=None)).values(
-                'applicationStatus').annotate(count=Count('pk'))
+            statuses = total_jobs_applied.filter(~Q(application_status=None)).values(
+                'application_status').annotate(count=Count('pk'))
             for status in statuses:
                 status_text = ApplicationStatus.objects.get(
-                    pk=status['applicationStatus']).value.upper()
+                    pk=status['application_status']).value.upper()
                 item['graph']['legend'].append(status_text)
                 serie = {'name': status_text, 'value': status['count']}
                 if status_text == 'PHONE SCREEN':
@@ -54,13 +54,13 @@ def generic(request):
                 item['value'] = '0%'
             else:
                 item['value'] = str(round(total_jobs_applied.filter(
-                    applicationStatus__value='ONSITE INTERVIEW').count() / total_jobs_applied.count() * 100, 2)) + '%'
+                    application_status__value='ONSITE INTERVIEW').count() / total_jobs_applied.count() * 100, 2)) + '%'
             item['description'] = '4% DECREASE from last month'
-            statuses = total_jobs_applied.filter(~Q(applicationStatus=None)).values(
-                'applicationStatus').annotate(count=Count('pk'))
+            statuses = total_jobs_applied.filter(~Q(application_status=None)).values(
+                'application_status').annotate(count=Count('pk'))
             for status in statuses:
                 status_text = ApplicationStatus.objects.get(
-                    pk=status['applicationStatus']).value.upper()
+                    pk=status['application_status']).value.upper()
                 item['graph']['legend'].append(status_text)
                 serie = {'name': status_text, 'value': status['count']}
                 if status_text == 'ONSITE INTERVIEW':
@@ -84,15 +84,15 @@ def generic(request):
             while len(months) != 12:
                 months.insert(0, dec)
                 dec = dec + relativedelta(months=-1)
-            apps_by_month = total_jobs_applied.filter(applyDate__range=[
-                last_year, today]).values('applyDate__year', 'applyDate__month').annotate(
+            apps_by_month = total_jobs_applied.filter(apply_date__range=[
+                last_year, today]).values('apply_date__year', 'apply_date__month').annotate(
                 count=Count('pk'))
 
             serie = {'name': item['title'], 'type': 'line'}
             data = [0] * 12
             for j in range(0, 12):
                 count = apps_by_month.filter(
-                    applyDate__year=months[j].year, applyDate__month=months[j].month)
+                    apply_date__year=months[j].year, apply_date__month=months[j].month)
                 if count.count() > 0:
                     data[j] = count[0]['count']
             serie['data'] = data
@@ -102,7 +102,7 @@ def generic(request):
             item['graph']['type'] = 'line'
             item['graph']['series'] = []
             item['title'] = 'Total Rejected Jobs'
-            item['value'] = str(total_jobs_applied.filter(isRejected=True).count()) + '/' + str(
+            item['value'] = str(total_jobs_applied.filter(is_rejected=True).count()) + '/' + str(
                 total_jobs_applied.count())
             item['description'] = '3% DECREASE from last month'
 
@@ -116,8 +116,8 @@ def generic(request):
             while len(months) != 12:
                 months.insert(0, dec)
                 dec = dec + relativedelta(months=-1)
-            apps_by_month = total_jobs_applied.filter(applyDate__range=[
-                last_year, today], isRejected=True).values('applyDate__year', 'applyDate__month').annotate(
+            apps_by_month = total_jobs_applied.filter(apply_date__range=[
+                last_year, today], is_rejected=True).values('apply_date__year', 'apply_date__month').annotate(
                 count=Count('pk'))
 
             serie = {'name': item['title'], 'type': 'line'}
@@ -169,22 +169,22 @@ def detailed(request):
             for i in sources:
                 if i != 'Others':
                     apps = JobApplication.objects.filter(user=request.user, app_source__value=i,
-                                                         applyDate__range=[
-                                                             last_year, today], isDeleted=False)
+                                                         apply_date__range=[
+                                                             last_year, today], is_deleted=False)
                     apps_by_months = apps.values(
-                        'applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+                        'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 else:
                     apps = JobApplication.objects.filter(user=request.user, app_source__system=False,
-                                                         applyDate__range=[
-                                                             last_year, today], isDeleted=False)
+                                                         apply_date__range=[
+                                                             last_year, today], is_deleted=False)
                     apps_by_months = apps.values(
-                        'applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+                        'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 item['list']['data'].append({'id': i, 'value': apps.count()})
                 serie = {'name': i}
                 data = [0] * 12
                 for j in range(0, 12):
                     count = apps_by_months.filter(
-                        applyDate__year=months[j].year, applyDate__month=months[j].month)
+                        apply_date__year=months[j].year, apply_date__month=months[j].month)
                     if len(count) > 0:
                         data[j] = count[0]['count']
                 serie['data'] = data
@@ -193,8 +193,8 @@ def detailed(request):
                 item['graph']['series'].append(serie)
 
             item['list']['data'].sort(key=lambda x: x['value'], reverse=True)
-            item['list']['total'] = JobApplication.objects.filter(user=request.user, applyDate__range=[
-                last_year, today], isDeleted=False).count()
+            item['list']['total'] = JobApplication.objects.filter(user=request.user, apply_date__range=[
+                last_year, today], is_deleted=False).count()
             item['graph']['xAxis'] = months_string
         elif graph == 1:
             item['graph'] = {}
@@ -222,17 +222,17 @@ def detailed(request):
 
             statuses = ApplicationStatus.objects.all()
             for status in statuses:
-                apps = JobApplication.objects.filter(user=request.user, applicationStatus=status,
-                                                     applyDate__range=[
-                                                         last_year, today], isDeleted=False)
+                apps = JobApplication.objects.filter(user=request.user, application_status=status,
+                                                     apply_date__range=[
+                                                         last_year, today], is_deleted=False)
                 item['list']['data'].append({'id': status.value.upper(), 'value': apps.count()})
                 apps = apps.values(
-                    'applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+                    'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 serie = {'name': status.value.upper()}
                 data = [0] * 12
                 for j in range(0, 12):
                     count = apps.filter(
-                        applyDate__year=months[j].year, applyDate__month=months[j].month)
+                        apply_date__year=months[j].year, apply_date__month=months[j].month)
                     if len(count) > 0:
                         data[j] = count[0]['count']
                 serie['data'] = data
@@ -240,8 +240,8 @@ def detailed(request):
                 serie['stack'] = 'Status'
                 item['graph']['series'].append(serie)
             item['list']['data'].sort(key=lambda x: x['value'], reverse=True)
-            item['list']['total'] = JobApplication.objects.filter(user=request.user, applyDate__range=[
-                last_year, today], isDeleted=False).count()
+            item['list']['total'] = JobApplication.objects.filter(user=request.user, apply_date__range=[
+                last_year, today], is_deleted=False).count()
             item['graph']['xAxis'] = months_string
         elif graph == 2:
             item['graph'] = {}
@@ -292,9 +292,9 @@ def detailed(request):
 
             item['graph']['xAxis'] = []
 
-            top_companies = JobApplication.objects.filter(~Q(applicationStatus=None), user=request.user,
-                                                          isDeleted=False).values(
-                company=F('companyObject__company')).annotate(count=Count('companyObject')).order_by('-count')
+            top_companies = JobApplication.objects.filter(~Q(application_status=None), user=request.user,
+                                                          is_deleted=False).values(
+                company=F('company_object__company')).annotate(count=Count('company_object')).order_by('-count')
             if top_companies.count() > 10:
                 top_companies = top_companies[:10]
 
@@ -311,9 +311,9 @@ def detailed(request):
                 serie = {'name': company['company'], 'type': "bar", 'stack': 'Company'}
                 data = [0] * statuses.count()
                 for idx, status in enumerate(statuses):
-                    data[idx] = JobApplication.objects.filter(~Q(applicationStatus=None), user=request.user,
-                                                              companyObject__company=company['company'],
-                                                              applicationStatus=status).count()
+                    data[idx] = JobApplication.objects.filter(~Q(application_status=None), user=request.user,
+                                                              company_object__company=company['company'],
+                                                              application_status=status).count()
                 serie['data'] = data
                 item['graph']['series'].append(serie)
 
@@ -341,13 +341,13 @@ def agg_detailed(request):
             months = []
             months_string = []
 
-            distinct_jobapps = JobApplication.objects.all().distinct('companyObject', 'user')
-            #  ~Q(applicationStatus__pk = 2) indicates not 'To Apply' statuses in the prod DB.
-            top_companies = JobApplication.objects.filter(~Q(applicationStatus=None), ~Q(applicationStatus__pk=2),
-                                                          applyDate__range=[
+            distinct_jobapps = JobApplication.objects.all().distinct('company_object', 'user')
+            #  ~Q(application_status__pk = 2) indicates not 'To Apply' statuses in the prod DB.
+            top_companies = JobApplication.objects.filter(~Q(application_status=None), ~Q(application_status__pk=2),
+                                                          apply_date__range=[
                                                               last_year, today],
-                                                          isDeleted=False).values(
-                company=F('companyObject__company')).annotate(count=Count('companyObject')).filter(
+                                                          is_deleted=False).values(
+                company=F('company_object__company')).annotate(count=Count('company_object')).filter(
                 id__in=distinct_jobapps).order_by('-count')
 
             for i in range(0, today.month):
@@ -370,10 +370,10 @@ def agg_detailed(request):
                 serie = {'name': company['company'], 'type': 'bar'}
                 data = [0] * 12
                 for j in range(0, 12):
-                    count = JobApplication.objects.filter(companyObject__company=company['company'],
-                                                          applyDate__year=months[j].year,
-                                                          applyDate__month=months[j].month,
-                                                          isDeleted=False,
+                    count = JobApplication.objects.filter(company_object__company=company['company'],
+                                                          apply_date__year=months[j].year,
+                                                          apply_date__month=months[j].month,
+                                                          is_deleted=False,
                                                           id__in=distinct_jobapps)
                     data[j] = count.count()
                 serie['data'] = data
@@ -416,27 +416,27 @@ def agg_detailed(request):
 
             for i in sources:
                 if i == 'Total':
-                    apps = JobApplication.objects.filter(applyDate__range=[last_year, today], isDeleted=False)
+                    apps = JobApplication.objects.filter(apply_date__range=[last_year, today], is_deleted=False)
                     apps_by_months = apps.values(
-                        'applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+                        'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 elif i != 'Others':
                     apps = JobApplication.objects.filter(app_source__value=i,
-                                                         applyDate__range=[
-                                                             last_year, today], isDeleted=False)
+                                                         apply_date__range=[
+                                                             last_year, today], is_deleted=False)
                     apps_by_months = apps.values(
-                        'applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+                        'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 else:
                     apps = JobApplication.objects.filter(app_source__system=False,
-                                                         applyDate__range=[
-                                                             last_year, today], isDeleted=False)
+                                                         apply_date__range=[
+                                                             last_year, today], is_deleted=False)
                     apps_by_months = apps.values(
-                        'applyDate__year', 'applyDate__month').annotate(count=Count('pk'))
+                        'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
 
                 serie = {'name': i}
                 data = [0] * 12
                 for j in range(0, 12):
                     count = apps_by_months.filter(
-                        applyDate__year=months[j].year, applyDate__month=months[j].month)
+                        apply_date__year=months[j].year, apply_date__month=months[j].month)
                     if len(count) > 0:
                         data[j] = count[0]['count']
                 serie['data'] = data
@@ -446,8 +446,8 @@ def agg_detailed(request):
 
             total = 0
             for idx, month in enumerate(months):
-                apps = JobApplication.objects.filter(applyDate__year=month.year, applyDate__month=month.month,
-                                                     isDeleted=False)
+                apps = JobApplication.objects.filter(apply_date__year=month.year, apply_date__month=month.month,
+                                                     is_deleted=False)
                 item['list']['data'].append(
                     {'id': months_string[idx] + ' ' + str(month.year), 'value': apps.count()})
                 total += apps.count()
@@ -506,11 +506,11 @@ def agg_detailed(request):
             months_string = []
 
             distinct_positions = JobApplication.objects.all().distinct('position', 'user')
-            #  ~Q(applicationStatus__pk = 2) indicates not 'To Apply' statuses in the prod DB.
-            top_positions = JobApplication.objects.filter(~Q(applicationStatus=None), ~Q(applicationStatus__pk=2),
-                                                          applyDate__range=[
+            #  ~Q(application_status__pk = 2) indicates not 'To Apply' statuses in the prod DB.
+            top_positions = JobApplication.objects.filter(~Q(application_status=None), ~Q(application_status__pk=2),
+                                                          apply_date__range=[
                                                               last_year, today],
-                                                          isDeleted=False).values(
+                                                          is_deleted=False).values(
                 position_=F('position__job_title')).annotate(count=Count('position')).filter(
                 id__in=distinct_positions).order_by('-count').order_by('-count')
 
@@ -534,11 +534,11 @@ def agg_detailed(request):
                 serie = {'name': position['position_'], 'type': 'bar'}
                 data = [0] * 12
                 for j in range(0, 12):
-                    count = JobApplication.objects.filter(~Q(applicationStatus=None), ~Q(applicationStatus__pk=2),
+                    count = JobApplication.objects.filter(~Q(application_status=None), ~Q(application_status__pk=2),
                                                           position__job_title=position['position_'],
-                                                          applyDate__year=months[j].year,
-                                                          applyDate__month=months[j].month,
-                                                          isDeleted=False,
+                                                          apply_date__year=months[j].year,
+                                                          apply_date__month=months[j].month,
+                                                          is_deleted=False,
                                                           id__in=distinct_positions)
                     data[j] = count.count()
                 serie['data'] = data
@@ -556,7 +556,7 @@ def agg_detailed(request):
 @api_view(["GET"])
 def agg_generic(request):
     response = []
-    total_jobs_applied = JobApplication.objects.filter(isDeleted=False)
+    total_jobs_applied = JobApplication.objects.filter(is_deleted=False)
     for graph in range(4):
         item = {}
         if graph == 0:
@@ -569,13 +569,13 @@ def agg_generic(request):
                 item['value'] = '0%'
             else:
                 item['value'] = str(round(total_jobs_applied.filter(
-                    applicationStatus__value='PHONE SCREEN').count() / total_jobs_applied.count() * 100, 2)) + '%'
+                    application_status__value='PHONE SCREEN').count() / total_jobs_applied.count() * 100, 2)) + '%'
             item['description'] = '13% INCREASE from last month'
-            statuses = total_jobs_applied.filter(~Q(applicationStatus=None)).values(
-                'applicationStatus').annotate(count=Count('pk'))
+            statuses = total_jobs_applied.filter(~Q(application_status=None)).values(
+                'application_status').annotate(count=Count('pk'))
             for status in statuses:
                 status_text = ApplicationStatus.objects.get(
-                    pk=status['applicationStatus']).value.upper()
+                    pk=status['application_status']).value.upper()
                 item['graph']['legend'].append(status_text)
                 serie = {'name': status_text, 'value': status['count']}
                 if status_text == 'PHONE SCREEN':
@@ -591,13 +591,13 @@ def agg_generic(request):
                 item['value'] = '0%'
             else:
                 item['value'] = str(round(total_jobs_applied.filter(
-                    applicationStatus__value='ONSITE INTERVIEW').count() / total_jobs_applied.count() * 100, 2)) + '%'
+                    application_status__value='ONSITE INTERVIEW').count() / total_jobs_applied.count() * 100, 2)) + '%'
             item['description'] = '4% DECREASE from last month'
-            statuses = total_jobs_applied.filter(~Q(applicationStatus=None)).values(
-                'applicationStatus').annotate(count=Count('pk'))
+            statuses = total_jobs_applied.filter(~Q(application_status=None)).values(
+                'application_status').annotate(count=Count('pk'))
             for status in statuses:
                 status_text = ApplicationStatus.objects.get(
-                    pk=status['applicationStatus']).value.upper()
+                    pk=status['application_status']).value.upper()
                 item['graph']['legend'].append(status_text)
                 serie = {'name': status_text, 'value': status['count']}
                 if status_text == 'ONSITE INTERVIEW':
@@ -621,15 +621,15 @@ def agg_generic(request):
             while len(months) != 12:
                 months.insert(0, dec)
                 dec = dec + relativedelta(months=-1)
-            apps_by_month = total_jobs_applied.filter(applyDate__range=[
-                last_year, today]).values('applyDate__year', 'applyDate__month').annotate(
+            apps_by_month = total_jobs_applied.filter(apply_date__range=[
+                last_year, today]).values('apply_date__year', 'apply_date__month').annotate(
                 count=Count('pk'))
 
             serie = {'name': item['title'], 'type': 'line'}
             data = [0] * 12
             for j in range(0, 12):
                 count = apps_by_month.filter(
-                    applyDate__year=months[j].year, applyDate__month=months[j].month)
+                    apply_date__year=months[j].year, apply_date__month=months[j].month)
                 if count.count() > 0:
                     data[j] = count[0]['count']
             serie['data'] = data

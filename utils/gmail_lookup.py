@@ -37,7 +37,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
       A Message.
     """
     try:
-        if JobApplication.objects.all().filter(msgId=msg_id).count() > 0:
+        if JobApplication.objects.all().filter(msg_id=msg_id).count() > 0:
             log('this email parsed before', 'e')
             return
         message = service.users().messages().get(
@@ -80,10 +80,10 @@ def get_email_detail(service, user_id, msg_id, user, source):
             log(str(message['payload']['headers']), 'e')
 
         if mail_subject is not None and mail_body is not None and original_date is not None:
-            inserted_before = GoogleMail.objects.all().filter(msgId=msg_id)
+            inserted_before = GoogleMail.objects.all().filter(msg_id=msg_id)
             if inserted_before.count() == 0:
                 app_source = Source.objects.get(value__iexact=source)
-                mail = GoogleMail(user=user, subject=mail_subject, body=mail_body, date=date, msgId=msg_id,
+                mail = GoogleMail(user=user, subject=mail_subject, body=mail_body, date=date, msg_id=msg_id,
                                   app_source=app_source)
                 mail.save()
             else:
@@ -246,7 +246,7 @@ def get_email_detail(service, user_id, msg_id, user, source):
                 job_title = ps[0].text
                 company = ps[1].text
 
-        inserted_before = JobApplication.objects.all().filter(msgId=msg_id)
+        inserted_before = JobApplication.objects.all().filter(msg_id=msg_id)
         if inserted_before.count() == 0 and job_title != '' and company != '':
             jt = get_or_insert_position(job_title)
 
@@ -258,12 +258,12 @@ def get_email_detail(service, user_id, msg_id, user, source):
             else:
                 status = ApplicationStatus.objects.get(default=True)
             source = Source.objects.get(value__iexact=source)
-            japp = JobApplication(position=jt, companyObject=jc, applyDate=date, msgId=msg_id, app_source=source,
-                                  user=user, applicationStatus=status)
+            japp = JobApplication(position=jt, company_object=jc, apply_date=date, msg_id=msg_id, app_source=source,
+                                  user=user, application_status=status)
             japp.save()
             log('Job Application inserted : ' + str(japp), 'i')
             status_history = StatusHistory(
-                job_post=japp, applicationStatus=status)
+                job_post=japp, application_status=status)
             status_history.save()
             if mail is not None:
                 mail.job_post = japp

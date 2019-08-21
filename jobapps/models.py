@@ -6,8 +6,6 @@ from django.db import models
 
 from company.models import Company
 from position.models import JobPosition
-from users.models import EmploymentAuth
-from users.models import EmploymentStatus
 
 User = get_user_model()
 
@@ -39,29 +37,29 @@ class Source(models.Model):
 class JobApplication(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True)
-    applicationStatus = models.ForeignKey(
-        ApplicationStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_applicationStatus')
+    application_status = models.ForeignKey(
+        ApplicationStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_application_status')
     position = models.ForeignKey(
         JobPosition, on_delete=models.SET_NULL, null=True, related_name='%(class)s_position')
-    companyObject = models.ForeignKey(
+    company_object = models.ForeignKey(
         Company, on_delete=models.SET_NULL, null=True, related_name='%(class)s_company')
-    applyDate = models.DateTimeField(blank=True)
-    msgId = models.CharField(max_length=200)
+    apply_date = models.DateTimeField(blank=True)
+    msg_id = models.CharField(max_length=200)
     app_source = models.ForeignKey(
         Source, on_delete=models.SET_NULL, null=True, related_name='%(class)s_source')
     rejected_date = models.DateTimeField(null=True, blank=True)
     deleted_date = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(default=datetime.now, null=True, blank=True)
     updated_date = models.DateTimeField(null=True, blank=True)
-    isRejected = models.BooleanField(default=False)
-    isDeleted = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
 
 
 class StatusHistory(models.Model):
     job_post = models.ForeignKey(
         JobApplication, on_delete=models.CASCADE, null=True, blank=True)
-    applicationStatus = models.ForeignKey(
-        ApplicationStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_applicationStatus')
+    application_status = models.ForeignKey(
+        ApplicationStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_application_status')
     update_date = models.DateTimeField(default=datetime.now, blank=True)
 
 
@@ -75,7 +73,7 @@ class GoogleMail(models.Model):
     subject = models.CharField(max_length=200)
     body = models.TextField(null=True, blank=True)
     date = models.CharField(max_length=50)
-    msgId = models.CharField(max_length=200, null=True)
+    msg_id = models.CharField(max_length=200, null=True)
 
 
 class JobApplicationNote(models.Model):

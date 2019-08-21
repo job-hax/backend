@@ -22,8 +22,8 @@ def companies(request):
         companies_has_review = Review.objects.order_by('company__id').distinct('company__id')
         companies = Company.objects.all().filter(id__in=[r.company.id for r in companies_has_review])
     if mine is not None:
-        users_companies = JobApplication.objects.filter(user=request.user, isDeleted=False)
-        companies = companies.filter(id__in=[j.companyObject.id for j in users_companies])
+        users_companies = JobApplication.objects.filter(user=request.user, is_deleted=False)
+        companies = companies.filter(id__in=[j.company_object.id for j in users_companies])
     if q is not None:
         companies = companies.filter(company__icontains=q)
     paginator = pagination.CustomPagination()
@@ -38,7 +38,7 @@ def companies(request):
 def positions(request, company_pk):
     has_review = request.GET.get('hasReview')
     company = Company.objects.get(pk=company_pk)
-    queryset = JobApplication.objects.filter(companyObject=company)
+    queryset = JobApplication.objects.filter(company_object=company)
     if has_review is not None:
         positions_has_review = Review.objects.filter(company=company).order_by('position__id').distinct('position__id')
         queryset = queryset.filter(position__id__in=[r.position.id for r in positions_has_review])

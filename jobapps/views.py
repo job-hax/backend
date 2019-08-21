@@ -30,10 +30,10 @@ def get_jobapps(request):
     status_id = request.GET.get('status_id')
     if status_id is not None:
         user_job_apps = JobApplication.objects.filter(
-            applicationStatus_id=status_id, user_id=request.user.id, isDeleted=False).order_by('-applyDate')
+            application_status__id=status_id, user__id=request.user.id, is_deleted=False).order_by('-apply_date')
     else:
         user_job_apps = JobApplication.objects.filter(
-            user_id=request.user.id, isDeleted=False).order_by('-applyDate')
+            user_id=request.user.id, is_deleted=False).order_by('-apply_date')
     joblist = JobApplicationSerializer(instance=user_job_apps, many=True, context={
         'user': request.user}).data
     return JsonResponse(create_response(data=joblist), safe=False)
@@ -113,7 +113,7 @@ def get_contacts(request):
             alumni = []
         else:
             jobapp = JobApplication.objects.get(pk=jobapp_id)
-            alumni_list = Profile.objects.filter(college=user_profile.college, company=jobapp.companyObject, user_type=int(Profile.UserTypes.alumni))
+            alumni_list = Profile.objects.filter(college=user_profile.college, company=jobapp.company_object, user_type=int(Profile.UserTypes.alumni))
             alumni = AlumniSerializer(
                 instance=alumni_list, many=True, context={'user': request.user}).data
         data['alumni'] = alumni
@@ -269,7 +269,7 @@ def update_jobapp(request):
             for user_job_app in user_job_apps:
                 if user_job_app.user == request.user:
                     if status_id is None:
-                        user_job_app.isRejected = rejected
+                        user_job_app.is_rejected = rejected
                     else:
                         new_status = ApplicationStatus.objects.filter(pk=status_id)
                         if new_status.count() == 0:
@@ -278,12 +278,12 @@ def update_jobapp(request):
                                 safe=False)
                         else:
                             if rejected is None:
-                                user_job_app.applicationStatus = new_status[0]
+                                user_job_app.application_status = new_status[0]
                             else:
-                                user_job_app.applicationStatus = new_status[0]
-                                user_job_app.isRejected = rejected
+                                user_job_app.application_status = new_status[0]
+                                user_job_app.is_rejected = rejected
                             status_history = StatusHistory(
-                                job_post=user_job_app, applicationStatus=new_status[0])
+                                job_post=user_job_app, application_status=new_status[0])
                             status_history.save()
                     if rejected is not None:
                         user_job_app.rejected_date = datetime.now()
@@ -318,7 +318,7 @@ def delete_jobapp(request):
             for user_job_app in user_job_apps:
                 if user_job_app.user == request.user:
                     user_job_app.deleted_date = datetime.now()
-                    user_job_app.isDeleted = True
+                    user_job_app.is_deleted = True
                     user_job_app.save()
                 # else:
                 #    success = False
@@ -350,9 +350,9 @@ def add_jobapp(request):
     else:
         source = Source.objects.get(value__iexact=source)
 
-    japp = JobApplication(position=jt, companyObject=jc, applyDate=applicationdate,
-                          msgId='', app_source=source, user=request.user)
-    japp.applicationStatus = ApplicationStatus.objects.get(pk=status)
+    japp = JobApplication(position=jt, company_object=jc, apply_date=applicationdate,
+                          msg_id='', app_source=source, user=request.user)
+    japp.application_status = ApplicationStatus.objects.get(pk=status)
     japp.save()
     return JsonResponse(
         create_response(data=JobApplicationSerializer(instance=japp, many=False, context={'user': request.user}).data),
@@ -376,7 +376,7 @@ def edit_jobapp(request):
     if user_job_app.user != request.user:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
                             safe=False)
-    if user_job_app.msgId is not None and user_job_app.msgId != '':
+    if user_job_app.msg_id is not None and user_job_app.msg_id != '':
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
                             safe=False)
 
@@ -386,13 +386,13 @@ def edit_jobapp(request):
     source = body.get('source')
 
     if applicationdate is not None:
-        user_job_app.applyDate = applicationdate
+        user_job_app.apply_date = applicationdate
 
     if job_title is not None:
         user_job_app.position = get_or_insert_position(job_title)
 
     if company is not None:
-        user_job_app.companyObject = get_or_create_company(company)
+        user_job_app.company_object = get_or_create_company(company)
 
     if source is not None:
         if Source.objects.filter(value__iexact=source).count() == 0:
