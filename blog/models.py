@@ -1,12 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from users.models import Profile
-
 
 class Blog(models.Model):
     publisher_profile = models.ForeignKey(
-        Profile, on_delete=models.SET_NULL, null=True, blank=True)
+        get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=50)
     snippet = models.CharField(null=True, max_length=400)
     header_image = models.FileField(blank=True, null=True)

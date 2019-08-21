@@ -1,12 +1,12 @@
 import pytz
 from rest_framework import serializers
 
-from users.serializers import ProfileSerializer
+from users.serializers import UserSerializer
 from . import models
 
 
 class BlogSerializer(serializers.ModelSerializer):
-    publisher_profile = ProfileSerializer(read_only=True)
+    publisher_profile = UserSerializer(read_only=True)
     upvote = serializers.SerializerMethodField()
     downvote = serializers.SerializerMethodField()
     voted = serializers.SerializerMethodField()
@@ -40,6 +40,7 @@ class BlogSerializer(serializers.ModelSerializer):
 
 
 class BlogSnippetSerializer(serializers.ModelSerializer):
+    publisher_profile = UserSerializer(read_only=True)
     upvote = serializers.SerializerMethodField()
     downvote = serializers.SerializerMethodField()
     voted = serializers.SerializerMethodField()
