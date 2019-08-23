@@ -18,8 +18,9 @@ from .serializers import BlogSnippetSerializer
 
 
 class ActionType(Enum):
-    upvote = 0
-    downvote = 1
+    none = 0
+    upvote = 1
+    downvote = -1
     view = 2
 
 
@@ -95,27 +96,23 @@ def do_action(request, blog_pk, type):
         blog.view_count = blog.view_count + 1
         blog.save()
     else:
-        vote, new = Vote.objects.get_or_create(user=request.user, blog=blog)
-        if type == ActionType.upvote:
-            vote.vote_type = True
-        elif type == ActionType.downvote:
-            vote.vote_type = False
-        vote.save()
-    return JsonResponse(
-        create_response(data=BlogSnippetSerializer(instance=blog, many=False, context={'user': request.user}).data),
-        safe=False)
+        if type == ActionType.none:
+            Vote.objects.filter(user=request.user, blog=blog).delete()
+        else:
+            vote, new = Vote.objects.get_or_create(user=request.user, blog=blog)
+            if type == ActionType.upvote:
+                vote.vote_type = True
+            elif type == ActionType.downvote:
+                vote.vote_type = False
+            vote.save()
+    return JsonResponse(create_response(data=None))
 
 
 @csrf_exempt
 @api_view(["POST"])
-def upvote(request, blog_pk):
-    return do_action(request, blog_pk, ActionType.upvote)
-
-
-@csrf_exempt
-@api_view(["POST"])
-def downvote(request, blog_pk):
-    return do_action(request, blog_pk, ActionType.downvote)
+def vote(request, blog_pk):
+    action = request.data['action']
+    return do_action(request, blog_pk, ActionType(action))
 
 
 @csrf_exempt

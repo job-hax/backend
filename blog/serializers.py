@@ -12,6 +12,10 @@ class BlogSerializer(serializers.ModelSerializer):
     downvote = serializers.SerializerMethodField()
     voted = serializers.SerializerMethodField()
     word_count = serializers.SerializerMethodField()
+    mine = serializers.SerializerMethodField()
+
+    def get_mine(self, obj):
+        return obj.publisher_profile == self.context.get('user')
 
     def get_word_count(self, obj):
         line_soup = bs(obj.content.strip(), 'html.parser')
@@ -42,7 +46,7 @@ class BlogSerializer(serializers.ModelSerializer):
         return voted
 
     class Meta:
-        fields = ('id', 'publisher_profile', 'title', 'content', 'header_image',
+        fields = ('id', 'publisher_profile', 'mine', 'title', 'content', 'header_image',
                   'created_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted', 'is_published')
         model = models.Blog
 
