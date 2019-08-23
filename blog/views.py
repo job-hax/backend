@@ -39,7 +39,7 @@ def blogs(request):
         serialized_blogs = BlogSnippetSerializer(
             instance=blogs, many=True, context={'user': request.user}).data
         return JsonResponse(create_response(data=serialized_blogs, paginator=paginator), safe=False)
-    elif request.method == "PUT":
+    elif request.method == "POST":
         body = request.data
         file = body['header_image']
         ext = file.name.split('.')[-1]
@@ -55,7 +55,7 @@ def blogs(request):
         blog.header_image.save(filename, file, save=True)
         blog.save()
         return JsonResponse(create_response(data=None), safe=False)
-    elif request.method == "POST":
+    elif request.method == "PUT":
         body = request.data
         blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
         if 'title' in body:

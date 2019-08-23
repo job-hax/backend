@@ -17,7 +17,12 @@ from utils.generic_json_creator import create_response
 @api_view(["GET", "POST", "DELETE"])
 def events(request):
     if request.method == "GET":
-        queryset = Event.objects.filter(is_published=True)
+        attended = request.GET.get('attended')
+        if attended is None:
+            queryset = Event.objects.filter(is_published=True)
+        else:
+            attended_events = EventAttendee.objects.filter(user=request.user)
+            queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
         paginator = pagination.CustomPagination()
         event_list = paginator.paginate_queryset(queryset, request)
         serialized_events = EventSimpleSerializer(
