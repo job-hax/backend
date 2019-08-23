@@ -37,7 +37,7 @@ from .models import EmploymentStatus, EmploymentAuth
 from .models import Feedback
 from .models import Profile
 from .serializers import EmploymentStatusSerializer, EmploymentAuthSerializer
-from .serializers import ProfileSerializer
+from .serializers import ProfileSerializer, UserSerializer
 
 User = get_user_model()
 
@@ -579,8 +579,12 @@ def refresh_token(request):
 @csrf_exempt
 @api_view(["GET"])
 def get_profile(request):
-    profile = Profile.objects.get(user=request.user)
-    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
+    basic = request.GET.get('basic')
+    if basic:
+        return JsonResponse(create_response(data=UserSerializer(instance=request.user, context={'detailed': True}, many=False).data), safe=False)
+    else:
+        profile = Profile.objects.get(user=request.user)
+        return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
 
 
 @csrf_exempt
