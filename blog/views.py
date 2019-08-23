@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
+from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
@@ -30,9 +31,9 @@ def blogs(request):
     if request.method == "GET":
         mine = request.GET.get('mine')
         if mine is None:
-            queryset = Blog.objects.filter(is_published=True)
+            queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user))
         else:
-            queryset = Blog.objects.filter(publisher_profile__user=request.user)
+            queryset = Blog.objects.filter(publisher_profile=request.user)
         paginator = pagination.CustomPagination()
         blogs = paginator.paginate_queryset(queryset, request)
         serialized_blogs = BlogSnippetSerializer(
@@ -47,15 +48,16 @@ def blogs(request):
         title = body['title']
         content = body['content']
         snippet = body['snippet'][:130] + '...'
+        publish = body['publish']
         publisher_profile = Profile.objects.get(user=request.user)
 
-        blog = Blog(title=title, snippet=snippet, content=content, publisher_profile=publisher_profile)
+        blog = Blog(title=title, snippet=snippet, content=content, publisher_profile=publisher_profile, is_published=publish)
         blog.header_image.save(filename, file, save=True)
         blog.save()
         return JsonResponse(create_response(data=None), safe=False)
     elif request.method == "POST":
         body = request.data
-        blog = Blog.objects.get(pk=body['blog_id'], publisher_profile__user=request.user)
+        blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
         if 'title' in body:
             blog.title = body['title']
         if 'content' in body:
@@ -66,12 +68,14 @@ def blogs(request):
             ext = file.name.split('.')[-1]
             filename = "%s.%s" % (uuid.uuid4(), ext)
             blog.header_image.save(filename, file, save=True)
+        if 'publish' in body:
+            blog.is_published = body['publish']
         blog.update_date = datetime.now()
         blog.save()
         return JsonResponse(create_response(data=None), safe=False)
     elif request.method == "DELETE":
         body = request.data
-        blog = Blog.objects.get(pk=body['blog_id'], publisher_profile__user=request.user)
+        blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
         blog.delete()
         return JsonResponse(create_response(data=None), safe=False)
 

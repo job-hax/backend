@@ -71,7 +71,7 @@ def events(request):
                                 safe=False)
 
         body = request.data
-        blog = Event.objects.get(pk=body['event_id'], publisher_profile__user=request.user)
+        blog = Event.objects.get(pk=body['event_id'], host_user=request.user)
         blog.delete()
         return JsonResponse(create_response(data=None), safe=False)
 
