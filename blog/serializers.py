@@ -46,7 +46,7 @@ class BlogSerializer(serializers.ModelSerializer):
         return voted
 
     class Meta:
-        fields = ('id', 'publisher_profile', 'mine', 'title', 'content', 'header_image',
+        fields = ('id', 'publisher_profile', 'mine', 'title', 'content', 'header_image', 'snippet',
                   'created_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted', 'is_published',
                   'is_approved')
         model = models.Blog
