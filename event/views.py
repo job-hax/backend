@@ -45,7 +45,7 @@ def events(request):
         return JsonResponse(create_response(data=None), safe=False)
     else:
         user_profile = Profile.objects.get(user=request.user)
-        if user_profile.user_type < int(Profile.UserTypes.career_service):
+        if user_profile.user_type < int(Profile.UserTypes.alumni):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                                 safe=False)
         body = request.data
