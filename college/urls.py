@@ -5,11 +5,11 @@ from college import views
 
 urlpatterns = [
     path('', views.colleges),
-    path('majors',
+    path('majors/',
          views.majors),
-    path('companies',
+    path('companies/',
          views.companies),
-    path('positions',
+    path('positions/',
          views.positions),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

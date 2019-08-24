@@ -5,6 +5,6 @@ from review import views
 
 urlpatterns = [
     path('', views.reviews),
-    path('sourceTypes', views.source_types),
+    path('sourceTypes/', views.source_types),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
