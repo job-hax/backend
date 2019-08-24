@@ -70,7 +70,8 @@ def blogs(request):
             blog.header_image.save(filename, file, save=True)
         if 'publish' in body:
             blog.is_published = get_boolean_from_request(request, 'publish', request.method)
-        blog.update_date = datetime.now()
+        blog.is_approved = False
+        blog.updated_at = datetime.now()
         blog.save()
         return JsonResponse(create_response(data={"id": blog.id}), safe=False)
     elif request.method == "DELETE":

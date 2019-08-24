@@ -48,7 +48,9 @@ def events(request):
             event = Event()
         else:
             event = Event.objects.get(pk=body['event_id'])
+            event.updated_at = datetime.now()
 
+        event.is_published = False
         event.host_user = request.user
         if 'title' in body:
             event.title = body['title']
@@ -76,7 +78,6 @@ def events(request):
             filename = "%s.%s" % (uuid.uuid4(), ext)
             event.header_image.save(filename, file, save=True)
 
-        event.update_date = datetime.now()
         event.save()
         return JsonResponse(create_response(data=EventSerializer(
             instance=event, many=False, context={'user': request.user, 'detailed': True}).data), safe=False)

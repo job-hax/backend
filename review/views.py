@@ -2,6 +2,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
+from datetime import datetime
 
 from company.models import Company
 from company.serializers import CompanySerializer
@@ -73,6 +74,7 @@ def reviews(request):
             if review.user.pk != user.pk:
                 return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
                                     safe=False)
+            review.update_date = datetime.now()
         elif request.method == "POST":
             review = Review()
         review.company = company
