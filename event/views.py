@@ -14,7 +14,7 @@ from utils.generic_json_creator import create_response
 
 
 @csrf_exempt
-@api_view(["GET", "POST", "DELETE"])
+@api_view(["GET", "POST", "PUT", "DELETE"])
 def events(request):
     if request.method == "GET":
         attended = request.GET.get('attended')
@@ -28,16 +28,27 @@ def events(request):
         serialized_events = EventSimpleSerializer(
             instance=event_list, many=True, context={'user': request.user, 'detailed': False}).data
         return JsonResponse(create_response(data=serialized_events, paginator=paginator), safe=False)
-    elif request.method == "POST":
+    elif request.method == "DELETE":
+        user_profile = Profile.objects.get(user=request.user)
+        if user_profile.user_type < int(Profile.UserTypes.career_service):
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                                safe=False)
+
+        body = request.data
+        blog = Event.objects.get(pk=body['event_id'], host_user=request.user)
+        blog.delete()
+        return JsonResponse(create_response(data=None), safe=False)
+    else:
         user_profile = Profile.objects.get(user=request.user)
         if user_profile.user_type < int(Profile.UserTypes.career_service):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                                 safe=False)
         body = request.data
-        if 'event_id' in body:
-            event = Event.objects.get(pk=body['event_id'])
-        else:
+        if request.method == "POST":
             event = Event()
+        else:
+            event = Event.objects.get(pk=body['event_id'])
+
         event.host_user = request.user
         if 'title' in body:
             event.title = body['title']
@@ -69,16 +80,6 @@ def events(request):
         event.save()
         return JsonResponse(create_response(data=EventSerializer(
             instance=event, many=False, context={'user': request.user, 'detailed': True}).data), safe=False)
-    elif request.method == "DELETE":
-        user_profile = Profile.objects.get(user=request.user)
-        if user_profile.user_type < int(Profile.UserTypes.career_service):
-            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
-                                safe=False)
-
-        body = request.data
-        blog = Event.objects.get(pk=body['event_id'], host_user=request.user)
-        blog.delete()
-        return JsonResponse(create_response(data=None), safe=False)
 
 
 @csrf_exempt
