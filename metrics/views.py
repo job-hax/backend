@@ -13,7 +13,9 @@ from jobapps.models import ApplicationStatus
 from jobapps.models import JobApplication
 from jobapps.models import Source
 from users.models import Profile
+from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
+from utils.utils import get_boolean_from_request
 
 
 @csrf_exempt
@@ -333,10 +335,15 @@ def agg_detailed(request):
     response = []
     user_profile = Profile.objects.get(user=request.user)
     filter_by_college = False
-    if user_profile.user_type >= int(Profile.UserTypes.student):
+    public = get_boolean_from_request(request, 'public', request.method)
+    if user_profile.user_type >= int(Profile.UserTypes.student) and not public:
         college_users = get_user_model().objects.filter(
             id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
         filter_by_college = True
+
+    if user_profile.user_type < int(Profile.UserTypes.student) and not public:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                            safe=False)
 
     for graph in range(4):
         item = {}
@@ -594,12 +601,15 @@ def agg_generic(request):
     response = []
     user_profile = Profile.objects.get(user=request.user)
     filter_by_college = False
-    if user_profile.user_type >= int(Profile.UserTypes.student):
+    public = get_boolean_from_request(request, 'public', request.method)
+    if user_profile.user_type >= int(Profile.UserTypes.student) and not public:
         college_users = get_user_model().objects.filter(
             id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
         filter_by_college = True
         total_jobs_applied = JobApplication.objects.filter(user__in=college_users, is_deleted=False)
     else:
+        if user_profile.user_type < int(Profile.UserTypes.student) and not public:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user), safe=False)
         total_jobs_applied = JobApplication.objects.filter(is_deleted=False)
     for graph in range(4):
         item = dict(graph={})
