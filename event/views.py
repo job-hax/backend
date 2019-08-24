@@ -11,6 +11,7 @@ from event.serializers import EventSerializer, EventSimpleSerializer, EventTypeS
 from users.models import Profile
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
+from utils.utils import get_boolean_from_request
 
 
 @csrf_exempt
@@ -19,7 +20,11 @@ def events(request):
     if request.method == "GET":
         attended = request.GET.get('attended')
         if attended is None:
-            queryset = Event.objects.filter(is_published=True)
+            user_profile = Profile.objects.get(user=request.user)
+            if user_profile.user_type >= int(Profile.UserTypes.student):
+                queryset = Event.objects.filter(is_published=True)
+            else:
+                queryset = Event.objects.filter(is_published=True, is_public=True)
         else:
             attended_events = EventAttendee.objects.filter(user=request.user)
             queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
@@ -77,6 +82,8 @@ def events(request):
             ext = file.name.split('.')[-1]
             filename = "%s.%s" % (uuid.uuid4(), ext)
             event.header_image.save(filename, file, save=True)
+        if 'public' in body:
+            event.is_public = get_boolean_from_request(request, 'public', request.method)
 
         event.save()
         return JsonResponse(create_response(data=EventSerializer(

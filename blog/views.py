@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
+from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -32,7 +33,11 @@ def blogs(request):
     if request.method == "GET":
         mine = request.GET.get('mine')
         if mine is None:
-            queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user))
+            user_profile = Profile.objects.get(user=request.user)
+            if user_profile.user_type >= int(Profile.UserTypes.student):
+                queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user))
+            else:
+                queryset = Blog.objects.filter(is_approved=True, is_public=True)
         else:
             queryset = Blog.objects.filter(publisher_profile=request.user)
         paginator = pagination.CustomPagination()
@@ -50,8 +55,9 @@ def blogs(request):
         content = body['content']
         snippet = body['snippet'][:130] + '...'
         publish = get_boolean_from_request(request, 'publish', request.method)
+        public = get_boolean_from_request(request, 'public', request.method)
 
-        blog = Blog(title=title, snippet=snippet, content=content, publisher_profile=request.user, is_published=publish)
+        blog = Blog(title=title, snippet=snippet, content=content, publisher_profile=request.user, is_published=publish, is_public=public)
         blog.header_image.save(filename, file, save=True)
         blog.save()
         return JsonResponse(create_response(data={"id": blog.id}), safe=False)
@@ -70,6 +76,8 @@ def blogs(request):
             blog.header_image.save(filename, file, save=True)
         if 'publish' in body:
             blog.is_published = get_boolean_from_request(request, 'publish', request.method)
+        if 'public' in body:
+            blog.is_public = get_boolean_from_request(request, 'public', request.method)
         blog.is_approved = False
         blog.updated_at = datetime.now()
         blog.save()
