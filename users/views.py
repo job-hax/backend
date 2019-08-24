@@ -218,7 +218,7 @@ def forgot_password(request):
         user.forgot_password_key_expires = expiration_time
         user.save()
         utils.send_email(user.email, activation_key,
-                         'check_forgot_password')
+                         'validateForgotPassword')
     except Exception as e:
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
     return JsonResponse(create_response(data=None, success=True), safe=False)
