@@ -105,8 +105,8 @@ def register(request):
 
                     response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
                         post_data), headers={'content-type': 'application/json'})
-                    jsonres = json.loads(response.text)
-                    if 'error' in jsonres:
+                    json_res = json.loads(response.text)
+                    if 'error' in json_res:
                         success = False
                         code = ResponseCodes.couldnt_login
                     else:
@@ -114,8 +114,8 @@ def register(request):
                         code = ResponseCodes.success
                         profile = Profile.objects.get(
                             user=user)
-                        jsonres['user_type'] = profile.user_type
-                    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
+                        json_res['user_type'] = profile.user_type
+                    return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
                 else:
                     post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'],
                                  'grant_type': 'convert_token'}
@@ -145,25 +145,6 @@ def register(request):
         success = False
         code = ResponseCodes.passwords_do_not_match
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
-
-
-@require_GET
-@csrf_exempt
-def check_credentials(request):
-    email = request.GET.get('email')
-    username = request.GET.get('username')
-    error_code = ResponseCodes.invalid_parameters
-    if email is not None:
-        users = User.objects.filter(email=email)
-        if users.count() == 0:
-            return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
-        error_code = ResponseCodes.email_exists
-    if username is not None:
-        users = User.objects.filter(username=username)
-        if users.count() == 0:
-            return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
-        error_code = ResponseCodes.username_exists
-    return JsonResponse(create_response(data=None, success=False, error_code=error_code), safe=False)
 
 
 @require_GET
@@ -198,7 +179,7 @@ def activate_user(request):
 
 @require_POST
 @csrf_exempt
-def generate_activation_code(request):
+def send_activation_code(request):
     body = JSONParser().parse(request)
     user = authenticate(username=body['username'], password=body['password'])
     if user is not None:
@@ -245,7 +226,7 @@ def forgot_password(request):
 
 @require_GET
 @csrf_exempt
-def check_forgot_password(request):
+def validate_forgot_password(request):
     try:
         user = User.objects.filter(forgot_password_key=request.GET.get('code'))
         if user.count() == 0:
@@ -301,8 +282,8 @@ def login(request):
 
     response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
         post_data), headers={'content-type': 'application/json'})
-    jsonres = json.loads(response.text)
-    if 'error' in jsonres:
+    json_res = json.loads(response.text)
+    if 'error' in json_res:
         success = False
         code = ResponseCodes.couldnt_login
     else:
@@ -310,9 +291,9 @@ def login(request):
         code = ResponseCodes.success
         profile = Profile.objects.get(
             user=user)
-        jsonres['user_type'] = profile.user_type
+        json_res['user_type'] = profile.user_type
         profile.save()
-    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
+    return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
 @require_POST
@@ -452,14 +433,13 @@ def link_social_account(request):
                 create_response(data=None, success=False, error_code=ResponseCodes.account_already_linked), safe=False)
     response = requests.post('http://localhost:8000/auth/convert-token',
                              data=json.dumps(post_data), headers={'content-type': 'application/json'})
-    jsonres = json.loads(response.text)
-    log(jsonres, 'e')
-    if 'error' in jsonres:
+    json_res = json.loads(response.text)
+    log(json_res, 'e')
+    if 'error' in json_res:
         success = False
         code = ResponseCodes.invalid_credentials
     else:
         social_user = UserSocialAuth.objects.get(extra_data__icontains=post_data['token'])
-
 
         if social_user.user.email != request.user.email:
             JobApplication.objects.filter(user=social_user.user).update(user=request.user)
@@ -473,7 +453,7 @@ def link_social_account(request):
         social_user.user = request.user
         social_user.save()
 
-        post_data = {'token': jsonres['access_token'], 'client_id': body['client_id'],
+        post_data = {'token': json_res['access_token'], 'client_id': body['client_id'],
                      'client_secret': body['client_secret']}
         headers = {'content-type': 'application/json'}
         response = requests.post('http://localhost:8000/auth/revoke-token',
@@ -508,17 +488,17 @@ def auth_social_user(request):
         post_data['token'] = body['token']
     response = requests.post('http://localhost:8000/auth/convert-token',
                              data=json.dumps(post_data), headers={'content-type': 'application/json'})
-    jsonres = json.loads(response.text)
-    log(jsonres, 'e')
-    if 'error' in jsonres:
+    json_res = json.loads(response.text)
+    log(json_res, 'e')
+    if 'error' in json_res:
         success = False
         code = ResponseCodes.invalid_credentials
     else:
         success = True
         code = ResponseCodes.success
-        user = AccessToken.objects.get(token=jsonres['access_token']).user
+        user = AccessToken.objects.get(token=json_res['access_token']).user
         profile = Profile.objects.get(user=user)
-        jsonres['user_type'] = profile.user_type
+        json_res['user_type'] = profile.user_type
         profile.save()
         user.approved = True
         user.save()
@@ -526,7 +506,7 @@ def auth_social_user(request):
             profile.is_gmail_read_ok = True
             profile.save()
             schedule_fetcher(user.id)
-    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
+    return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
 @background(schedule=1)
@@ -560,20 +540,18 @@ def sync_user_emails(request):
 @csrf_exempt
 def refresh_token(request):
     body = JSONParser().parse(request)
-    post_data = {'client_id': body['client_id']}
-    post_data['client_secret'] = body['client_secret']
-    post_data['grant_type'] = 'refresh_token'
-    post_data['refresh_token'] = body['refresh_token']
+    post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'], 'grant_type': 'refresh_token',
+                 'refresh_token': body['refresh_token']}
     response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
         post_data), headers={'content-type': 'application/json'})
-    jsonres = json.loads(response.text)
-    if 'error' in jsonres:
+    json_res = json.loads(response.text)
+    if 'error' in json_res:
         success = False
         code = ResponseCodes.invalid_credentials
     else:
         success = True
         code = ResponseCodes.success
-    return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
+    return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
 @csrf_exempt
@@ -589,14 +567,14 @@ def get_profile(request):
 
 @csrf_exempt
 @api_view(["GET"])
-def get_employment_statuses(request):
+def employment_statuses(request):
     statuses = EmploymentStatus.objects.all()
     return JsonResponse(create_response(data=EmploymentStatusSerializer(instance=statuses, many=True).data), safe=False)
 
 
 @csrf_exempt
 @api_view(["GET"])
-def get_employment_auths(request):
+def employment_authorizations(request):
     statuses = EmploymentAuth.objects.all()
     return JsonResponse(create_response(data=EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)
 
@@ -634,14 +612,6 @@ def update_gmail_token(request):
         success = False
         code = ResponseCodes.couldnt_update_google_token
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
-
-
-@csrf_exempt
-@api_view(["GET"])
-def get_user_google_mails(request):
-    mails = GoogleMail.objects.all()
-    slist = GoogleMailSerializer(instance=mails, many=True).data
-    return JsonResponse(create_response(data=slist), safe=False)
 
 
 @csrf_exempt

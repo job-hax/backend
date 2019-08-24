@@ -1,4 +1,3 @@
-import traceback
 from datetime import datetime
 
 from django.http import JsonResponse
@@ -7,11 +6,9 @@ from rest_framework.decorators import api_view
 
 from company.utils import get_or_create_company
 from position.utils import get_or_insert_position
-from users.models import Profile
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
-from utils.logger import log
 from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
 from .models import JobApplicationNote
 from .models import Source
