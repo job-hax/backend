@@ -12,6 +12,7 @@ from rest_framework.decorators import api_view
 from jobapps.models import ApplicationStatus
 from jobapps.models import JobApplication
 from jobapps.models import Source
+from users.models import Profile
 from utils.generic_json_creator import create_response
 
 
@@ -220,12 +221,18 @@ def detailed(request):
                 months_string.insert(0, dec.strftime("%B"))
                 dec = dec + relativedelta(months=-1)
 
-            statuses = ApplicationStatus.objects.all()
+            statuses = list(ApplicationStatus.objects.all())
+            status_total = ApplicationStatus(value='Total')
+            statuses.append(status_total)
             for status in statuses:
-                apps = JobApplication.objects.filter(user=request.user, application_status=status,
-                                                     apply_date__range=[
-                                                         last_year, today], is_deleted=False)
-                item['list']['data'].append({'id': status.value.upper(), 'value': apps.count()})
+                if status.value == 'Total':
+                    apps = JobApplication.objects.filter(user=request.user, apply_date__range=[last_year, today],
+                                                         is_deleted=False)
+                else:
+                    apps = JobApplication.objects.filter(user=request.user, application_status=status,
+                                                         apply_date__range=[
+                                                             last_year, today], is_deleted=False)
+                    item['list']['data'].append({'id': status.value.upper(), 'value': apps.count()})
                 apps = apps.values(
                     'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 serie = {'name': status.value.upper()}
@@ -237,7 +244,6 @@ def detailed(request):
                         data[j] = count[0]['count']
                 serie['data'] = data
                 serie['type'] = "line"
-                serie['stack'] = 'Status'
                 item['graph']['series'].append(serie)
             item['list']['data'].sort(key=lambda x: x['value'], reverse=True)
             item['list']['total'] = JobApplication.objects.filter(user=request.user, apply_date__range=[
@@ -325,6 +331,13 @@ def detailed(request):
 @api_view(["GET"])
 def agg_detailed(request):
     response = []
+    user_profile = Profile.objects.get(user=request.user)
+    filter_by_college = False
+    if user_profile.user_type >= int(Profile.UserTypes.student):
+        college_users = get_user_model().objects.filter(
+            id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
+        filter_by_college = True
+
     for graph in range(4):
         item = {}
         if graph == 0:
@@ -341,7 +354,10 @@ def agg_detailed(request):
             months = []
             months_string = []
 
-            distinct_jobapps = JobApplication.objects.all().distinct('company_object', 'user')
+            if filter_by_college:
+                distinct_jobapps = JobApplication.objects.filter(user__in=college_users).distinct('company_object', 'user')
+            else:
+                distinct_jobapps = JobApplication.objects.all().distinct('company_object', 'user')
             #  ~Q(application_status__pk = 2) indicates not 'To Apply' statuses in the prod DB.
             top_companies = JobApplication.objects.filter(~Q(application_status=None), ~Q(application_status__pk=2),
                                                           apply_date__range=[
@@ -416,19 +432,31 @@ def agg_detailed(request):
 
             for i in sources:
                 if i == 'Total':
-                    apps = JobApplication.objects.filter(apply_date__range=[last_year, today], is_deleted=False)
+                    if filter_by_college:
+                        apps = JobApplication.objects.filter(user__in=college_users, apply_date__range=[last_year, today],
+                                                             is_deleted=False)
+                    else:
+                        apps = JobApplication.objects.filter(apply_date__range=[last_year, today], is_deleted=False)
                     apps_by_months = apps.values(
                         'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 elif i != 'Others':
-                    apps = JobApplication.objects.filter(app_source__value=i,
+                    if filter_by_college:
+                        apps = JobApplication.objects.filter(user__in=college_users, app_source__value=i,
                                                          apply_date__range=[
                                                              last_year, today], is_deleted=False)
+                    else:
+                        apps = JobApplication.objects.filter(app_source__value=i, apply_date__range=[
+                                                                 last_year, today], is_deleted=False)
                     apps_by_months = apps.values(
                         'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 else:
-                    apps = JobApplication.objects.filter(app_source__system=False,
+                    if filter_by_college:
+                        apps = JobApplication.objects.filter(user__in=college_users, app_source__system=False,
                                                          apply_date__range=[
                                                              last_year, today], is_deleted=False)
+                    else:
+                        apps = JobApplication.objects.filter(app_source__system=False, apply_date__range=[
+                                                                 last_year, today], is_deleted=False)
                     apps_by_months = apps.values(
                         'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
 
@@ -446,8 +474,13 @@ def agg_detailed(request):
 
             total = 0
             for idx, month in enumerate(months):
-                apps = JobApplication.objects.filter(apply_date__year=month.year, apply_date__month=month.month,
-                                                     is_deleted=False)
+                if filter_by_college:
+                    apps = JobApplication.objects.filter(user__in=college_users, apply_date__year=month.year,
+                                                         apply_date__month=month.month,
+                                                         is_deleted=False)
+                else:
+                    apps = JobApplication.objects.filter(apply_date__year=month.year, apply_date__month=month.month,
+                                                         is_deleted=False)
                 item['list']['data'].append(
                     {'id': months_string[idx] + ' ' + str(month.year), 'value': apps.count()})
                 total += apps.count()
@@ -505,7 +538,10 @@ def agg_detailed(request):
             months = []
             months_string = []
 
-            distinct_positions = JobApplication.objects.all().distinct('position', 'user')
+            if filter_by_college:
+                distinct_positions = JobApplication.objects.filter(user__in=college_users).distinct('position', 'user')
+            else:
+                distinct_positions = JobApplication.objects.all().distinct('position', 'user')
             #  ~Q(application_status__pk = 2) indicates not 'To Apply' statuses in the prod DB.
             top_positions = JobApplication.objects.filter(~Q(application_status=None), ~Q(application_status__pk=2),
                                                           apply_date__range=[
@@ -556,11 +592,18 @@ def agg_detailed(request):
 @api_view(["GET"])
 def agg_generic(request):
     response = []
-    total_jobs_applied = JobApplication.objects.filter(is_deleted=False)
+    user_profile = Profile.objects.get(user=request.user)
+    filter_by_college = False
+    if user_profile.user_type >= int(Profile.UserTypes.student):
+        college_users = get_user_model().objects.filter(
+            id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
+        filter_by_college = True
+        total_jobs_applied = JobApplication.objects.filter(user__in=college_users, is_deleted=False)
+    else:
+        total_jobs_applied = JobApplication.objects.filter(is_deleted=False)
     for graph in range(4):
-        item = {}
+        item = dict(graph={})
         if graph == 0:
-            item['graph'] = {}
             item['graph']['type'] = 'pie'
             item['graph']['legend'] = []
             item['graph']['series'] = []
@@ -582,7 +625,6 @@ def agg_generic(request):
                     serie['selected'] = True
                 item['graph']['series'].append(serie)
         elif graph == 1:
-            item['graph'] = {}
             item['graph']['type'] = 'pie'
             item['graph']['legend'] = []
             item['graph']['series'] = []
@@ -604,7 +646,6 @@ def agg_generic(request):
                     serie['selected'] = True
                 item['graph']['series'].append(serie)
         elif graph == 2:
-            item['graph'] = {}
             item['graph']['type'] = 'line'
             item['graph']['series'] = []
             item['title'] = 'Total Applied Jobs'
@@ -635,15 +676,17 @@ def agg_generic(request):
             serie['data'] = data
             item['graph']['series'].append(serie)
         elif graph == 3:
-            item['graph'] = {}
             item['graph']['type'] = 'line'
             item['graph']['series'] = []
             item['title'] = 'Total Users'
             User = get_user_model()
-            total_user = User.objects.filter(is_staff=False)
+            if filter_by_college:
+                total_user = User.objects.filter(id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
+            else:
+                total_user = User.objects.all()
             total_user_count = total_user.count()
             item['value'] = total_user_count
-            total_application = JobApplication.objects.all().count()
+            total_application = total_jobs_applied.count()
             total_average = total_application / total_user_count
             item['description'] = 'Average ' + str(round(total_average, 2)) + ' & ' + 'Total ' + str(
                 total_application) + ' Jobs'
