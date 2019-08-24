@@ -9,7 +9,7 @@ urlpatterns = [
     path('logout', views.logout),
     path('activate', views.activate_user),
     path('forgotPassword', views.forgot_password),
-    path('validateForgotPassword', views.check_forgot_password),
+    path('validateForgotPassword', views.validate_forgot_password),
     path('resetPassword', views.reset_password),
     path('sendActivationCode', views.send_activation_code),
     path('changePassword', views.change_password),
