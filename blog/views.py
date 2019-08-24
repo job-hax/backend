@@ -14,6 +14,7 @@ from users.models import Profile
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
+from utils.utils import get_boolean_from_request
 from .serializers import BlogSerializer
 from .serializers import BlogSnippetSerializer
 
@@ -48,13 +49,12 @@ def blogs(request):
         title = body['title']
         content = body['content']
         snippet = body['snippet'][:130] + '...'
-        publish = body['publish']
-        publisher_profile = Profile.objects.get(user=request.user)
+        publish = get_boolean_from_request(request, 'publish', request.method)
 
-        blog = Blog(title=title, snippet=snippet, content=content, publisher_profile=publisher_profile, is_published=publish)
+        blog = Blog(title=title, snippet=snippet, content=content, publisher_profile=request.user, is_published=publish)
         blog.header_image.save(filename, file, save=True)
         blog.save()
-        return JsonResponse(create_response(data=None), safe=False)
+        return JsonResponse(create_response(data={"id": blog.id}), safe=False)
     elif request.method == "PUT":
         body = request.data
         blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
@@ -69,10 +69,10 @@ def blogs(request):
             filename = "%s.%s" % (uuid.uuid4(), ext)
             blog.header_image.save(filename, file, save=True)
         if 'publish' in body:
-            blog.is_published = body['publish']
+            blog.is_published = get_boolean_from_request(request, 'publish', request.method)
         blog.update_date = datetime.now()
         blog.save()
-        return JsonResponse(create_response(data=None), safe=False)
+        return JsonResponse(create_response(data={"id": blog.id}), safe=False)
     elif request.method == "DELETE":
         body = request.data
         blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
