@@ -17,6 +17,8 @@ from utils.logger import log
 
 
 def get_boolean_from_request(request, key, method='POST'):
+    if method is not 'GET':
+        method = 'POST'
     " gets the value from request and returns it's boolean state "
     value = getattr(request, method).get(key, False)
 
