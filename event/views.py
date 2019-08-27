@@ -82,8 +82,8 @@ def events(request):
             ext = file.name.split('.')[-1]
             filename = "%s.%s" % (uuid.uuid4(), ext)
             event.header_image.save(filename, file, save=True)
-        if 'public' in body:
-            event.is_public = get_boolean_from_request(request, 'public', request.method)
+        if 'is_public' in body:
+            event.is_public = get_boolean_from_request(request, 'is_public', request.method)
 
         event.save()
         send_notification_email_to_admins('event')

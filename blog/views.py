@@ -62,13 +62,13 @@ def blogs(request):
         if 'snippet' in body:
             snippet = body['snippet'][:130] + '...'
             blog.snippet = snippet
-        if 'publish' in body:
-            publish = get_boolean_from_request(request, 'publish', request.method)
-            blog.is_published = publish
+        if 'is_publish' in body:
+            is_publish = get_boolean_from_request(request, 'is_publish', request.method)
+            blog.is_published = is_publish
             send_notification_email_to_admins('blog')
-        if 'public' in body:
-            public = get_boolean_from_request(request, 'public', request.method)
-            blog.is_public = public
+        if 'is_public' in body:
+            is_public = get_boolean_from_request(request, 'is_public', request.method)
+            blog.is_public = is_public
         blog.publisher_profile = request.user
 
         blog.save()
