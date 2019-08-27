@@ -36,7 +36,7 @@ class EventSerializer(serializers.ModelSerializer):
     mine = serializers.SerializerMethodField()
 
     def get_mine(self, obj):
-        return obj.publisher_profile == self.context.get('user')
+        return obj.host_user == self.context.get('user')
 
     def get_created_at(self, obj):
         if obj.date is None:
