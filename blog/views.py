@@ -15,7 +15,7 @@ from users.models import Profile
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
-from utils.utils import get_boolean_from_request
+from utils.utils import get_boolean_from_request, send_notification_email_to_admins
 from .serializers import BlogSerializer
 from .serializers import BlogSnippetSerializer
 
@@ -47,18 +47,30 @@ def blogs(request):
         return JsonResponse(create_response(data=serialized_blogs, paginator=paginator), safe=False)
     elif request.method == "POST":
         body = request.data
-        file = body['header_image']
-        ext = file.name.split('.')[-1]
-        filename = "%s.%s" % (uuid.uuid4(), ext)
+        blog = Blog()
+        if 'header_image' in body:
+            file = body['header_image']
+            ext = file.name.split('.')[-1]
+            filename = "%s.%s" % (uuid.uuid4(), ext)
+            blog.header_image.save(filename, file, save=True)
+        if 'title' in body:
+            title = body['title']
+            blog.title = title
+        if 'content' in body:
+            content = body['content']
+            blog.content = content
+        if 'snippet' in body:
+            snippet = body['snippet'][:130] + '...'
+            blog.snippet = snippet
+        if 'publish' in body:
+            publish = get_boolean_from_request(request, 'publish', request.method)
+            blog.is_published = publish
+            send_notification_email_to_admins('blog')
+        if 'public' in body:
+            public = get_boolean_from_request(request, 'public', request.method)
+            blog.is_public = public
+        blog.publisher_profile = request.user
 
-        title = body['title']
-        content = body['content']
-        snippet = body['snippet'][:130] + '...'
-        publish = get_boolean_from_request(request, 'publish', request.method)
-        public = get_boolean_from_request(request, 'public', request.method)
-
-        blog = Blog(title=title, snippet=snippet, content=content, publisher_profile=request.user, is_published=publish, is_public=public)
-        blog.header_image.save(filename, file, save=True)
         blog.save()
         return JsonResponse(create_response(data={"id": blog.id}), safe=False)
     elif request.method == "PUT":
@@ -81,6 +93,7 @@ def blogs(request):
         blog.is_approved = False
         blog.updated_at = datetime.now()
         blog.save()
+        send_notification_email_to_admins('blog')
         return JsonResponse(create_response(data={"id": blog.id}), safe=False)
     elif request.method == "DELETE":
         body = request.data

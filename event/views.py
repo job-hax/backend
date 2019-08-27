@@ -11,7 +11,7 @@ from event.serializers import EventSerializer, EventSimpleSerializer, EventTypeS
 from users.models import Profile
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
-from utils.utils import get_boolean_from_request
+from utils.utils import get_boolean_from_request, send_notification_email_to_admins
 
 
 @csrf_exempt
@@ -86,6 +86,7 @@ def events(request):
             event.is_public = get_boolean_from_request(request, 'public', request.method)
 
         event.save()
+        send_notification_email_to_admins('event')
         return JsonResponse(create_response(data=EventSerializer(
             instance=event, many=False, context={'user': request.user, 'detailed': True}).data), safe=False)
 

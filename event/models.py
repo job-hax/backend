@@ -21,7 +21,7 @@ class Event(models.Model):
     location_lon = models.FloatField(blank=True, null=True)
     location_title = models.CharField(max_length=250, blank=True, null=True)
     location_address = models.CharField(max_length=250, blank=True, null=True)
-    event_date_start = models.DateTimeField()
+    event_date_start = models.DateTimeField(blank=True, null=True)
     event_date_end = models.DateTimeField(blank=True, null=True)
     event_type = models.ForeignKey(EventType, on_delete=models.SET_NULL, null=True)
     spot_count = models.IntegerField(null=True, blank=True)

@@ -13,6 +13,7 @@ from users.models import EmploymentAuth, EmploymentStatus
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
+from utils.utils import send_notification_email_to_admins
 from .models import Review, CompanyEmploymentAuth
 from .serializers import ReviewSerializer
 
@@ -119,6 +120,7 @@ def reviews(request):
             review.is_published = True
         else:
             review.is_published = False
+            send_notification_email_to_admins('review')
 
         review.save()
         response = {'review': ReviewSerializer(instance=review, many=False).data,

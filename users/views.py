@@ -33,6 +33,7 @@ from jobapps.models import JobApplication, GoogleMail
 from event.models import Event, EventAttendee
 from poll.models import Vote
 from review.models import Review
+from utils.utils import send_notification_email_to_admins
 from .models import EmploymentStatus, EmploymentAuth
 from .models import Feedback
 from .models import Profile
@@ -627,6 +628,7 @@ def feedback(request):
     star = body['star']
     user = request.user
     Feedback.objects.create(user=user, text=text, star=star)
+    send_notification_email_to_admins('feedback')
     return JsonResponse(create_response(data=None), safe=False)
 
 
