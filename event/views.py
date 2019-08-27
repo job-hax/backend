@@ -88,8 +88,7 @@ def events(request):
         event.is_approved = False
         event.save()
         send_notification_email_to_admins('event')
-        return JsonResponse(create_response(data=EventSerializer(
-            instance=event, many=False, context={'user': request.user, 'detailed': True}).data), safe=False)
+        return JsonResponse(create_response(data={"id": event.id}), safe=False)
 
 
 @csrf_exempt
