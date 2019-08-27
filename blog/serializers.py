@@ -47,7 +47,7 @@ class BlogSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'publisher_profile', 'mine', 'title', 'content', 'header_image', 'snippet',
-                  'created_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted', 'is_published',
+                  'created_at', 'updated_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted', 'is_publish',
                   'is_public', 'is_approved')
         model = models.Blog
 
@@ -89,6 +89,6 @@ class BlogSnippetSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'publisher_profile', 'title', 'snippet',
-                  'header_image', 'created_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted',
-                  'is_public', 'is_published', 'is_approved')
+                  'header_image', 'created_at', 'updated_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted',
+                  'is_public', 'is_publish', 'is_approved')
         model = models.Blog

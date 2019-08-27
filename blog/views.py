@@ -64,7 +64,7 @@ def blogs(request):
             blog.snippet = snippet
         if 'is_publish' in body:
             is_publish = get_boolean_from_request(request, 'is_publish', request.method)
-            blog.is_published = is_publish
+            blog.is_publish = is_publish
             send_notification_email_to_admins('blog')
         if 'is_public' in body:
             is_public = get_boolean_from_request(request, 'is_public', request.method)
@@ -86,10 +86,10 @@ def blogs(request):
             ext = file.name.split('.')[-1]
             filename = "%s.%s" % (uuid.uuid4(), ext)
             blog.header_image.save(filename, file, save=True)
-        if 'publish' in body:
-            blog.is_published = get_boolean_from_request(request, 'publish', request.method)
-        if 'public' in body:
-            blog.is_public = get_boolean_from_request(request, 'public', request.method)
+        if 'is_publish' in body:
+            blog.is_publish = get_boolean_from_request(request, 'is_publish', request.method)
+        if 'is_public' in body:
+            blog.is_public = get_boolean_from_request(request, 'is_public', request.method)
         blog.is_approved = False
         blog.updated_at = datetime.now()
         blog.save()

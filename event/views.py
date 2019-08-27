@@ -22,9 +22,9 @@ def events(request):
         if attended is None:
             user_profile = Profile.objects.get(user=request.user)
             if user_profile.user_type >= int(Profile.UserTypes.student):
-                queryset = Event.objects.filter(is_published=True)
+                queryset = Event.objects.filter(is_approved=True)
             else:
-                queryset = Event.objects.filter(is_published=True, is_public=True)
+                queryset = Event.objects.filter(is_approved=True, is_public=True)
         else:
             attended_events = EventAttendee.objects.filter(user=request.user)
             queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
@@ -55,7 +55,6 @@ def events(request):
             event = Event.objects.get(pk=body['event_id'])
             event.updated_at = datetime.now()
 
-        event.is_published = False
         event.host_user = request.user
         if 'title' in body:
             event.title = body['title']
@@ -84,7 +83,9 @@ def events(request):
             event.header_image.save(filename, file, save=True)
         if 'is_public' in body:
             event.is_public = get_boolean_from_request(request, 'is_public', request.method)
-
+        if 'is_publish' in body:
+            event.is_publish = get_boolean_from_request(request, 'is_publish', request.method)
+        event.is_approved = False
         event.save()
         send_notification_email_to_admins('event')
         return JsonResponse(create_response(data=EventSerializer(
