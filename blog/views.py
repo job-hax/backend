@@ -30,10 +30,10 @@ class ActionType(Enum):
 @csrf_exempt
 @api_view(["GET", "PUT", "POST", "DELETE"])
 def blogs(request):
+    user_profile = Profile.objects.get(user=request.user)
     if request.method == "GET":
         mine = request.GET.get('mine')
         if mine is None:
-            user_profile = Profile.objects.get(user=request.user)
             if user_profile.user_type >= int(Profile.UserTypes.student):
                 queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user))
             else:
@@ -45,61 +45,65 @@ def blogs(request):
         serialized_blogs = BlogSnippetSerializer(
             instance=blogs, many=True, context={'user': request.user}).data
         return JsonResponse(create_response(data=serialized_blogs, paginator=paginator), safe=False)
-    elif request.method == "POST":
-        body = request.data
-        blog = Blog()
-        if 'header_image' in body:
-            file = body['header_image']
-            ext = file.name.split('.')[-1]
-            filename = "%s.%s" % (uuid.uuid4(), ext)
-            blog.header_image.save(filename, file, save=True)
-        if 'title' in body:
-            title = body['title']
-            blog.title = title
-        if 'content' in body:
-            content = body['content']
-            blog.content = content
-        if 'snippet' in body:
-            snippet = body['snippet'][:130] + '...'
-            blog.snippet = snippet
-        if 'is_publish' in body:
-            is_publish = get_boolean_from_request(request, 'is_publish', request.method)
-            blog.is_publish = is_publish
-            send_notification_email_to_admins('blog')
-        if 'is_public' in body:
-            is_public = get_boolean_from_request(request, 'is_public', request.method)
-            blog.is_public = is_public
-        blog.publisher_profile = request.user
+    else:
+        if user_profile.user_type < int(Profile.UserTypes.student):
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                                safe=False)
+        if request.method == "POST":
+            body = request.data
+            blog = Blog()
+            if 'header_image' in body:
+                file = body['header_image']
+                ext = file.name.split('.')[-1]
+                filename = "%s.%s" % (uuid.uuid4(), ext)
+                blog.header_image.save(filename, file, save=True)
+            if 'title' in body:
+                title = body['title']
+                blog.title = title
+            if 'content' in body:
+                content = body['content']
+                blog.content = content
+            if 'snippet' in body:
+                snippet = body['snippet'][:130] + '...'
+                blog.snippet = snippet
+            if 'is_publish' in body:
+                is_publish = get_boolean_from_request(request, 'is_publish', request.method)
+                blog.is_publish = is_publish
+                send_notification_email_to_admins('blog')
+            if 'is_public' in body:
+                is_public = get_boolean_from_request(request, 'is_public', request.method)
+                blog.is_public = is_public
+            blog.publisher_profile = request.user
 
-        blog.save()
-        return JsonResponse(create_response(data={"id": blog.id}), safe=False)
-    elif request.method == "PUT":
-        body = request.data
-        blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
-        if 'title' in body:
-            blog.title = body['title']
-        if 'content' in body:
-            blog.content = body['content']
-            blog.snippet = body['snippet'][:130] + '...'
-        if 'header_image' in body:
-            file = body['header_image']
-            ext = file.name.split('.')[-1]
-            filename = "%s.%s" % (uuid.uuid4(), ext)
-            blog.header_image.save(filename, file, save=True)
-        if 'is_publish' in body:
-            blog.is_publish = get_boolean_from_request(request, 'is_publish', request.method)
-        if 'is_public' in body:
-            blog.is_public = get_boolean_from_request(request, 'is_public', request.method)
-        blog.is_approved = False
-        blog.updated_at = datetime.now()
-        blog.save()
-        send_notification_email_to_admins('blog')
-        return JsonResponse(create_response(data={"id": blog.id}), safe=False)
-    elif request.method == "DELETE":
-        body = request.data
-        blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
-        blog.delete()
-        return JsonResponse(create_response(data=None), safe=False)
+            blog.save()
+            return JsonResponse(create_response(data={"id": blog.id}), safe=False)
+        elif request.method == "PUT":
+            body = request.data
+            blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
+            if 'title' in body:
+                blog.title = body['title']
+            if 'content' in body:
+                blog.content = body['content']
+                blog.snippet = body['snippet'][:130] + '...'
+            if 'header_image' in body:
+                file = body['header_image']
+                ext = file.name.split('.')[-1]
+                filename = "%s.%s" % (uuid.uuid4(), ext)
+                blog.header_image.save(filename, file, save=True)
+            if 'is_publish' in body:
+                blog.is_publish = get_boolean_from_request(request, 'is_publish', request.method)
+            if 'is_public' in body:
+                blog.is_public = get_boolean_from_request(request, 'is_public', request.method)
+            blog.is_approved = False
+            blog.updated_at = datetime.now()
+            blog.save()
+            send_notification_email_to_admins('blog')
+            return JsonResponse(create_response(data={"id": blog.id}), safe=False)
+        elif request.method == "DELETE":
+            body = request.data
+            blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
+            blog.delete()
+            return JsonResponse(create_response(data=None), safe=False)
 
 
 @csrf_exempt

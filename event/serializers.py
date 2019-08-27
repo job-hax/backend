@@ -33,6 +33,10 @@ class EventSerializer(serializers.ModelSerializer):
     attended = serializers.SerializerMethodField()
     attendee_list = serializers.SerializerMethodField()
     event_type = serializers.SerializerMethodField()
+    mine = serializers.SerializerMethodField()
+
+    def get_mine(self, obj):
+        return obj.publisher_profile == self.context.get('user')
 
     def get_created_at(self, obj):
         if obj.date is None:
