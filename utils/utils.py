@@ -5,6 +5,7 @@ import os
 import traceback
 
 import requests
+from background_task import background
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.db.models import Q
@@ -43,6 +44,7 @@ def generate_activation_key(username):
     return hashlib.sha256((secret_key + username).encode('utf-8')).hexdigest()
 
 
+@background(schedule=1)
 def send_notification_email_to_admins(type):
     profiles = Profile.objects.filter(Q(user_type=Profile.UserTypes.career_service) | Q(user__is_staff=True))
     subject = '[JobHax Platform] New ' + type + ' notification'
