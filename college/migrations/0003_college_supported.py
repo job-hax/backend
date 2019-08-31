@@ -9,9 +9,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='college',
-            name='supported',
-            field=models.BooleanField(default=False),
-        ),
     ]
