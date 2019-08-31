@@ -21,13 +21,15 @@ class Event(models.Model):
     location_lon = models.FloatField(blank=True, null=True)
     location_title = models.CharField(max_length=250, blank=True, null=True)
     location_address = models.CharField(max_length=250, blank=True, null=True)
-    event_date_start = models.DateTimeField()
+    event_date_start = models.DateTimeField(blank=True, null=True)
     event_date_end = models.DateTimeField(blank=True, null=True)
     event_type = models.ForeignKey(EventType, on_delete=models.SET_NULL, null=True)
     spot_count = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_published = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
+    is_publish = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title

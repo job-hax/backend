@@ -13,6 +13,14 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     profile_photo = serializers.SerializerMethodField()
+    is_admin = serializers.SerializerMethodField(required=False)
+    user_type = serializers.SerializerMethodField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(UserSerializer, self).__init__(*args, **kwargs)
+        if 'detailed' not in self.context:
+            del self.fields['is_admin']
+            del self.fields['user_type']
 
     def get_profile_photo(self, obj):
         profile = Profile.objects.get(user=obj)
@@ -22,12 +30,20 @@ class UserSerializer(serializers.ModelSerializer):
             return profile.profile_photo_social
         return None
 
+    def get_is_admin(self, obj):
+        if self.context.get('detailed'):
+            return obj.is_staff
+
+    def get_user_type(self, obj):
+        if self.context.get('detailed'):
+            return Profile.objects.get(user=obj).user_type
+
     def create(self, validated_data):
         return User.objects.create(**validated_data)
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'profile_photo', 'last_name', 'email', 'date_joined')
+        fields = ('first_name', 'profile_photo', 'last_name', 'date_joined', 'is_admin', 'user_type')
 
 
 class EmploymentStatusSerializer(serializers.ModelSerializer):

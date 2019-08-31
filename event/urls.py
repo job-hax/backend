@@ -5,12 +5,12 @@ from event import views
 
 urlpatterns = [
     path('', views.events),
-    path('types', views.types),
+    path('types/', views.types),
     path('<int:event_pk>/',
          views.event),
-    path('<int:event_pk>/attend',
+    path('<int:event_pk>/attend/',
          views.attend),
-    path('<int:event_pk>/leave',
+    path('<int:event_pk>/leave/',
          views.leave),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

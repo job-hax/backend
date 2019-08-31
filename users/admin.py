@@ -13,9 +13,9 @@ class UserAdmin(admin.ModelAdmin, ExportCsv):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin, ExportCsv):
-    list_display = ("user", "user_type", "is_gmail_read_ok", "gender",
+    list_display = ("user", "user_type", "is_gmail_read_ok", "gender", "college",
                     "student_email", "phone_number", "dob")
-    list_filter = ("user", "user_type", "is_gmail_read_ok", "gender",
+    list_filter = ("user", "user_type", "is_gmail_read_ok", "gender", "college",
                    "student_email", "phone_number", "dob")
     actions = ["export_as_csv"]
 
