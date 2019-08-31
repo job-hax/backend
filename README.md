@@ -4,19 +4,21 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/job-hax/backend.svg)
 ![GitHub repo size](https://img.shields.io/github/repo-size/job-hax/backend.svg)
 
-1. Install Postgres database depending on your [OS](https://www.postgresql.org/download/):
+1. Install python3 on your [OS](https://realpython.com/installing-python/):
+
+2. Install Postgres database depending on your [OS](https://www.postgresql.org/download/):
 ```
 brew install postgres
 ```
 
-2. Make sure your Postgres is running:
+3. Make sure your Postgres is running:
 ```
 # Start Postgres
 initdb /usr/local/var/postgres
 pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start
 ```
 
-3. Add the variables below to your environment variables (all optional except LinkedIn keys but you need to add them to use these features):
+4. Add the variables below to your environment variables (all of them are optional but you need to add them to use/develop these features):
 ```
 export JOBHAX_CLEARBIT_KEY=/*key*/ # to get/verify company logo&name from ClearBit API.
 export EMAIL_HOST_USER=/*test@gmail.com*/ # to send activation or reset password email to the user (should be Google Mail)
@@ -27,17 +29,17 @@ export JOBHAX_LINKEDIN_CLIENT_SECRET=/*linkedin application client_secret*/ #to 
 ```
 [How to add variables to your Environment Variables](https://medium.com/@himanshuagarwal1395/setting-up-environment-variables-in-macos-sierra-f5978369b255)
 
-4. Run install script located in /JH_RestAPI directory:
+5. Run install script located in root directory:
 ```
 ./install.sh
 ```
 
-5. Start server located in /JH_RestAPI directory:
+6. Start server located in root directory:
 ```
 ./start.sh
 ```
 
-6. To use Rest API you need to create oauth2 credentials.
+7. To use Rest API you need to create oauth2 credentials.
 ```
 -   Under http://localhost:8000/admin/oauth2_provider/application/ click 'ADD APPLICATION'
 
@@ -49,7 +51,7 @@ export JOBHAX_LINKEDIN_CLIENT_SECRET=/*linkedin application client_secret*/ #to 
     Name -> Whatever you want   
 ```
 
-7. AUTHENTICATION
+8. AUTHENTICATION (Google Auth only. You can skip this part if you want to use regular registration/authenticating process)
 ```
 You need to generate an access token and add it as a Bearer header in your requests. See the Postman Collection for how to
 generate an access token.
@@ -64,6 +66,6 @@ You will need to grant following permissions:
 
 [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/) 
 
-8. [Postman Collection](https://www.getpostman.com/collections/2bb6572a9df9802168a8)
+9. [Postman Collection](https://www.getpostman.com/collections/2bb6572a9df9802168a8)
 
-9. [API Documentation](https://github.com/job-hax/docs/blob/master/3.backend_api.md)
+10. [API Documentation](https://github.com/job-hax/docs/blob/master/3.backend_api.md)
