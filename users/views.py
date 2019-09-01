@@ -17,6 +17,7 @@ from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 from social_django.models import UserSocialAuth
 
+from blog.models import Blog
 from college.models import College
 from company.utils import get_or_create_company
 from jobapps.serializers import GoogleMailSerializer
@@ -449,6 +450,7 @@ def link_social_account(request):
             EventAttendee.objects.filter(user=social_user.user).update(user=request.user)
             Vote.objects.filter(user=social_user.user).update(user=request.user)
             Review.objects.filter(user=social_user.user).update(user=request.user)
+            Blog.objects.filter(user=social_user.user).update(user=request.user)
             social_user.user.delete()
 
         social_user.user = request.user

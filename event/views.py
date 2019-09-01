@@ -28,6 +28,7 @@ def events(request):
         else:
             attended_events = EventAttendee.objects.filter(user=request.user)
             queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
+        queryset = queryset.filter(host_user__isnull=False)
         paginator = pagination.CustomPagination()
         event_list = paginator.paginate_queryset(queryset, request)
         serialized_events = EventSimpleSerializer(
@@ -40,8 +41,8 @@ def events(request):
                                 safe=False)
 
         body = request.data
-        blog = Event.objects.get(pk=body['event_id'], host_user=request.user)
-        blog.delete()
+        event = Event.objects.get(pk=body['event_id'], host_user=request.user)
+        event.delete()
         return JsonResponse(create_response(data=None), safe=False)
     else:
         user_profile = Profile.objects.get(user=request.user)
