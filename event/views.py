@@ -82,9 +82,9 @@ def events(request):
             filename = "%s.%s" % (uuid.uuid4(), ext)
             event.header_image.save(filename, file, save=True)
         if 'is_public' in body:
-            event.is_public = get_boolean_from_request(request, 'is_public', request.method)
+            event.is_public = get_boolean_from_request(request, 'is_public')
         if 'is_publish' in body:
-            event.is_publish = get_boolean_from_request(request, 'is_publish', request.method)
+            event.is_publish = get_boolean_from_request(request, 'is_publish')
         event.is_approved = False
         event.save()
         send_notification_email_to_admins('event')

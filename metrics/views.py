@@ -335,7 +335,7 @@ def agg_detailed(request):
     response = []
     user_profile = Profile.objects.get(user=request.user)
     filter_by_college = False
-    public = get_boolean_from_request(request, 'public', request.method)
+    public = get_boolean_from_request(request, 'public')
     if user_profile.user_type >= int(Profile.UserTypes.student) and not public:
         college_users = get_user_model().objects.filter(
             id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
@@ -601,7 +601,7 @@ def agg_generic(request):
     response = []
     user_profile = Profile.objects.get(user=request.user)
     filter_by_college = False
-    public = get_boolean_from_request(request, 'public', request.method)
+    public = get_boolean_from_request(request, 'public')
     if user_profile.user_type >= int(Profile.UserTypes.student) and not public:
         college_users = get_user_model().objects.filter(
             id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
