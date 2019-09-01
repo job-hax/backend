@@ -46,12 +46,12 @@ def send_notification_email_to_admins(type):
     profiles = Profile.objects.filter(Q(user_type=Profile.UserTypes.career_service) | Q(user__is_staff=True))
     subject = '[JobHax Platform] New ' + type + ' notification'
     body = '''<html>
-    						Hello JobHax editor!<br>
-    						<br>
-    						A new ''' + type + ''' has been sent to JobHax platform.<br>
-    						<br>
-    						Please review the content and take the required actions.
-    						</html>'''
+                Hello JobHax editor!<br>
+                <br>
+                A new ''' + type + ''' has been sent to JobHax platform.<br>
+                <br>
+                Please review the content and take the required actions.
+            </html>'''
     email_addresses = []
     for profile in profiles:
         email_addresses.append(profile.user.email)
@@ -70,32 +70,32 @@ def send_email(email, activation_key, action):
     if action == 'activate':
         subject = '[JobHax Platform] Confirm E-mail Address'
         body = '''<html>
-						Welcome to JobHax!<br>
-						<br>
-						You must follow this link to <span class="il">activate</span> your account:<br>
-						<a href="''' + url + '''">''' + url + '''</a><br>
-						<br>
-						Have fun with the JobHax, and don't hesitate to contact us with your feedback.
-						</html>'''
+                    Welcome to JobHax!<br>
+                    <br>
+                    You must follow this link to <span class="il">activate</span> your account:<br>
+                    <a href="''' + url + '''">''' + url + '''</a><br>
+                    <br>
+                    Have fun with the JobHax, and don't hesitate to contact us with your feedback.
+                </html>'''
     elif action == 'warning':
         subject = '[JobHax Platform] Unusual Activity Detected'
         body = '''<html>
-						Welcome to JobHax!<br>
-						<br>
-						You must follow this link to <span class="il">activate</span> your account:<br>
-						Have fun with the JobHax, and don't hesitate to contact us with your feedback.
-						</html>'''
+                    Welcome to JobHax!<br>
+                    <br>
+                    You must follow this link to <span class="il">activate</span> your account:<br>
+                    Have fun with the JobHax, and don't hesitate to contact us with your feedback.
+                </html>'''
     else:
         subject = '[JobHax Platform] Reset your password'
         body = '''<html>
-						You recently requested to reset your password.<br>
-						<br>
-						To reset your password you must follow this link:<br>
-						<a href="''' + url + '''">''' + url + '''</a><br>
-						<br>
-						If you did not make this request, you can safely ignore this email. A password reset request can be made by anyone,
-						and it does not indicate that your account is in any danger of being accessed by someone else.
-						</html>'''
+                    You recently requested to reset your password.<br>
+                    <br>
+                    To reset your password you must follow this link:<br>
+                    <a href="''' + url + '''">''' + url + '''</a><br>
+                    <br>
+                    If you did not make this request, you can safely ignore this email. A password reset request can be made by anyone,
+                    and it does not indicate that your account is in any danger of being accessed by someone else.
+                </html>'''
     email = EmailMessage(subject, body, to=[email])
     email.content_subtype = "html"  # this is the crucial part
     try:

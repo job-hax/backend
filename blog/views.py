@@ -40,6 +40,7 @@ def blogs(request):
                 queryset = Blog.objects.filter(is_approved=True, is_public=True)
         else:
             queryset = Blog.objects.filter(publisher_profile=request.user)
+        queryset = queryset.filter(publisher_profile__isnull=False)
         paginator = pagination.CustomPagination()
         blogs = paginator.paginate_queryset(queryset, request)
         serialized_blogs = BlogSnippetSerializer(
