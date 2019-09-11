@@ -23,13 +23,6 @@ class EmploymentStatus(models.Model):
         return self.value
 
 
-class EmploymentAuth(models.Model):
-    value = models.CharField(max_length=20, null=False)
-
-    def __str__(self):
-        return self.value
-
-
 class User(AbstractUser):
     objects = UserManager()
     email = models.EmailField(('email address'), unique=True)

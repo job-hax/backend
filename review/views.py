@@ -9,13 +9,13 @@ from company.serializers import CompanySerializer
 from jobapps.models import SourceType
 from jobapps.serializers import SourceSerializer
 from position.models import JobPosition
-from users.models import EmploymentAuth, EmploymentStatus
+from review.models import EmploymentAuth, EmploymentStatus
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from utils.utils import send_notification_email_to_admins
 from .models import Review, CompanyEmploymentAuth
-from .serializers import ReviewSerializer
+from .serializers import ReviewSerializer, EmploymentAuthSerializer
 
 
 @csrf_exempt
@@ -134,3 +134,10 @@ def reviews(request):
 def source_types(request):
     sources = SourceType.objects.all()
     return JsonResponse(create_response(data=SourceSerializer(instance=sources, many=True).data), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def employment_authorizations(request):
+    statuses = EmploymentAuth.objects.all()
+    return JsonResponse(create_response(data=EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)
