@@ -34,7 +34,7 @@ from jobapps.models import JobApplication, GoogleMail
 from event.models import Event, EventAttendee
 from poll.models import Vote
 from review.models import Review
-from utils.utils import send_notification_email_to_admins
+from utils.utils import send_notification_email_to_admins, get_boolean_from_request
 from .models import EmploymentStatus
 from .models import Feedback
 from .models import Profile
@@ -575,7 +575,7 @@ def refresh_token(request):
 @csrf_exempt
 @api_view(["GET"])
 def get_profile(request):
-    basic = request.GET.get('basic')
+    basic = get_boolean_from_request(request, 'basic')
     if basic:
         return JsonResponse(create_response(data=UserSerializer(instance=request.user, context={'detailed': True}, many=False).data), safe=False)
     else:

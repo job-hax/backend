@@ -13,7 +13,7 @@ from review.models import EmploymentAuth, EmploymentStatus
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
-from utils.utils import send_notification_email_to_admins
+from utils.utils import send_notification_email_to_admins, get_boolean_from_request
 from .models import Review, CompanyEmploymentAuth
 from .serializers import ReviewSerializer, EmploymentAuthSerializer
 
@@ -31,7 +31,7 @@ def reviews(request):
     if request.method == "GET":
         company_id = request.GET.get('company_id')
         position_id = request.GET.get('position_id')
-        all_reviews = request.GET.get('all_reviews')
+        all_reviews = get_boolean_from_request(request, 'all_reviews')
         review_id = request.GET.get('review_id')
         if review_id is not None:
             reviews_list = Review.objects.filter(pk=review_id, user=request.user)
@@ -51,7 +51,7 @@ def reviews(request):
             reviews_list = Review.objects.filter(Q(is_published=True) | Q(
                 user=request.user), company__pk=company_id)
         else:
-            if all_reviews == 'true':
+            if all_reviews:
                 reviews_list = Review.objects.filter(
                     is_published=True, position__pk=position_id, company__pk=company_id)
             else:

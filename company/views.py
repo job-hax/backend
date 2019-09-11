@@ -6,6 +6,7 @@ from JH_RestAPI import pagination
 from jobapps.models import JobApplication
 from position.serializers import JobPositionSerializer
 from utils.generic_json_creator import create_response
+from utils.utils import get_boolean_from_request
 from .models import Company
 from review.models import Review
 from .serializers import CompanySerializer
@@ -15,13 +16,13 @@ from .serializers import CompanySerializer
 @api_view(["GET"])
 def companies(request):
     q = request.GET.get('q')
-    has_review = request.GET.get('hasReview')
-    mine = request.GET.get('mine')
+    has_review = get_boolean_from_request(request, 'hasReview')
+    mine = get_boolean_from_request(request, 'mine')
     companies = Company.objects.all()
-    if has_review is not None:
+    if has_review:
         companies_has_review = Review.objects.order_by('company__id').distinct('company__id')
         companies = Company.objects.all().filter(id__in=[r.company.id for r in companies_has_review])
-    if mine is not None:
+    if mine:
         users_companies = JobApplication.objects.filter(user=request.user, is_deleted=False)
         companies = companies.filter(id__in=[j.company_object.id for j in users_companies])
     if q is not None:
@@ -36,10 +37,10 @@ def companies(request):
 @csrf_exempt
 @api_view(["GET"])
 def positions(request, company_pk):
-    has_review = request.GET.get('hasReview')
+    has_review = get_boolean_from_request(request, 'hasReview')
     company = Company.objects.get(pk=company_pk)
     queryset = JobApplication.objects.filter(company_object=company)
-    if has_review is not None:
+    if has_review:
         positions_has_review = Review.objects.filter(company=company).order_by('position__id').distinct('position__id')
         queryset = queryset.filter(position__id__in=[r.position.id for r in positions_has_review])
     positions = set()
