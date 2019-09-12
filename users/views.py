@@ -34,11 +34,11 @@ from jobapps.models import JobApplication, GoogleMail
 from event.models import Event, EventAttendee
 from poll.models import Vote
 from review.models import Review
-from utils.utils import send_notification_email_to_admins
-from .models import EmploymentStatus, EmploymentAuth
+from utils.utils import send_notification_email_to_admins, get_boolean_from_request
+from .models import EmploymentStatus
 from .models import Feedback
 from .models import Profile
-from .serializers import EmploymentStatusSerializer, EmploymentAuthSerializer
+from .serializers import EmploymentStatusSerializer
 from .serializers import ProfileSerializer, UserSerializer
 
 User = get_user_model()
@@ -123,10 +123,10 @@ def register(request):
                                  'grant_type': 'convert_token'}
                     if linkedin_auth_code is not None:
                         post_data['backend'] = 'linkedin-oauth2'
-                        post_data['token'] = get_access_token_with_code(body['token'])
+                        post_data['token'] = get_access_token_with_code(body['linkedin_auth_code'])
                     else:
                         post_data['backend'] = 'google-oauth2'
-                        post_data['token'] = body['token']
+                        post_data['token'] = body['google_access_token']
                     response = requests.post('http://localhost:8000/auth/convert-token',
                                              data=json.dumps(post_data), headers={'content-type': 'application/json'})
                     jsonres = json.loads(response.text)
@@ -135,6 +135,21 @@ def register(request):
                         success = False
                         code = ResponseCodes.invalid_credentials
                     else:
+                        social_user = UserSocialAuth.objects.get(extra_data__icontains=post_data['token'])
+
+                        if social_user.user.email != user.email:
+                            JobApplication.objects.filter(user=social_user.user).update(user=user)
+                            GoogleMail.objects.filter(user=social_user.user).update(user=user)
+                            Event.objects.filter(host_user=social_user.user).update(host_user=user)
+                            EventAttendee.objects.filter(user=social_user.user).update(user=user)
+                            Vote.objects.filter(user=social_user.user).update(user=user)
+                            Review.objects.filter(user=social_user.user).update(user=user)
+                            Blog.objects.filter(user=social_user.user).update(user=user)
+                            social_user.user.delete()
+
+                        social_user.user = user
+                        social_user.save()
+
                         success = True
                         code = ResponseCodes.success
                         user = AccessToken.objects.get(token=jsonres['access_token']).user
@@ -158,7 +173,7 @@ def activate_user(request):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                                 safe=False)
         user = user[0]
-        if user.approved == False:
+        if not user.approved:
             if user.key_expires is None or timezone.now() > user.key_expires:
                 return JsonResponse(
                     create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
@@ -171,7 +186,7 @@ def activate_user(request):
                                     safe=False)
         # If user is already active, simply display error message
         else:
-            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.email_already_verified),
                                 safe=False)
     except Exception as e:
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
@@ -450,7 +465,7 @@ def link_social_account(request):
             EventAttendee.objects.filter(user=social_user.user).update(user=request.user)
             Vote.objects.filter(user=social_user.user).update(user=request.user)
             Review.objects.filter(user=social_user.user).update(user=request.user)
-            Blog.objects.filter(user=social_user.user).update(user=request.user)
+            Blog.objects.filter(publisher_profile=social_user.user).update(publisher_profile=request.user)
             social_user.user.delete()
 
         social_user.user = request.user
@@ -560,7 +575,7 @@ def refresh_token(request):
 @csrf_exempt
 @api_view(["GET"])
 def get_profile(request):
-    basic = request.GET.get('basic')
+    basic = get_boolean_from_request(request, 'basic')
     if basic:
         return JsonResponse(create_response(data=UserSerializer(instance=request.user, context={'detailed': True}, many=False).data), safe=False)
     else:
@@ -573,13 +588,6 @@ def get_profile(request):
 def employment_statuses(request):
     statuses = EmploymentStatus.objects.all()
     return JsonResponse(create_response(data=EmploymentStatusSerializer(instance=statuses, many=True).data), safe=False)
-
-
-@csrf_exempt
-@api_view(["GET"])
-def employment_authorizations(request):
-    statuses = EmploymentAuth.objects.all()
-    return JsonResponse(create_response(data=EmploymentAuthSerializer(instance=statuses, many=True).data), safe=False)
 
 
 @csrf_exempt

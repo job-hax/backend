@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from utils.export_csv import ExportCsv
-from .models import Review, CompanyEmploymentAuth
+from .models import Review, CompanyEmploymentAuth, EmploymentAuth
 
 
 @admin.register(Review)
@@ -12,3 +12,4 @@ class ReviewAdmin(admin.ModelAdmin, ExportCsv):
 
 
 admin.site.register(CompanyEmploymentAuth)
+admin.site.register(EmploymentAuth)

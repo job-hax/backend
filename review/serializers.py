@@ -2,8 +2,18 @@ import pytz
 from rest_framework import serializers
 
 from jobapps.serializers import SourceTypeSerializer
-from users.serializers import EmploymentAuthSerializer, EmploymentStatusSerializer
-from .models import Review, CompanyEmploymentAuth
+from users.serializers import EmploymentStatusSerializer
+from .models import Review, CompanyEmploymentAuth, EmploymentAuth
+
+
+class EmploymentAuthSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        return EmploymentAuth.objects.create(**validated_data)
+
+    class Meta:
+        model = EmploymentAuth
+        fields = ('__all__')
 
 
 class CompanyEmploymentAuthSerializer(serializers.ModelSerializer):

@@ -6,7 +6,7 @@ from company.serializers import CompanyBasicsSerializer
 from major.serializers import MajorSerializer
 from position.serializers import JobPositionSerializer
 from utils.serializers import CountrySerializer, StateSerializer
-from .models import Profile, EmploymentStatus, EmploymentAuth
+from .models import Profile, EmploymentStatus
 
 User = get_user_model()
 
@@ -53,16 +53,6 @@ class EmploymentStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmploymentStatus
-        fields = ('__all__')
-
-
-class EmploymentAuthSerializer(serializers.ModelSerializer):
-
-    def create(self, validated_data):
-        return EmploymentAuth.objects.create(**validated_data)
-
-    class Meta:
-        model = EmploymentAuth
         fields = ('__all__')
 
 

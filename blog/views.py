@@ -32,8 +32,8 @@ class ActionType(Enum):
 def blogs(request):
     user_profile = Profile.objects.get(user=request.user)
     if request.method == "GET":
-        mine = request.GET.get('mine')
-        if mine is None:
+        mine = get_boolean_from_request(request, 'mine')
+        if not mine:
             if user_profile.user_type >= int(Profile.UserTypes.student):
                 queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user))
             else:

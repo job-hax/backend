@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from utils.export_csv import ExportCsv
-from .models import Profile, User, EmploymentStatus, Feedback, EmploymentAuth
+from .models import Profile, User, EmploymentStatus, Feedback
 
 
 @admin.register(User)
@@ -28,4 +28,3 @@ class FeedbackAdmin(admin.ModelAdmin, ExportCsv):
 
 
 admin.site.register(EmploymentStatus)
-admin.site.register(EmploymentAuth)

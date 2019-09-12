@@ -50,8 +50,8 @@ class CompanySerializer(serializers.ModelSerializer):
         return ratings
 
     def get_supported_employment_auths(self, obj):
-        from users.models import EmploymentAuth
-        from users.serializers import EmploymentAuthSerializer
+        from review.models import EmploymentAuth
+        from review.serializers import EmploymentAuthSerializer
         auths = []
         for auth in EmploymentAuth.objects.all():
             a_ser = EmploymentAuthSerializer(instance=auth, many=False).data

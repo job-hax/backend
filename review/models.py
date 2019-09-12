@@ -7,10 +7,16 @@ from django.db import models
 from company.models import Company
 from jobapps.models import SourceType
 from position.models import JobPosition
-from users.models import EmploymentAuth
 from users.models import EmploymentStatus
 
 User = get_user_model()
+
+
+class EmploymentAuth(models.Model):
+    value = models.CharField(max_length=20, null=False)
+
+    def __str__(self):
+        return self.value
 
 
 class Review(models.Model):

@@ -18,8 +18,8 @@ from utils.utils import get_boolean_from_request, send_notification_email_to_adm
 @api_view(["GET", "POST", "PUT", "DELETE"])
 def events(request):
     if request.method == "GET":
-        attended = request.GET.get('attended')
-        if attended is None:
+        attended = get_boolean_from_request(request, 'attended')
+        if not attended:
             user_profile = Profile.objects.get(user=request.user)
             if user_profile.user_type >= int(Profile.UserTypes.student):
                 queryset = Event.objects.filter(is_approved=True)
