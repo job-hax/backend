@@ -4,6 +4,7 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/job-hax/backend.svg)
 ![GitHub repo size](https://img.shields.io/github/repo-size/job-hax/backend.svg)
 
+
 1. Install python3 on your [OS](https://realpython.com/installing-python/):
 
 2. Install Postgres database depending on your [OS](https://www.postgresql.org/download/):
@@ -66,6 +67,6 @@ You will need to grant following permissions:
 
 [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/) 
 
-9. [Postman Collection](https://www.getpostman.com/collections/2bb6572a9df9802168a8)
 
-10. [API Documentation](https://github.com/job-hax/docs/blob/master/3.backend_api.md)
+## Documentation
+* [JobHax REST API Docs](https://documenter.getpostman.com/view/3396184/SVfWL5ex)
