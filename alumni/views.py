@@ -4,10 +4,14 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 
 from JH_RestAPI import pagination
-from users.models import Profile
-from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from .serializers import AlumniSerializer
+from major.serializers import MajorSerializer
+from company.serializers import CompanyBasicsSerializer
+from users.models import Profile
+from college.models import College
+from utils.error_codes import ResponseCodes
+from position.serializers import JobPositionSerializer
 
 
 @csrf_exempt
@@ -46,3 +50,60 @@ def alumni(request):
     serialized_alumni = AlumniSerializer(
         instance=alumni_list, many=True, context={'user': request.user}).data
     return JsonResponse(create_response(data=serialized_alumni, paginator=paginator), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def majors(request):
+    user_profile = Profile.objects.get(user=request.user)
+    if user_profile.user_type < int(Profile.UserTypes.student):
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                            safe=False)
+    college = College.objects.get(pk=user_profile.college.pk)
+    alumni = Profile.objects.filter(~Q(major=None), college=college, user_type=Profile.UserTypes.alumni)
+    data = []
+    for a in alumni:
+        if a.major is not None:
+            data.append(a.major)
+    data = set(data)
+    serialized_majors = MajorSerializer(
+        instance=data, many=True, ).data
+    return JsonResponse(create_response(data=serialized_majors), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def companies(request):
+    user_profile = Profile.objects.get(user=request.user)
+    if user_profile.user_type < int(Profile.UserTypes.student):
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                            safe=False)
+    college = College.objects.get(pk=user_profile.college.pk)
+    alumni = Profile.objects.filter(~Q(major=None), college=college, user_type=Profile.UserTypes.alumni)
+    data = []
+    for a in alumni:
+        if a.company is not None:
+            data.append(a.company)
+    data = set(data)
+    serialized_companies = CompanyBasicsSerializer(
+        instance=data, many=True, ).data
+    return JsonResponse(create_response(data=serialized_companies), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def positions(request):
+    user_profile = Profile.objects.get(user=request.user)
+    if user_profile.user_type < int(Profile.UserTypes.student):
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                            safe=False)
+    college = College.objects.get(pk=user_profile.college.pk)
+    alumni = Profile.objects.filter(~Q(major=None), college=college, user_type=Profile.UserTypes.alumni)
+    data = []
+    for a in alumni:
+        if a.job_position is not None:
+            data.append(a.job_position)
+    data = set(data)
+    serialized_positions = JobPositionSerializer(
+        instance=data, many=True, ).data
+    return JsonResponse(create_response(data=serialized_positions), safe=False)
