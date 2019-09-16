@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils.translation import gettext as _
 
 from company.models import Company
 from position.models import JobPosition
@@ -12,6 +13,8 @@ User = get_user_model()
 
 class ApplicationStatus(models.Model):
     value = models.CharField(max_length=20)
+    icon = models.FileField(blank=True, null=True)
+    pos = models.SmallIntegerField(default='0', verbose_name=_('position'))
     default = models.BooleanField(default=False)
 
     def __str__(self):
@@ -19,6 +22,9 @@ class ApplicationStatus(models.Model):
 
     class Meta:
         ordering = ['value']
+        verbose_name = _('status')
+        verbose_name_plural = _('statuses')
+        ordering = ['pos']
 
 
 class Source(models.Model):
