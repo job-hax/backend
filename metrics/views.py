@@ -12,7 +12,6 @@ from rest_framework.decorators import api_view
 from jobapps.models import ApplicationStatus
 from jobapps.models import JobApplication
 from jobapps.models import Source
-from users.models import Profile
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from utils.utils import get_boolean_from_request
@@ -333,15 +332,16 @@ def detailed(request):
 @api_view(["GET"])
 def agg_detailed(request):
     response = []
-    user_profile = Profile.objects.get(user=request.user)
+    user_profile = request.user
+    User = get_user_model()
     filter_by_college = False
     public = get_boolean_from_request(request, 'public')
-    if user_profile.user_type >= int(Profile.UserTypes.student) and not public:
+    if user_profile.user_type >= int(User.UserTypes.student) and not public:
         college_users = get_user_model().objects.filter(
-            id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college)])
         filter_by_college = True
 
-    if user_profile.user_type < int(Profile.UserTypes.student) and not public:
+    if user_profile.user_type < int(User.UserTypes.student) and not public:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
 
@@ -599,16 +599,17 @@ def agg_detailed(request):
 @api_view(["GET"])
 def agg_generic(request):
     response = []
-    user_profile = Profile.objects.get(user=request.user)
+    user_profile = request.user
+    User = get_user_model()
     filter_by_college = False
     public = get_boolean_from_request(request, 'public')
-    if user_profile.user_type >= int(Profile.UserTypes.student) and not public:
+    if user_profile.user_type >= int(User.UserTypes.student) and not public:
         college_users = get_user_model().objects.filter(
-            id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college)])
         filter_by_college = True
         total_jobs_applied = JobApplication.objects.filter(user__in=college_users, is_deleted=False)
     else:
-        if user_profile.user_type < int(Profile.UserTypes.student) and not public:
+        if user_profile.user_type < int(User.UserTypes.student) and not public:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user), safe=False)
         total_jobs_applied = JobApplication.objects.filter(is_deleted=False)
     for graph in range(4):
@@ -691,7 +692,7 @@ def agg_generic(request):
             item['title'] = 'Total Users'
             User = get_user_model()
             if filter_by_college:
-                total_user = User.objects.filter(id__in=[p.user.id for p in Profile.objects.filter(college=user_profile.college)])
+                total_user = User.objects.filter(id__in=[p.id for p in User.objects.filter(college=user_profile.college)])
             else:
                 total_user = User.objects.all()
             total_user_count = total_user.count()

@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -8,20 +9,21 @@ from utils.generic_json_creator import create_response
 from .serializers import AlumniSerializer
 from major.serializers import MajorSerializer
 from company.serializers import CompanyBasicsSerializer
-from users.models import Profile
 from college.models import College
 from utils.error_codes import ResponseCodes
 from position.serializers import JobPositionSerializer
+
+User = get_user_model()
 
 
 @csrf_exempt
 @api_view(["GET"])
 def alumni(request):
-    user_profile = Profile.objects.get(user=request.user)
-    if user_profile.user_type < int(Profile.UserTypes.student):
+    user_profile = request.user
+    if user_profile.user_type < int(User.UserTypes.student):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
-    alumni_list = Profile.objects.filter(user_type=int(Profile.UserTypes.alumni), college__pk=user_profile.college.id)
+    alumni_list = User.objects.filter(user_type=int(User.UserTypes.alumni), college__pk=user_profile.college.id)
 
     q = request.GET.get('q')
     year = request.GET.get('year')
@@ -55,12 +57,12 @@ def alumni(request):
 @csrf_exempt
 @api_view(["GET"])
 def majors(request):
-    user_profile = Profile.objects.get(user=request.user)
-    if user_profile.user_type < int(Profile.UserTypes.student):
+    user_profile = request.user
+    if user_profile.user_type < int(User.UserTypes.student):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
     college = College.objects.get(pk=user_profile.college.pk)
-    alumni = Profile.objects.filter(~Q(major=None), college=college, user_type=Profile.UserTypes.alumni)
+    alumni = User.objects.filter(~Q(major=None), college=college, user_type=User.UserTypes.alumni)
     data = []
     for a in alumni:
         if a.major is not None:
@@ -74,12 +76,12 @@ def majors(request):
 @csrf_exempt
 @api_view(["GET"])
 def companies(request):
-    user_profile = Profile.objects.get(user=request.user)
-    if user_profile.user_type < int(Profile.UserTypes.student):
+    user_profile = request.user
+    if user_profile.user_type < int(User.UserTypes.student):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
     college = College.objects.get(pk=user_profile.college.pk)
-    alumni = Profile.objects.filter(~Q(major=None), college=college, user_type=Profile.UserTypes.alumni)
+    alumni = User.objects.filter(~Q(major=None), college=college, user_type=User.UserTypes.alumni)
     data = []
     for a in alumni:
         if a.company is not None:
@@ -93,12 +95,12 @@ def companies(request):
 @csrf_exempt
 @api_view(["GET"])
 def positions(request):
-    user_profile = Profile.objects.get(user=request.user)
-    if user_profile.user_type < int(Profile.UserTypes.student):
+    user_profile = request.user
+    if user_profile.user_type < int(User.UserTypes.student):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
     college = College.objects.get(pk=user_profile.college.pk)
-    alumni = Profile.objects.filter(~Q(major=None), college=college, user_type=Profile.UserTypes.alumni)
+    alumni = User.objects.filter(~Q(major=None), college=college, user_type=User.UserTypes.alumni)
     data = []
     for a in alumni:
         if a.job_position is not None:

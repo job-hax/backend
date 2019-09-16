@@ -7,13 +7,19 @@ import traceback
 import requests
 from background_task import background
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.mail import EmailMessage
 from django.db.models import Q
 from django.utils.crypto import get_random_string
 
-from users.models import Profile
 from utils.error_codes import ResponseCodes
 from utils.logger import log
+from django.core.files import File
+import uuid
+from urllib.request import urlretrieve
+from urllib.error import HTTPError
+
+User = get_user_model()
 
 
 def get_boolean_from_request(request, key):
@@ -43,7 +49,7 @@ def generate_activation_key(username):
 
 @background(schedule=1)
 def send_notification_email_to_admins(type):
-    profiles = Profile.objects.filter(Q(user_type=Profile.UserTypes.career_service) | Q(user__is_staff=True))
+    profiles = User.objects.filter(Q(user_type=User.UserTypes.career_service) | Q(user__is_staff=True))
     subject = '[JobHax Platform] New ' + type + ' notification'
     body = '''<html>
                 Hello JobHax editor!<br>
@@ -117,3 +123,16 @@ def verify_recaptcha(email, token, action):
         # if email is not None:
         #    send_email(email, "", "warning")
         return ResponseCodes.verify_recaptcha_failed
+
+
+def save_image_file_to_user(path, user):
+    try:
+        urlretrieve(path, filename=path.split('/')[-1])
+        file = open(path.split('/')[-1], 'rb')
+        filename = "%s.%s" % (uuid.uuid4(), 'jpg')
+        user.profile_photo.save(filename, File(file), save=True)
+        os.remove(path.split('/')[-1])
+    except FileNotFoundError as err:
+        print(err)  # something wrong with local path
+    except HTTPError as err:
+        print(err)  # something wrong with url

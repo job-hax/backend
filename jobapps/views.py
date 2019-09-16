@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
@@ -12,13 +13,14 @@ from utils.generic_json_creator import create_response
 from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
 from .models import JobApplicationNote
 from .models import Source
-from users.models import Profile
 from alumni.serializers import AlumniSerializer
 from .serializers import ApplicationStatusSerializer
 from .serializers import JobApplicationNoteSerializer
 from .serializers import JobApplicationSerializer, ContactSerializer
 from .serializers import SourceSerializer
 from .serializers import StatusHistorySerializer
+
+User = get_user_model()
 
 
 @csrf_exempt
@@ -35,7 +37,7 @@ def job_applications(request):
             timestamp = int(timestamp) / 1000
             if timestamp is None:
                 return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters))
-            profile = Profile.objects.get(user=request.user)
+            profile = request.user
             time = datetime.fromtimestamp(int(timestamp))
             user_job_apps = JobApplication.objects.filter(created__gte=time)
             job_application_list = JobApplicationSerializer(instance=user_job_apps, many=True, context={
@@ -211,13 +213,13 @@ def contacts(request, job_app_pk):
 
             data['contacts'] = contacts_list
 
-            user_profile = Profile.objects.get(user=request.user)
-            if user_profile.user_type < int(Profile.UserTypes.student):
+            user_profile = request.user
+            if user_profile.user_type < int(User.UserTypes.student):
                 alumni = []
             else:
                 jobapp = JobApplication.objects.get(pk=job_app_pk)
-                alumni_list = Profile.objects.filter(college=user_profile.college, company=jobapp.company_object,
-                                                     user_type=int(Profile.UserTypes.alumni))
+                alumni_list = User.objects.filter(college=user_profile.college, company=jobapp.company_object,
+                                                     user_type=int(User.UserTypes.alumni))
                 alumni = AlumniSerializer(
                     instance=alumni_list, many=True, context={'user': request.user}).data
             data['alumni'] = alumni
