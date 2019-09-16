@@ -15,6 +15,7 @@ class ApplicationStatus(models.Model):
     value = models.CharField(max_length=20)
     icon = models.FileField(blank=True, null=True)
     pos = models.SmallIntegerField(default='0', verbose_name=_('position'))
+    rejectable = models.BooleanField(default=True)
     default = models.BooleanField(default=False)
 
     def __str__(self):
