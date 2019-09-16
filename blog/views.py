@@ -11,13 +11,14 @@ from rest_framework.decorators import api_view
 from JH_RestAPI import pagination
 from blog.models import Blog
 from blog.models import Vote
-from users.models import Profile
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from utils.utils import get_boolean_from_request, send_notification_email_to_admins
 from .serializers import BlogSerializer
 from .serializers import BlogSnippetSerializer
+
+User = get_user_model()
 
 
 class ActionType(Enum):
@@ -30,11 +31,11 @@ class ActionType(Enum):
 @csrf_exempt
 @api_view(["GET", "PUT", "POST", "DELETE"])
 def blogs(request):
-    user_profile = Profile.objects.get(user=request.user)
+    user_profile = request.user
     if request.method == "GET":
         mine = get_boolean_from_request(request, 'mine')
         if not mine:
-            if user_profile.user_type >= int(Profile.UserTypes.student):
+            if user_profile.user_type >= int(User.UserTypes.student):
                 queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user))
             else:
                 queryset = Blog.objects.filter(is_approved=True, is_public=True)
@@ -47,7 +48,7 @@ def blogs(request):
             instance=blogs, many=True, context={'user': request.user}).data
         return JsonResponse(create_response(data=serialized_blogs, paginator=paginator), safe=False)
     else:
-        if user_profile.user_type < int(Profile.UserTypes.student):
+        if user_profile.user_type < int(User.UserTypes.student):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                                 safe=False)
         if request.method == "POST":

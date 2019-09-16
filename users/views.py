@@ -37,7 +37,6 @@ from review.models import Review
 from utils.utils import send_notification_email_to_admins, get_boolean_from_request
 from .models import EmploymentStatus
 from .models import Feedback
-from .models import Profile
 from .serializers import EmploymentStatusSerializer
 from .serializers import ProfileSerializer, UserSerializer
 
@@ -114,9 +113,7 @@ def register(request):
                     else:
                         success = True
                         code = ResponseCodes.success
-                        profile = Profile.objects.get(
-                            user=user)
-                        json_res['user_type'] = profile.user_type
+                        json_res['user_type'] = user.user_type
                     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
                 else:
                     post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'],
@@ -153,8 +150,7 @@ def register(request):
                         success = True
                         code = ResponseCodes.success
                         user = AccessToken.objects.get(token=jsonres['access_token']).user
-                        profile = Profile.objects.get(user=user)
-                        jsonres['user_type'] = profile.user_type
+                        jsonres['user_type'] = user.user_type
                         user.approved = True
                         user.save()
                     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
@@ -306,10 +302,7 @@ def login(request):
     else:
         success = True
         code = ResponseCodes.success
-        profile = Profile.objects.get(
-            user=user)
-        json_res['user_type'] = profile.user_type
-        profile.save()
+        json_res['user_type'] = user.user_type
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
@@ -347,16 +340,15 @@ def change_password(request):
 def update_profile_photo(request):
     body = request.data
     user = request.user
-    profile = Profile.objects.get(user=user)
     if 'photo_url' in body:
-        profile.profile_photo_social = body['photo_url']
+        utils.save_image_file_to_user(body['photo_url'], user)
     if 'photo' in body:
         f = request.data['photo']
         ext = f.name.split('.')[-1]
         filename = "%s.%s" % (uuid.uuid4(), ext)
-        profile.profile_photo_custom.save(filename, f, save=True)
-    profile.save()
-    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
+        user.profile_photo.save(filename, f, save=True)
+    user.save()
+    return JsonResponse(create_response(data=ProfileSerializer(instance=user, many=False).data), safe=False)
 
 
 @csrf_exempt
@@ -369,7 +361,6 @@ def update_profile(request):
                             safe=False)
 
     user = request.user
-    profile = Profile.objects.get(user=user)
     if 'password' in body:
         user.set_password(body['password'])
     if 'username' in body:
@@ -382,33 +373,33 @@ def update_profile(request):
     if 'last_name' in body:
         user.last_name = body['last_name']
     if 'gender' in body:
-        profile.gender = body['gender']
+        user.gender = body['gender']
     if 'dob' in body:
-        profile.dob = datetime.strptime(body['dob'], "%Y-%m-%d").date()
+        user.dob = datetime.strptime(body['dob'], "%Y-%m-%d").date()
     if 'student_email' in body:
-        profile.student_email = body['student_email']
+        user.student_email = body['student_email']
     if 'phone_number' in body:
-        profile.phone_number = body['phone_number']
+        user.phone_number = body['phone_number']
     if 'emp_status_id' in body:
         if EmploymentStatus.objects.filter(pk=body['emp_status_id']).count() > 0:
-            profile.emp_status = EmploymentStatus.objects.get(
+            user.emp_status = EmploymentStatus.objects.get(
                 pk=body['emp_status_id'])
     if 'user_type' in body:
-        profile.user_type = body['user_type']
+        user.user_type = body['user_type']
     if 'college_id' in body:
         if College.objects.filter(pk=body['college_id']).count() > 0:
-            profile.college = College.objects.get(
+            user.college = College.objects.get(
                 pk=body['college_id'])
     if 'major' in body:
-        profile.major = insert_or_update_major(body['major'])
+        user.major = insert_or_update_major(body['major'])
     if 'grad_year' in body:
-        profile.grad_year = body['grad_year']
+        user.grad_year = body['grad_year']
     if 'job_title' in body:
         job_title = body['job_title']
-        profile.job_position = get_or_insert_position(job_title)
+        user.job_position = get_or_insert_position(job_title)
     if 'company' in body:
         company = body['company']
-        profile.company = get_or_create_company(company)
+        user.company = get_or_create_company(company)
 
     if 'country_id' in body and 'state_id' in body:
         state = State.objects.get(pk=body['state_id'])
@@ -416,12 +407,11 @@ def update_profile(request):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                                 safe=False)
         country = Country.objects.get(pk=body['country_id'])
-        profile.country = country
-        profile.state = state
+        user.country = country
+        user.state = state
 
     user.save()
-    profile.save()
-    return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
+    return JsonResponse(create_response(data=ProfileSerializer(instance=user, many=False).data), safe=False)
 
 
 @csrf_exempt
@@ -479,12 +469,10 @@ def link_social_account(request):
 
         log(str(response), 'e')
         if provider == 'google-oauth2':
-            profile = Profile.objects.get(user=request.user)
-            profile.is_gmail_read_ok = True
-            profile.save()
+            request.user.is_gmail_read_ok = True
+            request.user.save()
             schedule_fetcher(request.user.id)
-        profile = Profile.objects.get(user=request.user)
-        return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
+        return JsonResponse(create_response(data=ProfileSerializer(instance=request.user, many=False).data), safe=False)
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
 
 
@@ -515,14 +503,13 @@ def auth_social_user(request):
         success = True
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=json_res['access_token']).user
-        profile = Profile.objects.get(user=user)
-        json_res['user_type'] = profile.user_type
-        profile.save()
+        json_res['user_type'] = user.user_type
+        user.save()
         user.approved = True
         user.save()
         if provider == 'google-oauth2':
-            profile.is_gmail_read_ok = True
-            profile.save()
+            user.is_gmail_read_ok = True
+            user.save()
             schedule_fetcher(user.id)
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
@@ -531,17 +518,15 @@ def auth_social_user(request):
 def schedule_fetcher(user_id):
     user = User.objects.get(pk=user_id)
     if user.social_auth.filter(provider='google-oauth2'):
-        profile = Profile.objects.get(user=user)
-        profile.synching = True
-        profile.save()
+        user.synching = True
+        user.save()
         fetch_job_applications(user)
 
 
 @csrf_exempt
 @api_view(["GET"])
 def sync_user_emails(request):
-    profile = Profile.objects.get(user=request.user)
-    if not profile.is_gmail_read_ok:
+    if not request.user.is_gmail_read_ok:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.google_token_expired),
                             safe=False)
     # it'll be used for background tasking in production
@@ -549,7 +534,6 @@ def sync_user_emails(request):
     # https://django-background-tasks.readthedocs.io/en/latest/
     # https://stackoverflow.com/questions/41205607/how-to-activate-the-process-queue-in-django-background-tasks
     # schedule_fetcher.now(request.user.id)
-    profile.save()
     schedule_fetcher(request.user.id)
     return JsonResponse(create_response(data=None), safe=False)
 
@@ -579,8 +563,7 @@ def get_profile(request):
     if basic:
         return JsonResponse(create_response(data=UserSerializer(instance=request.user, context={'detailed': True}, many=False).data), safe=False)
     else:
-        profile = Profile.objects.get(user=request.user)
-        return JsonResponse(create_response(data=ProfileSerializer(instance=profile, many=False).data), safe=False)
+        return JsonResponse(create_response(data=ProfileSerializer(instance=request.user, many=False).data), safe=False)
 
 
 @csrf_exempt
@@ -608,12 +591,9 @@ def update_gmail_token(request):
             user_profile.extra_data['access_token'] = token
             user_profile.save()
             success = True
-            profile = Profile.objects.get(user=request.user)
-            profile.is_gmail_read_ok = True
-            profile.save()
+            request.user.is_gmail_read_ok = True
+            request.user.save()
             code = ResponseCodes.success
-            profile = Profile.objects.get(user=request.user)
-            profile.save()
             schedule_fetcher(request.user.id)
         else:
             success = False

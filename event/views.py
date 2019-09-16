@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
@@ -8,10 +9,11 @@ from rest_framework.decorators import api_view
 from JH_RestAPI import pagination
 from event.models import Event, EventType, EventAttendee
 from event.serializers import EventSerializer, EventSimpleSerializer, EventTypeSerializer
-from users.models import Profile
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from utils.utils import get_boolean_from_request, send_notification_email_to_admins
+
+User = get_user_model()
 
 
 @csrf_exempt
@@ -20,8 +22,8 @@ def events(request):
     if request.method == "GET":
         attended = get_boolean_from_request(request, 'attended')
         if not attended:
-            user_profile = Profile.objects.get(user=request.user)
-            if user_profile.user_type >= int(Profile.UserTypes.student):
+            user_profile = request.user
+            if user_profile.user_type >= int(User.UserTypes.student):
                 queryset = Event.objects.filter(is_approved=True)
             else:
                 queryset = Event.objects.filter(is_approved=True, is_public=True)
@@ -35,8 +37,8 @@ def events(request):
             instance=event_list, many=True, context={'user': request.user, 'detailed': False}).data
         return JsonResponse(create_response(data=serialized_events, paginator=paginator), safe=False)
     elif request.method == "DELETE":
-        user_profile = Profile.objects.get(user=request.user)
-        if user_profile.user_type < int(Profile.UserTypes.student):
+        user_profile = request.user
+        if user_profile.user_type < int(User.UserTypes.student):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                                 safe=False)
 
@@ -45,8 +47,8 @@ def events(request):
         event.delete()
         return JsonResponse(create_response(data=None), safe=False)
     else:
-        user_profile = Profile.objects.get(user=request.user)
-        if user_profile.user_type < int(Profile.UserTypes.student):
+        user_profile = request.user
+        if user_profile.user_type < int(User.UserTypes.student):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                                 safe=False)
         body = request.data

@@ -7,6 +7,7 @@ from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup as bs
+from django.contrib.auth import get_user_model
 from googleapiclient import errors
 from googleapiclient.discovery import build
 
@@ -17,13 +18,14 @@ from jobapps.models import JobApplication
 from jobapps.models import Source
 from jobapps.models import StatusHistory
 from position.utils import get_or_insert_position
-from users.models import Profile
 from utils.logger import log
 from .gmail_utils import convert_time
 from .gmail_utils import find_nth
 from .gmail_utils import remove_html_tags
 from .gmail_utils import unicode_to_ascii
 from .social_auth_credentials import Credentials
+
+User = get_user_model()
 
 
 def get_email_detail(service, user_id, msg_id, user, source):
@@ -314,12 +316,11 @@ def get_emails_with_custom_query(service, user_id, query=''):
 def fetch_job_applications(user):
     time_string = ''
     # checks user last update time and add it as a query parameter
-    profile = Profile.objects.get(user=user)
-    profile.synching = True
-    profile.save()
+    user.synching = True
+    user.save()
 
-    if profile.gmail_last_update_time != 0:
-        time = profile.gmail_last_update_time - 24 * 60 * 60
+    if user.gmail_last_update_time != 0:
+        time = user.gmail_last_update_time - 24 * 60 * 60
         time_string = ' AND after:' + str(time)
         log('its not the first time query will be added : ' + time_string, 'i')
     else:

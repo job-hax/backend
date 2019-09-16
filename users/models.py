@@ -31,17 +31,6 @@ class User(AbstractUser):
     key_expires = models.DateTimeField(null=True, blank=True)
     forgot_password_key = models.TextField(null=True, blank=True)
     forgot_password_key_expires = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        verbose_name = ('user')
-        verbose_name_plural = ('users')
-        db_table = 'auth_user'
-        swappable = 'AUTH_USER_MODEL'
-
-
-class Profile(models.Model):
-    User = get_user_model()
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
     gmail_last_update_time = models.IntegerField(default=0)
     USER_TYPE_CHOICES = (
         (0, 'NONE'),
@@ -68,8 +57,7 @@ class Profile(models.Model):
         message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     phone_number = models.CharField(
         validators=[phone_regex], max_length=17, blank=True)  # validators should be a list
-    profile_photo_social = models.CharField(max_length=200, blank=True)
-    profile_photo_custom = models.FileField(blank=True, null=True)
+    profile_photo = models.FileField(blank=True, null=True)
     emp_status = models.ForeignKey(
         EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)
     college = models.ForeignKey(
@@ -93,28 +81,11 @@ class Profile(models.Model):
         alumni = 3
         career_service = 4
 
-    def __str__(self):
-        return self.user.username
-
-    def is_student(self):
-        return self.user_type == 2
-
-    def is_alumni(self):
-        return self.user_type == 3
-
-    def is_career_service(self):
-        return self.user_type == 4
-
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    class Meta:
+        verbose_name = ('user')
+        verbose_name_plural = ('users')
+        db_table = 'auth_user'
+        swappable = 'AUTH_USER_MODEL'
 
 
 class Feedback(models.Model):

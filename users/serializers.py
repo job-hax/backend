@@ -6,13 +6,12 @@ from company.serializers import CompanyBasicsSerializer
 from major.serializers import MajorSerializer
 from position.serializers import JobPositionSerializer
 from utils.serializers import CountrySerializer, StateSerializer
-from .models import Profile, EmploymentStatus
+from .models import EmploymentStatus
 
 User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    profile_photo = serializers.SerializerMethodField()
     is_admin = serializers.SerializerMethodField(required=False)
     user_type = serializers.SerializerMethodField(required=False)
 
@@ -22,21 +21,13 @@ class UserSerializer(serializers.ModelSerializer):
             del self.fields['is_admin']
             del self.fields['user_type']
 
-    def get_profile_photo(self, obj):
-        profile = Profile.objects.get(user=obj)
-        if profile.profile_photo_custom.name:
-            return settings.MEDIA_URL + profile.profile_photo_custom.name
-        elif profile.profile_photo_social is not None:
-            return profile.profile_photo_social
-        return None
-
     def get_is_admin(self, obj):
         if self.context.get('detailed'):
             return obj.is_staff
 
     def get_user_type(self, obj):
         if self.context.get('detailed'):
-            return Profile.objects.get(user=obj).user_type
+            return obj.user_type
 
     def create(self, validated_data):
         return User.objects.create(**validated_data)
@@ -70,18 +61,16 @@ class ProfileSerializer(serializers.ModelSerializer):
     is_linkedin_linked = serializers.SerializerMethodField()
 
     def get_is_google_linked(self, obj):
-        if obj.user.social_auth.filter(provider='google-oauth2').count() == 0:
+        if obj.social_auth.filter(provider='google-oauth2').count() == 0:
             return False
         return True
 
     def get_is_linkedin_linked(self, obj):
-        if obj.user.social_auth.filter(provider='linkedin-oauth2').count() == 0:
+        if obj.social_auth.filter(provider='linkedin-oauth2').count() == 0:
             return False
         return True
 
-    def create(self, validated_data):
-        return Profile.objects.create(**validated_data)
-
     class Meta:
-        model = Profile
-        fields = ('__all__')
+        model = User
+        exclude = ['password', 'last_login', 'is_superuser', 'is_staff', 'is_active', 'activation_key', 'key_expires',
+                   'forgot_password_key', 'forgot_password_key_expires', 'approved', 'groups', 'user_permissions']
