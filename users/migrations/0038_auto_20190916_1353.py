@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
     ]
 
     def move_data(apps, schema_editor):
-        User = get_user_model()
+        User = apps.get_model('users', 'User')
         for user in User.objects.all():
             if not user.profile_photo_custom.name:
                 if user.profile_photo_social is not None and user.profile_photo_social is not '':

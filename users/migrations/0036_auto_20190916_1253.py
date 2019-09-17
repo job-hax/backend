@@ -19,7 +19,6 @@ class Migration(migrations.Migration):
 
     def move_data(apps, schema_editor):
         Profile = apps.get_model('users', 'Profile')
-        User = get_user_model()
         for profile in Profile.objects.all():
             user = profile.user
             user.gmail_last_update_time = profile.gmail_last_update_time
