@@ -26,9 +26,9 @@ class Migration(migrations.Migration):
                         user.profile_photo_custom.save(filename, File(file), save=True)
                         os.remove(user.profile_photo_social.split('/')[-1])
                     except FileNotFoundError as err:
-                        print(err)  # something wrong with local path
+                        pass  # something wrong with local path
                     except HTTPError as err:
-                        print(err)  # something wrong with url
+                        pass  # something wrong with url
 
     operations = [
         migrations.RunPython(move_data, reverse_code=migrations.RunPython.noop),

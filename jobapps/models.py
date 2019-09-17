@@ -71,8 +71,7 @@ class StatusHistory(models.Model):
 
 
 class GoogleMail(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=False, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=True)
     job_post = models.ForeignKey(
         JobApplication, on_delete=models.CASCADE, null=True, blank=True)
     app_source = models.ForeignKey(
@@ -121,4 +120,4 @@ class Contact(models.Model):
         default=datetime.now, null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return self.first_name

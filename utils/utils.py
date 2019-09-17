@@ -133,6 +133,6 @@ def save_image_file_to_user(path, user):
         user.profile_photo.save(filename, File(file), save=True)
         os.remove(path.split('/')[-1])
     except FileNotFoundError as err:
-        print(err)  # something wrong with local path
+        log(traceback.format_exception(None, err, err.__traceback__), 'e')
     except HTTPError as err:
-        print(err)  # something wrong with url
+        log(traceback.format_exception(None, err, err.__traceback__), 'e')

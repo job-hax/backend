@@ -26,7 +26,7 @@ class Blog(models.Model):
 
 
 class Vote(models.Model):
-    user = models.ForeignKey(
-        get_user_model(), on_delete=models.CASCADE, related_name='vote_user')
+    User = get_user_model()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vote_user')
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     vote_type = models.BooleanField(default=False)
