@@ -86,7 +86,7 @@ def demo(request):
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
-@background(schedule=300)
+@background(schedule=3600)
 def schedule_delete_demo_account(user_id):
     user = User.objects.get(pk=user_id)
     Blog.objects.filter(publisher_profile=user).delete()
