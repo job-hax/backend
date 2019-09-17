@@ -41,6 +41,7 @@ def demo(request):
     demo_user.username = username
     demo_user.email = email
     demo_user.pk = None
+    demo_user.set_password('123456')
     demo_user.save()
 
     user = User.objects.get(username=username)
@@ -81,12 +82,12 @@ def demo(request):
         success = True
         code = ResponseCodes.success
         json_res['user_type'] = user.user_type
-        schedule_fetcher(user.id)
+        schedule_delete_demo_account(user.id)
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
 @background(schedule=300)
-def schedule_fetcher(user_id):
+def schedule_delete_demo_account(user_id):
     user = User.objects.get(pk=user_id)
     Blog.objects.filter(publisher_profile=user).delete()
     Event.objects.filter(host_user=user).delete()
