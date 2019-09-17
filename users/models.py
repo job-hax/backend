@@ -40,6 +40,7 @@ class User(AbstractUser):
     user_type = models.IntegerField(choices=USER_TYPE_CHOICES, default=0)
     is_gmail_read_ok = models.BooleanField(default=True)
     synching = models.BooleanField(default=False)
+    is_demo = models.BooleanField(default=False)
     GENDER_CHOICES = (
         ('M', 'Male'),
         ('F', 'Female'),
