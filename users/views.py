@@ -20,7 +20,6 @@ from social_django.models import UserSocialAuth
 from blog.models import Blog
 from college.models import College
 from company.utils import get_or_create_company
-from jobapps.serializers import GoogleMailSerializer
 from major.utils import insert_or_update_major
 from position.utils import get_or_insert_position
 from utils import utils

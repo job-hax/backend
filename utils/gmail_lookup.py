@@ -350,16 +350,16 @@ def fetch_job_applications(user):
     except Exception as e:
         log('Users google token probably expired. Should have new token from google', 'e')
         log(traceback.format_exception(None, e, e.__traceback__), 'e')
-        profile.is_gmail_read_ok = False
-        profile.synching = False
-        profile.save()
+        user.is_gmail_read_ok = False
+        user.synching = False
+        user.save()
         return
 
     for m in allMails.values():
         if m is False:
-            profile.is_gmail_read_ok = False
-            profile.synching = False
-            profile.save()
+            user.is_gmail_read_ok = False
+            user.synching = False
+            user.save()
             log('403 error got from Google. Check permissions...', 'e')
             return
 
@@ -371,7 +371,7 @@ def fetch_job_applications(user):
 
                 # updates user last update time after all this
     now = datetime.utcnow().timestamp()
-    profile.gmail_last_update_time = now
-    profile.is_gmail_read_ok = True
-    profile.synching = False
-    profile.save()
+    user.gmail_last_update_time = now
+    user.is_gmail_read_ok = True
+    user.synching = False
+    user.save()
