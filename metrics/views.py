@@ -338,7 +338,7 @@ def agg_detailed(request):
     public = get_boolean_from_request(request, 'public')
     if user_profile.user_type >= int(User.UserTypes.student) and not public:
         college_users = User.objects.filter(
-            id__in=[p.id for p in User.objects.filter(college=user_profile.college, is_demo=True)])
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, is_demo=False)])
         filter_by_college = True
 
     if user_profile.user_type < int(User.UserTypes.student) and not public:
@@ -364,7 +364,7 @@ def agg_detailed(request):
             if filter_by_college:
                 distinct_jobapps = JobApplication.objects.filter(user__in=college_users).distinct('company_object', 'user')
             else:
-                distinct_jobapps = JobApplication.objects.filter(user__is_demo=True).distinct('company_object', 'user')
+                distinct_jobapps = JobApplication.objects.filter(user__is_demo=False).distinct('company_object', 'user')
             #  ~Q(application_status__pk = 2) indicates not 'To Apply' statuses in the prod DB.
             top_companies = JobApplication.objects.filter(~Q(application_status=None), ~Q(application_status__pk=2),
                                                           apply_date__range=[
@@ -443,7 +443,7 @@ def agg_detailed(request):
                         apps = JobApplication.objects.filter(user__in=college_users, apply_date__range=[last_year, today],
                                                              is_deleted=False)
                     else:
-                        apps = JobApplication.objects.filter(apply_date__range=[last_year, today], is_deleted=False, user__is_demo=True)
+                        apps = JobApplication.objects.filter(apply_date__range=[last_year, today], is_deleted=False, user__is_demo=False)
                     apps_by_months = apps.values(
                         'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 elif i != 'Others':
@@ -453,7 +453,7 @@ def agg_detailed(request):
                                                              last_year, today], is_deleted=False)
                     else:
                         apps = JobApplication.objects.filter(app_source__value=i, apply_date__range=[
-                                                                 last_year, today], is_deleted=False, user__is_demo=True)
+                                                                 last_year, today], is_deleted=False, user__is_demo=False)
                     apps_by_months = apps.values(
                         'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
                 else:
@@ -463,7 +463,7 @@ def agg_detailed(request):
                                                              last_year, today], is_deleted=False)
                     else:
                         apps = JobApplication.objects.filter(app_source__system=False, apply_date__range=[
-                                                                 last_year, today], is_deleted=False, user__is_demo=True)
+                                                                 last_year, today], is_deleted=False, user__is_demo=False)
                     apps_by_months = apps.values(
                         'apply_date__year', 'apply_date__month').annotate(count=Count('pk'))
 
@@ -487,7 +487,7 @@ def agg_detailed(request):
                                                          is_deleted=False)
                 else:
                     apps = JobApplication.objects.filter(apply_date__year=month.year, apply_date__month=month.month,
-                                                         is_deleted=False, user__is_demo=True)
+                                                         is_deleted=False, user__is_demo=False)
                 item['list']['data'].append(
                     {'id': months_string[idx] + ' ' + str(month.year), 'value': apps.count()})
                 total += apps.count()
@@ -548,7 +548,7 @@ def agg_detailed(request):
             if filter_by_college:
                 distinct_positions = JobApplication.objects.filter(user__in=college_users).distinct('position', 'user')
             else:
-                distinct_positions = JobApplication.objects.filter(user__is_demo=True).distinct('position', 'user')
+                distinct_positions = JobApplication.objects.filter(user__is_demo=False).distinct('position', 'user')
             #  ~Q(application_status__pk = 2) indicates not 'To Apply' statuses in the prod DB.
             top_positions = JobApplication.objects.filter(~Q(application_status=None), ~Q(application_status__pk=2),
                                                           apply_date__range=[
@@ -605,7 +605,7 @@ def agg_generic(request):
     public = get_boolean_from_request(request, 'public')
     if user_profile.user_type >= int(User.UserTypes.student) and not public:
         college_users = get_user_model().objects.filter(
-            id__in=[p.id for p in User.objects.filter(college=user_profile.college, is_demo=True)])
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, is_demo=False)])
         filter_by_college = True
         total_jobs_applied = JobApplication.objects.filter(user__in=college_users, is_deleted=False)
     else:
@@ -692,9 +692,9 @@ def agg_generic(request):
             item['title'] = 'Total Users'
             User = get_user_model()
             if filter_by_college:
-                total_user = User.objects.filter(id__in=[p.id for p in User.objects.filter(college=user_profile.college, is_demo=True)])
+                total_user = User.objects.filter(id__in=[p.id for p in User.objects.filter(college=user_profile.college, is_demo=False)])
             else:
-                total_user = User.objects.filter(is_demo=True)
+                total_user = User.objects.filter(is_demo=False)
             total_user_count = total_user.count()
             item['value'] = total_user_count
             total_application = total_jobs_applied.count()

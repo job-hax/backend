@@ -47,7 +47,7 @@ class EventSerializer(serializers.ModelSerializer):
         return EventTypeSerializer(instance=obj.event_type, many=False).data
 
     def get_attendee_list(self, obj):
-        return EventAttendeeSerializer(instance=EventAttendee.objects.filter(event=obj, user__is_demo=True),
+        return EventAttendeeSerializer(instance=EventAttendee.objects.filter(event=obj, user__is_demo=False),
                                        many=True).data
 
     def get_attended(self, obj):
