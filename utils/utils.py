@@ -60,7 +60,7 @@ def send_notification_email_to_admins(type):
             </html>'''
     email_addresses = []
     for profile in profiles:
-        email_addresses.append(profile.user.email)
+        email_addresses.append(profile.email)
     email = EmailMessage(subject, body, to=email_addresses)
     email.content_subtype = "html"  # this is the crucial part
     try:
