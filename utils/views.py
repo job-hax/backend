@@ -36,6 +36,10 @@ def demo(request):
     body = JSONParser().parse(request)
     demo_user = User.objects.get(username='demo')
 
+    demo_count = User.objects.filter(username__startswith='demo').count()
+    if demo_count > 49:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user), safe=False)
+
     username = 'demo' + str(User.objects.filter(username__startswith='demo').count())
     email = username + '@jobhax.com'
     demo_user.username = username
