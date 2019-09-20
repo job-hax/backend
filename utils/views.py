@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
+import random
 
 from blog.models import Blog
 from event.models import Event
@@ -40,7 +41,9 @@ def demo(request):
     if demo_count > 49:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user), safe=False)
 
-    username = 'demo' + str(User.objects.filter(username__startswith='demo').count())
+    username = 'demo' + str(random.randint(10000,99999))
+    if User.objects.filter(username=username).count() > 0:
+        username = 'demo' + str(random.randint(10000, 99999))
     email = username + '@jobhax.com'
     demo_user.username = username
     demo_user.email = email
