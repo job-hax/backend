@@ -44,7 +44,8 @@ class CompanySerializer(serializers.ModelSerializer):
     def get_ratings(self, obj):
         ratings = []
         for i in range(1, 6):
-            rating = {'id': i, 'count': Review.objects.filter(company=obj, overall_company_experience=i).aggregate(
+            rating = {'id': i, 'count': Review.objects.filter(company=obj, overall_company_experience=i,
+                                                              is_published=True).aggregate(
                 Count('overall_company_experience'))['overall_company_experience__count']}
             ratings.append(rating)
         return ratings

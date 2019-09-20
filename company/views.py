@@ -20,7 +20,7 @@ def companies(request):
     mine = get_boolean_from_request(request, 'mine')
     companies = Company.objects.all()
     if has_review:
-        companies_has_review = Review.objects.order_by('company__id').distinct('company__id')
+        companies_has_review = Review.objects.filter(is_published=True).order_by('company__id').distinct('company__id')
         companies = Company.objects.all().filter(id__in=[r.company.id for r in companies_has_review])
     if mine:
         users_companies = JobApplication.objects.filter(user=request.user, is_deleted=False)
@@ -41,7 +41,7 @@ def positions(request, company_pk):
     company = Company.objects.get(pk=company_pk)
     queryset = JobApplication.objects.filter(company_object=company)
     if has_review:
-        positions_has_review = Review.objects.filter(company=company).order_by('position__id').distinct('position__id')
+        positions_has_review = Review.objects.filter(company=company, is_published=True).order_by('position__id').distinct('position__id')
         queryset = queryset.filter(position__id__in=[r.position.id for r in positions_has_review])
     positions = set()
     for q in queryset:
