@@ -11,5 +11,9 @@ class ReviewAdmin(admin.ModelAdmin, ExportCsv):
     actions = ["export_as_csv"]
 
 
+@admin.register(EmploymentAuth)
+class EmploymentAuthAdmin(admin.ModelAdmin):
+    list_display = ("id", "value")
+
+
 admin.site.register(CompanyEmploymentAuth)
-admin.site.register(EmploymentAuth)

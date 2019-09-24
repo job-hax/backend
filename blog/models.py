@@ -16,11 +16,6 @@ class Blog(models.Model):
     is_publish = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
 
-    def __str__(self):
-        if self.title is None:
-            return ''
-        return self.title
-
     class Meta:
         ordering = ['-created_at']
 

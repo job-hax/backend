@@ -6,8 +6,10 @@ from .models import User, EmploymentStatus, Feedback
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin, ExportCsv):
-    list_display = ("email", "first_name", "last_name", "username")
-    list_filter = ("email", "first_name", "last_name", "username")
+    list_display = ("email", "first_name", "last_name", "username", "user_type", "gender", "college",
+                    "student_email", "phone_number", "dob")
+    list_filter = ("email", "first_name", "last_name", "username", "user_type", "gender", "college",
+                    "student_email", "phone_number", "dob")
     actions = ["export_as_csv"]
 
 
@@ -18,4 +20,6 @@ class FeedbackAdmin(admin.ModelAdmin, ExportCsv):
     actions = ["export_as_csv"]
 
 
-admin.site.register(EmploymentStatus)
+@admin.register(EmploymentStatus)
+class EmploymentStatusAdmin(admin.ModelAdmin, ExportCsv):
+    list_display = ("id", "value")

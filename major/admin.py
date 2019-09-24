@@ -2,5 +2,7 @@ from django.contrib import admin
 
 from major.models import Major
 
-# Register your models here.
-admin.site.register(Major)
+
+@admin.register(Major)
+class MajorAdmin(admin.ModelAdmin):
+    list_display = ("name", "supported")
