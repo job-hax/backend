@@ -14,9 +14,6 @@ class Faq(models.Model):
         verbose_name = _('faq')
         verbose_name_plural = _('faqs')
 
-    def __str__(self):
-        return self.title
-
 
 class Item(models.Model):
     faq = models.ForeignKey(Faq, related_name='items', on_delete=models.CASCADE)

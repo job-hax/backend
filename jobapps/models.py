@@ -18,9 +18,6 @@ class ApplicationStatus(models.Model):
     rejectable = models.BooleanField(default=True)
     default = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.value
-
     class Meta:
         ordering = ['value']
         verbose_name = _('status')
@@ -33,9 +30,6 @@ class Source(models.Model):
     gmail_key = models.CharField(max_length=100, blank=True)
     system = models.BooleanField(default=False)
     image = models.CharField(null=True, max_length=200, blank=True)
-
-    def __str__(self):
-        return self.value
 
     class Meta:
         ordering = ['value']
@@ -94,9 +88,6 @@ class JobApplicationNote(models.Model):
 class SourceType(models.Model):
     value = models.CharField(max_length=20, null=False)
 
-    def __str__(self):
-        return self.value
-
 
 class Contact(models.Model):
     job_post = models.ForeignKey(
@@ -118,6 +109,3 @@ class Contact(models.Model):
     created_date = models.DateTimeField(default=datetime.now, blank=True)
     update_date = models.DateTimeField(
         default=datetime.now, null=True, blank=True)
-
-    def __str__(self):
-        return self.first_name

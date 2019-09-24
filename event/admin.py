@@ -8,4 +8,7 @@ class EventAdmin(admin.ModelAdmin):
     list_filter = ("title", "event_date_start", "event_date_end", "host_user")
 
 
-admin.site.register(EventType)
+@admin.register(EventType)
+class EventTypeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    list_filter = ('id', 'name')

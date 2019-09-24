@@ -6,9 +6,6 @@ User = get_user_model()
 class EventType(models.Model):
     name = models.CharField(max_length=20, null=False)
 
-    def __str__(self):
-        return self.name
-
 
 class Event(models.Model):
     host_user = models.ForeignKey(
@@ -30,9 +27,6 @@ class Event(models.Model):
     is_public = models.BooleanField(default=False)
     is_publish = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.title
 
     class Meta:
         ordering = ['-created_at']

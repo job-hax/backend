@@ -6,7 +6,7 @@ from .models import JobApplication, ApplicationStatus, Source, GoogleMail, Sourc
 
 # Register your models here.
 @admin.register(JobApplication)
-class CompanyAdmin(admin.ModelAdmin, ExportCsv):
+class JobApplicationAdmin(admin.ModelAdmin, ExportCsv):
     list_display = ("user", "application_status", "position",
                     'company_object', 'app_source', 'is_deleted', 'apply_date')
     list_filter = ("user", "application_status", "position",
@@ -20,7 +20,21 @@ class ReviewAdmin(admin.ModelAdmin):
     list_filter = ("user", "job_post", "subject", "app_source")
 
 
-admin.site.register(ApplicationStatus)
-admin.site.register(Source)
-admin.site.register(Contact)
-admin.site.register(SourceType)
+@admin.register(ApplicationStatus)
+class ApplicationStatusAdmin(admin.ModelAdmin):
+    list_display = ("value", "pos", "rejectable", "default")
+
+
+@admin.register(Source)
+class SourceAdmin(admin.ModelAdmin):
+    list_display = ("value", "system")
+
+
+@admin.register(SourceType)
+class SourceTypeAdmin(admin.ModelAdmin):
+    list_display = ("id", "value")
+
+
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ("id", "first_name", "last_name", "created_date", "update_date")

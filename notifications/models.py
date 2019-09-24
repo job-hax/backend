@@ -7,8 +7,5 @@ class Notification(models.Model):
     image = models.CharField(null=True, max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.title
-
     class Meta:
         ordering = ['-created_at']

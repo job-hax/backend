@@ -17,9 +17,6 @@ from utils.models import Country, State
 class EmploymentStatus(models.Model):
     value = models.CharField(max_length=20, default='N/A')
 
-    def __str__(self):
-        return self.value
-
 
 class User(AbstractUser):
     objects = UserManager()
