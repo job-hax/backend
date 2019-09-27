@@ -12,8 +12,8 @@ from jobapps.models import JobApplication
 from poll.models import Vote
 from review.models import Review
 from utils.generic_json_creator import create_response
-from .models import Agreement, Country, State
-from .serializers import AgreementSerializer, CountrySerializer, StateSerializer
+from .models import *
+from .serializers import *
 import requests
 from utils.error_codes import ResponseCodes
 from rest_framework.parsers import JSONParser
@@ -118,3 +118,43 @@ def states(request, country_pk):
     states = State.objects.filter(country__pk=country_pk)
     slist = StateSerializer(instance=states, many=True).data
     return JsonResponse(create_response(data=slist), safe=False)
+
+
+@require_GET
+@csrf_exempt
+def feedbacks(request):
+    feedback_question = FeedbackQuestion.objects.first()
+    if feedback_question is None:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+    feedback_question = FeedbackQuestionSerializer(instance=feedback_question, many=False).data
+    return JsonResponse(create_response(data=feedback_question), safe=False)
+
+
+@require_POST
+@csrf_exempt
+def answer_feedback(request, feedback_pk):
+    feedback_question = FeedbackQuestion.objects.filter(pk=feedback_pk)
+    if feedback_question.count() == 0:
+        return JsonResponse(
+            create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+    feedback_question = feedback_question[0]
+    body = JSONParser().parse(request)
+    item_pk = body['item_id']
+    if not item_pk:
+        return JsonResponse(
+            create_response(data=None, success=False, error_code=ResponseCodes.missing_item_id_parameter), safe=False)
+
+    item = FeedbackQuestionItem.objects.get(pk=item_pk)
+
+    user_input = ''
+    if 'user_input' in body:
+        user_input = body['user_input']
+
+    FeedbackAnswer.objects.create(
+        feedback_question=feedback_question,
+        ip=request.META['REMOTE_ADDR'],
+        user_input=user_input,
+        answer=item,
+    )
+
+    return JsonResponse(create_response(data=None), safe=False)
