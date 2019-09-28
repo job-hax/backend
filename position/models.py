@@ -6,3 +6,6 @@ class JobPosition(models.Model):
 
     class Meta:
         ordering = ['job_title']
+
+    def __str__(self):
+        return self.job_title if self.job_title is not None else ''

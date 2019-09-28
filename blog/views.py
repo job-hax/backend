@@ -35,10 +35,7 @@ def blogs(request):
     if request.method == "GET":
         mine = get_boolean_from_request(request, 'mine')
         if not mine:
-            if user_profile.user_type >= int(User.UserTypes.student):
-                queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user))
-            else:
-                queryset = Blog.objects.filter(is_approved=True, is_public=True)
+            queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user), publisher_profile__user_type=user_profile.user_type)
         else:
             queryset = Blog.objects.filter(publisher_profile=request.user)
         queryset = queryset.filter(publisher_profile__isnull=False)
@@ -72,9 +69,6 @@ def blogs(request):
                 is_publish = get_boolean_from_request(request, 'is_publish')
                 blog.is_publish = is_publish
                 send_notification_email_to_admins('blog')
-            if 'is_public' in body:
-                is_public = get_boolean_from_request(request, 'is_public')
-                blog.is_public = is_public
             blog.publisher_profile = request.user
 
             blog.save()
@@ -94,8 +88,6 @@ def blogs(request):
                 blog.header_image.save(filename, file, save=True)
             if 'is_publish' in body:
                 blog.is_publish = get_boolean_from_request(request, 'is_publish')
-            if 'is_public' in body:
-                blog.is_public = get_boolean_from_request(request, 'is_public')
             blog.is_approved = False
             blog.updated_at = datetime.now()
             blog.save()

@@ -12,7 +12,6 @@ class Blog(models.Model):
     content = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_public = models.BooleanField(default=False)
     is_publish = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
 

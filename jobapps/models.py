@@ -24,6 +24,9 @@ class ApplicationStatus(models.Model):
         verbose_name_plural = _('statuses')
         ordering = ['pos']
 
+    def __str__(self):
+        return self.value if self.value is not None else ''
+
 
 class Source(models.Model):
     value = models.CharField(max_length=20)
@@ -33,6 +36,9 @@ class Source(models.Model):
 
     class Meta:
         ordering = ['value']
+
+    def __str__(self):
+        return self.value if self.value is not None else ''
 
 
 class JobApplication(models.Model):
@@ -87,6 +93,9 @@ class JobApplicationNote(models.Model):
 
 class SourceType(models.Model):
     value = models.CharField(max_length=20, null=False)
+
+    def __str__(self):
+        return self.value if self.value is not None else ''
 
 
 class Contact(models.Model):

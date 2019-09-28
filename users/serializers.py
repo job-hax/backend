@@ -72,5 +72,6 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        exclude = ['password', 'last_login', 'is_superuser', 'is_staff', 'is_active', 'is_demo', 'activation_key', 'key_expires',
+        exclude = ['password', 'last_login', 'is_superuser', 'is_staff',
+                   'is_active', 'is_demo', 'activation_key', 'key_expires',
                    'forgot_password_key', 'forgot_password_key_expires', 'approved', 'groups', 'user_permissions']
