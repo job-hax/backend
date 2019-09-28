@@ -23,6 +23,9 @@ class Country(models.Model):
     class Meta:
         ordering = ['name']
 
+    def __str__(self):
+        return self.name if self.name is not None else ''
+
 
 class State(models.Model):
     country = models.ForeignKey(
@@ -33,6 +36,9 @@ class State(models.Model):
 
     class Meta:
         ordering = ['name']
+
+    def __str__(self):
+        return self.name if self.name is not None else ''
 
 
 class PublishedManager(Manager):

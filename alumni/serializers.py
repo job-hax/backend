@@ -15,6 +15,13 @@ class AlumniSerializer(serializers.ModelSerializer):
     country = CountrySerializer(read_only=True)
     state = StateSerializer(read_only=True)
     job_position = JobPositionSerializer(read_only=True)
+    email = serializers.SerializerMethodField()
+
+    def get_email(self, obj):
+        if obj.is_email_public:
+            return obj.email
+        else:
+            return None
 
     class Meta:
         model = get_user_model()

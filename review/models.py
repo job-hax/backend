@@ -15,6 +15,9 @@ User = get_user_model()
 class EmploymentAuth(models.Model):
     value = models.CharField(max_length=20, null=False)
 
+    def __str__(self):
+        return self.value if self.value is not None else ''
+
 
 class Review(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True)

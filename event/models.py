@@ -6,6 +6,9 @@ User = get_user_model()
 class EventType(models.Model):
     name = models.CharField(max_length=20, null=False)
 
+    def __str__(self):
+        return self.name if self.name is not None else ''
+
 
 class Event(models.Model):
     host_user = models.ForeignKey(
@@ -24,7 +27,6 @@ class Event(models.Model):
     spot_count = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_public = models.BooleanField(default=False)
     is_publish = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
 

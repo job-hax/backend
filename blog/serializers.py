@@ -18,10 +18,12 @@ class BlogSerializer(serializers.ModelSerializer):
         return obj.publisher_profile == self.context.get('user')
 
     def get_word_count(self, obj):
-        line_soup = bs(obj.content.strip(), 'html.parser')
-        # naive way to get words count
-        words_count = len(line_soup.text.split())
-        return words_count
+        if obj.content:
+            line_soup = bs(obj.content.strip(), 'html.parser')
+            # naive way to get words count
+            words_count = len(line_soup.text.split())
+            return words_count
+        return 0
 
     def get_created_at(self, obj):
         if obj.date is None:
@@ -48,7 +50,7 @@ class BlogSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'publisher_profile', 'mine', 'title', 'content', 'header_image', 'snippet',
                   'created_at', 'updated_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted', 'is_publish',
-                  'is_public', 'is_approved')
+                  'is_approved')
         model = models.Blog
 
 
@@ -60,10 +62,12 @@ class BlogSnippetSerializer(serializers.ModelSerializer):
     word_count = serializers.SerializerMethodField()
 
     def get_word_count(self, obj):
-        line_soup = bs(obj.content.strip(), 'html.parser')
-        # naive way to get words count
-        words_count = len(line_soup.text.split())
-        return words_count
+        if obj.content:
+            line_soup = bs(obj.content.strip(), 'html.parser')
+            # naive way to get words count
+            words_count = len(line_soup.text.split())
+            return words_count
+        return 0
 
     def get_created_at(self, obj):
         if obj.date is None:
@@ -90,5 +94,5 @@ class BlogSnippetSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'publisher_profile', 'title', 'snippet',
                   'header_image', 'created_at', 'updated_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted',
-                  'is_public', 'is_publish', 'is_approved')
+                  'is_publish', 'is_approved')
         model = models.Blog

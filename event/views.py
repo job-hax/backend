@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
+from django.db.models import Q
 
 from JH_RestAPI import pagination
 from event.models import Event, EventType, EventAttendee
@@ -23,10 +24,7 @@ def events(request):
         attended = get_boolean_from_request(request, 'attended')
         if not attended:
             user_profile = request.user
-            if user_profile.user_type >= int(User.UserTypes.student):
-                queryset = Event.objects.filter(is_approved=True)
-            else:
-                queryset = Event.objects.filter(is_approved=True, is_public=True)
+            queryset = Event.objects.filter(Q(is_approved=True) | Q(host_user=request.user), host_user__user_type=user_profile.user_type)
         else:
             attended_events = EventAttendee.objects.filter(user=request.user)
             queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
@@ -84,8 +82,6 @@ def events(request):
             ext = file.name.split('.')[-1]
             filename = "%s.%s" % (uuid.uuid4(), ext)
             event.header_image.save(filename, file, save=True)
-        if 'is_public' in body:
-            event.is_public = get_boolean_from_request(request, 'is_public')
         if 'is_publish' in body:
             event.is_publish = get_boolean_from_request(request, 'is_publish')
         event.is_approved = False

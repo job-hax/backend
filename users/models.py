@@ -21,6 +21,7 @@ class EmploymentStatus(models.Model):
 class User(AbstractUser):
     objects = UserManager()
     email = models.EmailField(('email address'), unique=True)
+    is_email_public = models.BooleanField(default=True)
     approved = models.BooleanField(default=False, null=False)
     activation_key = models.TextField(null=True, blank=True)
     key_expires = models.DateTimeField(null=True, blank=True)

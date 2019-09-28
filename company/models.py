@@ -10,3 +10,6 @@ class Company(models.Model):
 
     class Meta:
         ordering = ['company']
+
+    def __str__(self):
+        return self.company if self.company is not None else ''

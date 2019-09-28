@@ -7,3 +7,6 @@ class Major(models.Model):
 
     class Meta:
         ordering = ['name']
+
+    def __str__(self):
+        return self.name if self.name is not None else ''

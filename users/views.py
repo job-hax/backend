@@ -377,6 +377,8 @@ def update_profile(request):
         user.dob = datetime.strptime(body['dob'], "%Y-%m-%d").date()
     if 'student_email' in body:
         user.student_email = body['student_email']
+    if 'is_email_public' in body:
+        user.is_email_public = body['is_email_public']
     if 'phone_number' in body:
         user.phone_number = body['phone_number']
     if 'emp_status_id' in body:
