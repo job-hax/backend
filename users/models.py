@@ -88,6 +88,7 @@ class Feedback(models.Model):
     User = get_user_model()
     user = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True)
+    from_demo_account = models.BooleanField(default=False)
     text = models.TextField(null=True, blank=True)
     star = models.IntegerField(validators=[
         MaxValueValidator(5),

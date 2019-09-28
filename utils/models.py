@@ -87,7 +87,7 @@ class FeedbackQuestionItem(models.Model):
 
 class FeedbackAnswer(models.Model):
     feedback_question = models.ForeignKey(FeedbackQuestion, on_delete=models.CASCADE, verbose_name=_('feedback question'))
-    answer = models.ForeignKey(FeedbackQuestionItem, related_name='answer', on_delete=models.CASCADE, verbose_name=_('answered item'))
+    answer = models.ForeignKey(FeedbackQuestionItem, related_name='answer', on_delete=models.CASCADE, verbose_name=_('answered item'), null=True)
     user_input = models.CharField(max_length=250, verbose_name=_('user input'), null=False, blank=True)
     ip = models.GenericIPAddressField(verbose_name=_('user\'s IP'))
     datetime = models.DateTimeField(auto_now_add=True)

@@ -139,12 +139,14 @@ def answer_feedback(request, feedback_pk):
             create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
     feedback_question = feedback_question[0]
     body = JSONParser().parse(request)
-    item_pk = body['item_id']
-    if not item_pk:
+    if 'item_id' not in body:
         return JsonResponse(
             create_response(data=None, success=False, error_code=ResponseCodes.missing_item_id_parameter), safe=False)
-
-    item = FeedbackQuestionItem.objects.get(pk=item_pk)
+    item_pk = body['item_id']
+    if item_pk == 0:
+        item = None
+    else:
+        item = FeedbackQuestionItem.objects.get(pk=item_pk)
 
     user_input = ''
     if 'user_input' in body:
