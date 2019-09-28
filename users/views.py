@@ -616,7 +616,11 @@ def feedback(request):
     text = body['text']
     star = body['star']
     user = request.user
-    Feedback.objects.create(user=user, text=text, star=star)
+    if user.username.startswith('demo'):
+        from_demo_account = True
+    else:
+        from_demo_account = False
+    Feedback.objects.create(user=user, text=text, star=star, from_demo_account=from_demo_account)
     send_notification_email_to_admins('feedback')
     return JsonResponse(create_response(data=None), safe=False)
 
