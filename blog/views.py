@@ -35,7 +35,8 @@ def blogs(request):
     if request.method == "GET":
         mine = get_boolean_from_request(request, 'mine')
         if not mine:
-            queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user), publisher_profile__user_type=user_profile.user_type)
+            queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
+                                           Q(publisher_profile__user_type=user_profile.user_type) | Q(publisher_profile__is_staff=True))
         else:
             queryset = Blog.objects.filter(publisher_profile=request.user)
         queryset = queryset.filter(publisher_profile__isnull=False)
@@ -45,7 +46,7 @@ def blogs(request):
             instance=blogs, many=True, context={'user': request.user}).data
         return JsonResponse(create_response(data=serialized_blogs, paginator=paginator), safe=False)
     else:
-        if user_profile.user_type < int(User.UserTypes.student):
+        if not user_profile.user_type.blog_creation_enabled:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                                 safe=False)
         if request.method == "POST":

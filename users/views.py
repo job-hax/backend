@@ -34,9 +34,9 @@ from event.models import Event, EventAttendee
 from poll.models import Vote
 from review.models import Review
 from utils.utils import send_notification_email_to_admins, get_boolean_from_request
-from .models import EmploymentStatus
+from .models import EmploymentStatus, UserType
 from .models import Feedback
-from .serializers import EmploymentStatusSerializer
+from .serializers import EmploymentStatusSerializer, UserTypeSerializer
 from .serializers import ProfileSerializer, UserSerializer
 
 User = get_user_model()
@@ -64,6 +64,8 @@ def register(request):
         linkedin_auth_code = body['linkedin_auth_code']
     if 'google_access_token' in body:
         google_access_token = body['google_access_token']
+    if 'user_type' in body:
+        user_type = UserType.objects.filter(pk=body['user_type'])
     username = body['username']
     email = body['email']
     password = body['password']
@@ -86,7 +88,7 @@ def register(request):
             else:
                 # Looks good
                 user = User.objects.create_user(username=username, password=password, email=email,
-                                                first_name=first_name,
+                                                first_name=first_name, user_type=user_type,
                                                 last_name=last_name, approved=False, activation_key=None,
                                                 key_expires=None)
                 user.save()
@@ -112,7 +114,7 @@ def register(request):
                     else:
                         success = True
                         code = ResponseCodes.success
-                        json_res['user_type'] = user.user_type
+                        json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
                     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
                 else:
                     post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'],
@@ -149,7 +151,7 @@ def register(request):
                         success = True
                         code = ResponseCodes.success
                         user = AccessToken.objects.get(token=jsonres['access_token']).user
-                        jsonres['user_type'] = user.user_type
+                        jsonres['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
                         user.approved = True
                         user.save()
                     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
@@ -301,7 +303,7 @@ def login(request):
     else:
         success = True
         code = ResponseCodes.success
-        json_res['user_type'] = user.user_type
+        json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
@@ -386,7 +388,7 @@ def update_profile(request):
             user.emp_status = EmploymentStatus.objects.get(
                 pk=body['emp_status_id'])
     if 'user_type' in body:
-        user.user_type = body['user_type']
+        user.user_type = UserType.objects.filter(pk=body['user_type'])
     if 'college_id' in body:
         if College.objects.filter(pk=body['college_id']).count() > 0:
             user.college = College.objects.get(
@@ -504,8 +506,10 @@ def auth_social_user(request):
         success = True
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=json_res['access_token']).user
-        json_res['user_type'] = user.user_type
-        user.save()
+        if 'user_type' in body:
+            user.user_type = UserType.objects.filter(pk=body['user_type'])
+            user.save()
+        json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         user.approved = True
         user.save()
         if provider == 'google-oauth2':

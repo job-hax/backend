@@ -24,7 +24,8 @@ def events(request):
         attended = get_boolean_from_request(request, 'attended')
         if not attended:
             user_profile = request.user
-            queryset = Event.objects.filter(Q(is_approved=True) | Q(host_user=request.user), host_user__user_type=user_profile.user_type)
+            queryset = Event.objects.filter(Q(is_approved=True) | Q(host_user=request.user),
+                                            Q(host_user__user_type=user_profile.user_type) | Q(host_user__is_staff=True))
         else:
             attended_events = EventAttendee.objects.filter(user=request.user)
             queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
@@ -35,18 +36,13 @@ def events(request):
             instance=event_list, many=True, context={'user': request.user, 'detailed': False}).data
         return JsonResponse(create_response(data=serialized_events, paginator=paginator), safe=False)
     elif request.method == "DELETE":
-        user_profile = request.user
-        if user_profile.user_type < int(User.UserTypes.student):
-            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
-                                safe=False)
-
         body = request.data
         event = Event.objects.get(pk=body['event_id'], host_user=request.user)
         event.delete()
         return JsonResponse(create_response(data=None), safe=False)
     else:
         user_profile = request.user
-        if user_profile.user_type < int(User.UserTypes.student):
+        if not user_profile.user_type.event_creation_enabled:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                                 safe=False)
         body = request.data

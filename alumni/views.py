@@ -20,10 +20,10 @@ User = get_user_model()
 @api_view(["GET"])
 def alumni(request):
     user_profile = request.user
-    if user_profile.user_type < int(User.UserTypes.student):
+    if not user_profile.user_type.alumni_listing_enabled:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
-    alumni_list = User.objects.filter(user_type=int(User.UserTypes.alumni), college__pk=user_profile.college.id)
+    alumni_list = User.objects.filter(user_type__iexact='Alumni', college__pk=user_profile.college.id)
 
     q = request.GET.get('q')
     year = request.GET.get('year')
@@ -58,11 +58,11 @@ def alumni(request):
 @api_view(["GET"])
 def majors(request):
     user_profile = request.user
-    if user_profile.user_type < int(User.UserTypes.student):
+    if not user_profile.user_type.alumni_listing_enabled:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
     college = College.objects.get(pk=user_profile.college.pk)
-    alumni = User.objects.filter(~Q(major=None), college=college, user_type=User.UserTypes.alumni)
+    alumni = User.objects.filter(~Q(major=None), college=college, user_type__iexact='Alumni')
     data = []
     for a in alumni:
         if a.major is not None:
@@ -77,11 +77,11 @@ def majors(request):
 @api_view(["GET"])
 def companies(request):
     user_profile = request.user
-    if user_profile.user_type < int(User.UserTypes.student):
+    if not user_profile.user_type.alumni_listing_enabled:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
     college = College.objects.get(pk=user_profile.college.pk)
-    alumni = User.objects.filter(~Q(major=None), college=college, user_type=User.UserTypes.alumni)
+    alumni = User.objects.filter(~Q(major=None), college=college, user_type__iexact='Alumni')
     data = []
     for a in alumni:
         if a.company is not None:
@@ -96,11 +96,11 @@ def companies(request):
 @api_view(["GET"])
 def positions(request):
     user_profile = request.user
-    if user_profile.user_type < int(User.UserTypes.student):
+    if not user_profile.user_type.alumni_listing_enabled:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
     college = College.objects.get(pk=user_profile.college.pk)
-    alumni = User.objects.filter(~Q(major=None), college=college, user_type=User.UserTypes.alumni)
+    alumni = User.objects.filter(~Q(major=None), college=college, user_type__iexact='Alumni')
     data = []
     for a in alumni:
         if a.job_position is not None:

@@ -6,14 +6,24 @@ from company.serializers import CompanyBasicsSerializer
 from major.serializers import MajorSerializer
 from position.serializers import JobPositionSerializer
 from utils.serializers import CountrySerializer, StateSerializer
-from .models import EmploymentStatus
+from .models import EmploymentStatus, UserType
 
 User = get_user_model()
 
 
+class UserTypeSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        return UserType.objects.create(**validated_data)
+
+    class Meta:
+        model = UserType
+        fields = ('__all__')
+
+
 class UserSerializer(serializers.ModelSerializer):
     is_admin = serializers.SerializerMethodField(required=False)
-    user_type = serializers.SerializerMethodField(required=False)
+    user_type = serializers.SerializerMethodField(required=False, read_only=True)
 
     def __init__(self, *args, **kwargs):
         super(UserSerializer, self).__init__(*args, **kwargs)
@@ -27,7 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_user_type(self, obj):
         if self.context.get('detailed'):
-            return obj.user_type
+            return UserTypeSerializer(instance=obj.user_type, many=False).data
 
     def create(self, validated_data):
         return User.objects.create(**validated_data)
