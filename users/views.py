@@ -65,7 +65,7 @@ def register(request):
     if 'google_access_token' in body:
         google_access_token = body['google_access_token']
     if 'user_type' in body:
-        user_type = UserType.objects.filter(pk=body['user_type'])
+        user_type = UserType.objects.get(pk=body['user_type'])
     username = body['username']
     email = body['email']
     password = body['password']
@@ -115,6 +115,7 @@ def register(request):
                         success = True
                         code = ResponseCodes.success
                         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
+                        json_res['signup_flow_completed'] = user.signup_flow_completed
                     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
                 else:
                     post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'],
@@ -152,6 +153,7 @@ def register(request):
                         code = ResponseCodes.success
                         user = AccessToken.objects.get(token=jsonres['access_token']).user
                         jsonres['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
+                        jsonres['signup_flow_completed'] = user.signup_flow_completed
                         user.approved = True
                         user.save()
                     return JsonResponse(create_response(data=jsonres, success=success, error_code=code), safe=False)
@@ -304,6 +306,7 @@ def login(request):
         success = True
         code = ResponseCodes.success
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
+        json_res['signup_flow_completed'] = user.signup_flow_completed
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
@@ -388,7 +391,7 @@ def update_profile(request):
             user.emp_status = EmploymentStatus.objects.get(
                 pk=body['emp_status_id'])
     if 'user_type' in body:
-        user.user_type = UserType.objects.filter(pk=body['user_type'])
+        user.user_type = UserType.objects.get(pk=body['user_type'])
     if 'college_id' in body:
         if College.objects.filter(pk=body['college_id']).count() > 0:
             user.college = College.objects.get(
@@ -413,6 +416,7 @@ def update_profile(request):
         user.country = country
         user.state = state
 
+    user.signup_flow_completed = True
     user.save()
     return JsonResponse(create_response(data=ProfileSerializer(instance=user, many=False).data), safe=False)
 
@@ -507,9 +511,10 @@ def auth_social_user(request):
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=json_res['access_token']).user
         if 'user_type' in body:
-            user.user_type = UserType.objects.filter(pk=body['user_type'])
+            user.user_type = UserType.objects.get(pk=body['user_type'])
             user.save()
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
+        json_res['signup_flow_completed'] = user.signup_flow_completed
         user.approved = True
         user.save()
         if provider == 'google-oauth2':

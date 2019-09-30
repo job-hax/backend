@@ -42,6 +42,7 @@ class User(AbstractUser):
     user_type = models.ForeignKey(
         UserType, on_delete=models.SET_NULL, null=True, blank=True)
     is_gmail_read_ok = models.BooleanField(default=True)
+    signup_flow_completed = models.BooleanField(default=False)
     synching = models.BooleanField(default=False)
     is_demo = models.BooleanField(default=False)
     GENDER_CHOICES = (

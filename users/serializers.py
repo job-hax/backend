@@ -23,6 +23,7 @@ class UserTypeSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     is_admin = serializers.SerializerMethodField(required=False)
+    signup_flow_completed = serializers.SerializerMethodField(required=False)
     user_type = serializers.SerializerMethodField(required=False, read_only=True)
 
     def __init__(self, *args, **kwargs):
@@ -30,10 +31,15 @@ class UserSerializer(serializers.ModelSerializer):
         if 'detailed' not in self.context:
             del self.fields['is_admin']
             del self.fields['user_type']
+            del self.fields['signup_flow_completed']
 
     def get_is_admin(self, obj):
         if self.context.get('detailed'):
             return obj.is_staff
+
+    def get_signup_flow_completed(self, obj):
+        if self.context.get('detailed'):
+            return obj.signup_flow_completed
 
     def get_user_type(self, obj):
         if self.context.get('detailed'):
@@ -44,7 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name', 'profile_photo', 'last_name', 'date_joined', 'is_admin', 'user_type')
+        fields = ('first_name', 'profile_photo', 'last_name', 'date_joined', 'is_admin', 'user_type', 'signup_flow_completed')
 
 
 class EmploymentStatusSerializer(serializers.ModelSerializer):
