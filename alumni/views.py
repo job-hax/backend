@@ -23,7 +23,7 @@ def alumni(request):
     if not user_profile.user_type.alumni_listing_enabled:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
-    alumni_list = User.objects.filter(user_type__iexact='Alumni', college__pk=user_profile.college.id)
+    alumni_list = User.objects.filter(user_type__name__iexact='Alumni', college__pk=user_profile.college.id)
 
     q = request.GET.get('q')
     year = request.GET.get('year')
@@ -62,7 +62,7 @@ def majors(request):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
     college = College.objects.get(pk=user_profile.college.pk)
-    alumni = User.objects.filter(~Q(major=None), college=college, user_type__iexact='Alumni')
+    alumni = User.objects.filter(~Q(major=None), college=college, user_type__name__iexact='Alumni')
     data = []
     for a in alumni:
         if a.major is not None:
@@ -81,7 +81,7 @@ def companies(request):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
     college = College.objects.get(pk=user_profile.college.pk)
-    alumni = User.objects.filter(~Q(major=None), college=college, user_type__iexact='Alumni')
+    alumni = User.objects.filter(~Q(major=None), college=college, user_type__name__iexact='Alumni')
     data = []
     for a in alumni:
         if a.company is not None:
@@ -100,7 +100,7 @@ def positions(request):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                             safe=False)
     college = College.objects.get(pk=user_profile.college.pk)
-    alumni = User.objects.filter(~Q(major=None), college=college, user_type__iexact='Alumni')
+    alumni = User.objects.filter(~Q(major=None), college=college, user_type__name__iexact='Alumni')
     data = []
     for a in alumni:
         if a.job_position is not None:

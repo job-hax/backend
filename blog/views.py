@@ -71,7 +71,7 @@ def blogs(request):
                 blog.is_publish = is_publish
                 send_notification_email_to_admins('blog')
             blog.publisher_profile = request.user
-            blog.event_types.add(request.user.user_type)
+            blog.user_types.add(request.user.user_type)
 
             blog.save()
             return JsonResponse(create_response(data={"id": blog.id}), safe=False)

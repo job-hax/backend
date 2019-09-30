@@ -338,11 +338,11 @@ def agg_detailed(request):
     public = get_boolean_from_request(request, 'public')
     if user_profile.user_type.name == 'Student' and not public:
         college_users = User.objects.filter(
-            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__iexact='Student', is_demo=False)])
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Student', is_demo=False)])
         filter_by_college = True
     elif user_profile.user_type.name == 'Alumni' and not public:
         college_users = User.objects.filter(
-            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__iexact='Alumni', is_demo=False)])
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Alumni', is_demo=False)])
         filter_by_college = True
 
     if not user_profile.user_type.college_specific_metrics_enabled and not public:
@@ -609,12 +609,12 @@ def agg_generic(request):
     public = get_boolean_from_request(request, 'public')
     if user_profile.user_type.name == 'Student' and not public:
         college_users = get_user_model().objects.filter(
-            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__iexact='Student', is_demo=False)])
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Student', is_demo=False)])
         filter_by_college = True
         total_jobs_applied = JobApplication.objects.filter(user__in=college_users, user__is_demo=False, is_deleted=False)
     elif user_profile.user_type.name == 'Alumni' and not public:
         college_users = get_user_model().objects.filter(
-            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__iexact='Alumni', is_demo=False)])
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Alumni', is_demo=False)])
         filter_by_college = True
         total_jobs_applied = JobApplication.objects.filter(user__in=college_users, user__is_demo=False, is_deleted=False)
     else:
