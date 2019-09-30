@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from users.models import UserType
+
 User = get_user_model()
 
 
@@ -13,6 +15,7 @@ class EventType(models.Model):
 class Event(models.Model):
     host_user = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True)
+    user_types = models.ManyToManyField(UserType)
     title = models.CharField(max_length=50)
     short_description = models.CharField(null=True, max_length=400)
     header_image = models.FileField(blank=True, null=True)

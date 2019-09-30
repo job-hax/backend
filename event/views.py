@@ -25,7 +25,7 @@ def events(request):
         if not attended:
             user_profile = request.user
             queryset = Event.objects.filter(Q(is_approved=True) | Q(host_user=request.user),
-                                            Q(host_user__user_type=user_profile.user_type) | Q(host_user__is_staff=True))
+                                            Q(user_types__in=[user_profile.user_type]) | Q(host_user__is_staff=True))
         else:
             attended_events = EventAttendee.objects.filter(user=request.user)
             queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
@@ -48,6 +48,7 @@ def events(request):
         body = request.data
         if request.method == "POST":
             event = Event()
+            event.user_types.add(request.user.user_type)
         else:
             event = Event.objects.get(pk=body['event_id'])
             event.updated_at = datetime.now()

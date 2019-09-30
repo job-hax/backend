@@ -36,7 +36,7 @@ def blogs(request):
         mine = get_boolean_from_request(request, 'mine')
         if not mine:
             queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
-                                           Q(publisher_profile__user_type=user_profile.user_type) | Q(publisher_profile__is_staff=True))
+                                           Q(user_types__in=[user_profile.user_type]) | Q(publisher_profile__is_staff=True))
         else:
             queryset = Blog.objects.filter(publisher_profile=request.user)
         queryset = queryset.filter(publisher_profile__isnull=False)
@@ -71,6 +71,7 @@ def blogs(request):
                 blog.is_publish = is_publish
                 send_notification_email_to_admins('blog')
             blog.publisher_profile = request.user
+            blog.event_types.add(request.user.user_type)
 
             blog.save()
             return JsonResponse(create_response(data={"id": blog.id}), safe=False)
