@@ -6,35 +6,51 @@ from company.serializers import CompanyBasicsSerializer
 from major.serializers import MajorSerializer
 from position.serializers import JobPositionSerializer
 from utils.serializers import CountrySerializer, StateSerializer
-from .models import EmploymentStatus
+from .models import EmploymentStatus, UserType
 
 User = get_user_model()
 
 
+class UserTypeSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        return UserType.objects.create(**validated_data)
+
+    class Meta:
+        model = UserType
+        fields = ('__all__')
+
+
 class UserSerializer(serializers.ModelSerializer):
     is_admin = serializers.SerializerMethodField(required=False)
-    user_type = serializers.SerializerMethodField(required=False)
+    signup_flow_completed = serializers.SerializerMethodField(required=False)
+    user_type = serializers.SerializerMethodField(required=False, read_only=True)
 
     def __init__(self, *args, **kwargs):
         super(UserSerializer, self).__init__(*args, **kwargs)
         if 'detailed' not in self.context:
             del self.fields['is_admin']
             del self.fields['user_type']
+            del self.fields['signup_flow_completed']
 
     def get_is_admin(self, obj):
         if self.context.get('detailed'):
             return obj.is_staff
 
+    def get_signup_flow_completed(self, obj):
+        if self.context.get('detailed'):
+            return obj.signup_flow_completed
+
     def get_user_type(self, obj):
         if self.context.get('detailed'):
-            return obj.user_type
+            return UserTypeSerializer(instance=obj.user_type, many=False).data
 
     def create(self, validated_data):
         return User.objects.create(**validated_data)
 
     class Meta:
         model = User
-        fields = ('first_name', 'profile_photo', 'last_name', 'date_joined', 'is_admin', 'user_type')
+        fields = ('first_name', 'profile_photo', 'last_name', 'date_joined', 'is_admin', 'user_type', 'signup_flow_completed')
 
 
 class EmploymentStatusSerializer(serializers.ModelSerializer):

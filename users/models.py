@@ -18,6 +18,17 @@ class EmploymentStatus(models.Model):
     value = models.CharField(max_length=20, default='N/A')
 
 
+class UserType(models.Model):
+    name = models.CharField(max_length=20)
+    alumni_listing_enabled = models.BooleanField(default=False, null=False)
+    blog_creation_enabled = models.BooleanField(default=False, null=False)
+    event_creation_enabled = models.BooleanField(default=False, null=False)
+    college_specific_metrics_enabled = models.BooleanField(default=False, null=False)
+
+    def __str__(self):
+        return self.name if self.name is not None else ''
+
+
 class User(AbstractUser):
     objects = UserManager()
     email = models.EmailField(('email address'), unique=True)
@@ -28,15 +39,10 @@ class User(AbstractUser):
     forgot_password_key = models.TextField(null=True, blank=True)
     forgot_password_key_expires = models.DateTimeField(null=True, blank=True)
     gmail_last_update_time = models.IntegerField(default=0)
-    USER_TYPE_CHOICES = (
-        (0, 'NONE'),
-        (1, 'PUBLIC'),
-        (2, 'STUDENT'),
-        (3, 'ALUMNI'),
-        (4, 'CAREER SERVICE'),
-    )
-    user_type = models.IntegerField(choices=USER_TYPE_CHOICES, default=0)
+    user_type = models.ForeignKey(
+        UserType, on_delete=models.SET_NULL, null=True, blank=True)
     is_gmail_read_ok = models.BooleanField(default=True)
+    signup_flow_completed = models.BooleanField(default=False)
     synching = models.BooleanField(default=False)
     is_demo = models.BooleanField(default=False)
     GENDER_CHOICES = (

@@ -12,6 +12,7 @@ from jobapps.models import JobApplication
 from poll.models import Vote
 from review.models import Review
 from utils.generic_json_creator import create_response
+from users.serializers import UserTypeSerializer
 from .models import *
 from .serializers import *
 import requests
@@ -88,7 +89,8 @@ def demo(request):
     else:
         success = True
         code = ResponseCodes.success
-        json_res['user_type'] = user.user_type
+        json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
+        json_res['signup_flow_completed'] = user.signup_flow_completed
         schedule_delete_demo_account(user.id)
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 

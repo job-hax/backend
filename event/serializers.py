@@ -68,7 +68,7 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = '__all__'
+        exclude = ['user_types']
 
 
 class EventSimpleSerializer(serializers.ModelSerializer):
@@ -103,4 +103,4 @@ class EventSimpleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        exclude = ['details']
+        exclude = ['details', 'user_types']

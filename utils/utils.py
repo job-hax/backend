@@ -49,7 +49,7 @@ def generate_activation_key(username):
 
 @background(schedule=1)
 def send_notification_email_to_admins(type):
-    profiles = User.objects.filter(Q(user_type=User.UserTypes.career_service) | Q(is_staff=True))
+    profiles = User.objects.filter(is_staff=True)
     subject = '[JobHax Platform] New ' + type + ' notification'
     body = '''<html>
                 Hello JobHax editor!<br>

@@ -214,12 +214,12 @@ def contacts(request, job_app_pk):
             data['contacts'] = contacts_list
 
             user_profile = request.user
-            if user_profile.user_type < int(User.UserTypes.student):
+            if not user_profile.user_type.alumni_listing_enabled:
                 alumni = []
             else:
                 jobapp = JobApplication.objects.get(pk=job_app_pk)
                 alumni_list = User.objects.filter(college=user_profile.college, company=jobapp.company_object,
-                                                     user_type=int(User.UserTypes.alumni))
+                                                     user_type__name__iexact='Alumni')
                 alumni = AlumniSerializer(
                     instance=alumni_list, many=True, context={'user': request.user}).data
             data['alumni'] = alumni

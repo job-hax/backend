@@ -1,11 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from users.models import UserType
 
 
 class Blog(models.Model):
     publisher_profile = models.ForeignKey(
         get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=50, null=True, blank=True)
+    user_types = models.ManyToManyField(UserType)
     snippet = models.CharField(null=True, blank=True, max_length=400)
     header_image = models.FileField(blank=True, null=True)
     view_count = models.IntegerField(default=0)
