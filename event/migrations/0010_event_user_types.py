@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         Event = apps.get_model('event', 'Event')
         events = Event.objects.all()
         for e in events:
-            if e.host_user.user_type is None or e.host_user.user_type.name == 'Undefined' \
+            if e.host_user is None or e.host_user.user_type is None or e.host_user.user_type.name == 'Undefined' \
                     or e.host_user.user_type.name == 'Public':
                 e.user_types.add(UserType.objects.get(name__iexact='Public'))
             elif e.host_user.user_type.name == 'Student':
