@@ -116,7 +116,7 @@ def verify_recaptcha(email, token, action):
     response = requests.post('https://www.google.com/recaptcha/api/siteverify',
                              data=post_data, headers={'content-type': 'application/x-www-form-urlencoded'})
     json_res = json.loads(response.text)
-    if json_res['success'] == True and json_res['action'] == action and json_res['score'] > 0.5:
+    if json_res['success'] == True and json_res['action'] == action and json_res['score'] > 0.09:
         return ResponseCodes.success
     else:
         log(json_res, "e")
