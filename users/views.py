@@ -394,7 +394,7 @@ def update_profile(request):
                 pk=body['emp_status_id'])
     if 'user_type' in body:
         user.user_type = UserType.objects.get(pk=body['user_type'])
-    else:
+    elif user.user_type is None:
         user.user_type = UserType.objects.get(name__iexact='Undefined')
     if 'college_id' in body:
         if College.objects.filter(pk=body['college_id']).count() > 0:
@@ -516,7 +516,7 @@ def auth_social_user(request):
         user = AccessToken.objects.get(token=json_res['access_token']).user
         if 'user_type' in body:
             user.user_type = UserType.objects.get(pk=body['user_type'])
-        else:
+        elif user.user_type is None:
             user.user_type = UserType.objects.get(name__iexact='Undefined')
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
