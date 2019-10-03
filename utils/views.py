@@ -145,10 +145,7 @@ def answer_feedback(request, feedback_pk):
         return JsonResponse(
             create_response(data=None, success=False, error_code=ResponseCodes.missing_item_id_parameter), safe=False)
     item_pk = body['item_id']
-    if item_pk == 0:
-        item = None
-    else:
-        item = FeedbackQuestionItem.objects.get(pk=item_pk)
+    item = FeedbackQuestionItem.objects.get(pk=item_pk)
 
     user_input = ''
     if 'user_input' in body:
