@@ -50,7 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name', 'profile_photo', 'last_name', 'date_joined', 'is_admin', 'user_type', 'signup_flow_completed')
+        fields = ('id', 'first_name', 'profile_photo', 'last_name', 'date_joined', 'is_admin', 'user_type', 'signup_flow_completed')
 
 
 class EmploymentStatusSerializer(serializers.ModelSerializer):
