@@ -16,8 +16,6 @@ from oauth2_provider.models import AccessToken
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 from social_django.models import UserSocialAuth
-
-from blog.models import Blog
 from college.models import College
 from company.utils import get_or_create_company
 from major.utils import insert_or_update_major
@@ -25,14 +23,9 @@ from position.utils import get_or_insert_position
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
-from utils.gmail_lookup import fetch_job_applications
 from utils.linkedin_utils import get_access_token_with_code
 from utils.logger import log
 from utils.models import Country, State
-from jobapps.models import JobApplication, GoogleMail
-from event.models import Event, EventAttendee
-from poll.models import Vote
-from review.models import Review
 from utils.utils import send_notification_email_to_admins, get_boolean_from_request
 from .models import EmploymentStatus, UserType
 from .models import Feedback
@@ -64,10 +57,7 @@ def register(request):
         linkedin_auth_code = body['linkedin_auth_code']
     if 'google_access_token' in body:
         google_access_token = body['google_access_token']
-    if 'user_type' in body:
-        user_type = UserType.objects.get(pk=body['user_type'])
-    else:
-        user_type = UserType.objects.get(name__iexact='Undefined')
+    user_type = UserType.objects.get_or_create(name__iexact='Employer')    
     username = body['username']
     email = body['email']
     password = body['password']
@@ -139,13 +129,6 @@ def register(request):
                         social_user = UserSocialAuth.objects.get(extra_data__icontains=post_data['token'])
 
                         if social_user.user.email != user.email:
-                            JobApplication.objects.filter(user=social_user.user).update(user=user)
-                            GoogleMail.objects.filter(user=social_user.user).update(user=user)
-                            Event.objects.filter(host_user=social_user.user).update(host_user=user)
-                            EventAttendee.objects.filter(user=social_user.user).update(user=user)
-                            Vote.objects.filter(user=social_user.user).update(user=user)
-                            Review.objects.filter(user=social_user.user).update(user=user)
-                            Blog.objects.filter(user=social_user.user).update(user=user)
                             social_user.user.delete()
 
                         social_user.user = user
@@ -392,10 +375,8 @@ def update_profile(request):
         if EmploymentStatus.objects.filter(pk=body['emp_status_id']).count() > 0:
             user.emp_status = EmploymentStatus.objects.get(
                 pk=body['emp_status_id'])
-    if 'user_type' in body:
-        user.user_type = UserType.objects.get(pk=body['user_type'])
-    elif user.user_type is None:
-        user.user_type = UserType.objects.get(name__iexact='Undefined')
+    user_type = UserType.objects.get_or_create(name__iexact='Employer')     
+    
     if 'college_id' in body:
         if College.objects.filter(pk=body['college_id']).count() > 0:
             user.college = College.objects.get(
@@ -460,13 +441,6 @@ def link_social_account(request):
         social_user = UserSocialAuth.objects.get(extra_data__icontains=post_data['token'])
 
         if social_user.user.email != request.user.email:
-            JobApplication.objects.filter(user=social_user.user).update(user=request.user)
-            GoogleMail.objects.filter(user=social_user.user).update(user=request.user)
-            Event.objects.filter(host_user=social_user.user).update(host_user=request.user)
-            EventAttendee.objects.filter(user=social_user.user).update(user=request.user)
-            Vote.objects.filter(user=social_user.user).update(user=request.user)
-            Review.objects.filter(user=social_user.user).update(user=request.user)
-            Blog.objects.filter(publisher_profile=social_user.user).update(publisher_profile=request.user)
             social_user.user.delete()
 
         social_user.user = request.user
@@ -482,7 +456,6 @@ def link_social_account(request):
         if provider == 'google-oauth2':
             request.user.is_gmail_read_ok = True
             request.user.save()
-            schedule_fetcher(request.user.id)
         return JsonResponse(create_response(data=ProfileSerializer(instance=request.user, many=False).data), safe=False)
     return JsonResponse(create_response(data=None, success=success, error_code=code), safe=False)
 
@@ -514,10 +487,8 @@ def auth_social_user(request):
         success = True
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=json_res['access_token']).user
-        if 'user_type' in body:
-            user.user_type = UserType.objects.get(pk=body['user_type'])
-        elif user.user_type is None:
-            user.user_type = UserType.objects.get(name__iexact='Undefined')
+        if user.user_type is None:
+            user.user_type = UserType.objects.get_or_create(name__iexact='Employer')
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
         user.approved = True
@@ -525,33 +496,7 @@ def auth_social_user(request):
         if provider == 'google-oauth2':
             user.is_gmail_read_ok = True
             user.save()
-            schedule_fetcher(user.id)
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
-
-
-@background(schedule=1)
-def schedule_fetcher(user_id):
-    user = User.objects.get(pk=user_id)
-    if user.social_auth.filter(provider='google-oauth2'):
-        user.synching = True
-        user.save()
-        fetch_job_applications(user)
-
-
-@csrf_exempt
-@api_view(["GET"])
-def sync_user_emails(request):
-    if not request.user.is_gmail_read_ok:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.google_token_expired),
-                            safe=False)
-    # it'll be used for background tasking in production
-    # refs. https://medium.com/@robinttt333/running-background-tasks-in-django-f4c1d3f6f06e
-    # https://django-background-tasks.readthedocs.io/en/latest/
-    # https://stackoverflow.com/questions/41205607/how-to-activate-the-process-queue-in-django-background-tasks
-    # schedule_fetcher.now(request.user.id)
-    schedule_fetcher(request.user.id)
-    return JsonResponse(create_response(data=None), safe=False)
-
 
 @require_POST
 @csrf_exempt
@@ -609,7 +554,6 @@ def update_gmail_token(request):
             request.user.is_gmail_read_ok = True
             request.user.save()
             code = ResponseCodes.success
-            schedule_fetcher(request.user.id)
         else:
             success = False
             code = ResponseCodes.user_profile_not_found

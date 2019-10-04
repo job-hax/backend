@@ -11,7 +11,6 @@ urlpatterns = [
     path('linkSocialAccount/', views.link_social_account),
     path('logout/', views.logout),
     path('updateGmailToken/', views.update_gmail_token),
-    path('syncUserEmails/', views.sync_user_emails),
     path('activate/', views.activate_user),
     path('sendActivationCode/', views.send_activation_code),
     path('forgotPassword/', views.forgot_password),

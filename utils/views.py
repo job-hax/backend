@@ -6,11 +6,6 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import random
 
-from blog.models import Blog
-from event.models import Event
-from jobapps.models import JobApplication
-from poll.models import Vote
-from review.models import Review
 from utils.generic_json_creator import create_response
 from users.serializers import UserTypeSerializer
 from .models import *
@@ -55,26 +50,6 @@ def demo(request):
     user = User.objects.get(username=username)
     demo_user = User.objects.get(username='demo')
 
-    blogs = Blog.objects.filter(publisher_profile=demo_user)
-    for blog in blogs:
-        blog.pk = None
-        blog.publisher_profile = user
-        blog.save()
-    events = Event.objects.filter(host_user=demo_user)
-    for event in events:
-        event.pk = None
-        event.host_user = user
-        event.save()
-    job_apps = JobApplication.objects.filter(user=demo_user)
-    for job_app in job_apps:
-        job_app.pk = None
-        job_app.user = user
-        job_app.save()
-    reviews = Review.objects.filter(user=demo_user)
-    for review in reviews:
-        review.pk = None
-        review.user = user
-        review.save()
 
     post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'],
                  'grant_type': 'password',
@@ -98,11 +73,6 @@ def demo(request):
 @background(schedule=3600)
 def schedule_delete_demo_account(user_id):
     user = User.objects.get(pk=user_id)
-    Blog.objects.filter(publisher_profile=user).delete()
-    Event.objects.filter(host_user=user).delete()
-    JobApplication.objects.filter(user=user).delete()
-    Vote.objects.filter(user=user).delete()
-    Review.objects.filter(user=user).delete()
     user.delete()
 
 
