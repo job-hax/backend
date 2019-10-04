@@ -55,7 +55,7 @@ def demo(request):
                  'grant_type': 'password',
                  'username': username, 'password': '123456'}
 
-    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
+    response = requests.post('http://localhost:8001/auth/token', data=json.dumps(
         post_data), headers={'content-type': 'application/json'})
     json_res = json.loads(response.text)
     if 'error' in json_res:

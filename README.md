@@ -42,7 +42,7 @@ export JOBHAX_LINKEDIN_CLIENT_SECRET=/*linkedin application client_secret*/ #to 
 
 7. To use Rest API you need to create oauth2 credentials.
 ```
--   Under http://localhost:8000/admin/oauth2_provider/application/ click 'ADD APPLICATION'
+-   Under http://localhost:8001/admin/oauth2_provider/application/ click 'ADD APPLICATION'
 
 -   Do not change 'client_id' & 'client_secret' (They will be used for generate access token to use in your requests header)
 

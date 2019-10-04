@@ -97,7 +97,7 @@ def register(request):
                                  'grant_type': 'password',
                                  'username': username, 'password': password}
 
-                    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
+                    response = requests.post('http://localhost:8001/auth/token', data=json.dumps(
                         post_data), headers={'content-type': 'application/json'})
                     json_res = json.loads(response.text)
                     if 'error' in json_res:
@@ -118,7 +118,7 @@ def register(request):
                     else:
                         post_data['backend'] = 'google-oauth2'
                         post_data['token'] = body['google_access_token']
-                    response = requests.post('http://localhost:8000/auth/convert-token',
+                    response = requests.post('http://localhost:8001/auth/convert-token',
                                              data=json.dumps(post_data), headers={'content-type': 'application/json'})
                     jsonres = json.loads(response.text)
                     log(jsonres, 'e')
@@ -281,7 +281,7 @@ def login(request):
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
                             safe=False)
 
-    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
+    response = requests.post('http://localhost:8001/auth/token', data=json.dumps(
         post_data), headers={'content-type': 'application/json'})
     json_res = json.loads(response.text)
     if 'error' in json_res:
@@ -302,7 +302,7 @@ def logout(request):
     post_data = {'token': body['token'], 'client_id': body['client_id'],
                  'client_secret': body['client_secret']}
     headers = {'content-type': 'application/json'}
-    response = requests.post('http://localhost:8000/auth/revoke-token',
+    response = requests.post('http://localhost:8001/auth/revoke-token',
                              data=json.dumps(post_data), headers=headers)
     if response.status_code is 204 or response.status_code is 200:
         success = True
@@ -430,7 +430,7 @@ def link_social_account(request):
         else:
             return JsonResponse(
                 create_response(data=None, success=False, error_code=ResponseCodes.account_already_linked), safe=False)
-    response = requests.post('http://localhost:8000/auth/convert-token',
+    response = requests.post('http://localhost:8001/auth/convert-token',
                              data=json.dumps(post_data), headers={'content-type': 'application/json'})
     json_res = json.loads(response.text)
     log(json_res, 'e')
@@ -449,7 +449,7 @@ def link_social_account(request):
         post_data = {'token': json_res['access_token'], 'client_id': body['client_id'],
                      'client_secret': body['client_secret']}
         headers = {'content-type': 'application/json'}
-        response = requests.post('http://localhost:8000/auth/revoke-token',
+        response = requests.post('http://localhost:8001/auth/revoke-token',
                                  data=json.dumps(post_data), headers=headers)
 
         log(str(response), 'e')
@@ -476,7 +476,7 @@ def auth_social_user(request):
         post_data['token'] = get_access_token_with_code(body['token'])
     else:
         post_data['token'] = body['token']
-    response = requests.post('http://localhost:8000/auth/convert-token',
+    response = requests.post('http://localhost:8001/auth/convert-token',
                              data=json.dumps(post_data), headers={'content-type': 'application/json'})
     json_res = json.loads(response.text)
     log(json_res, 'e')
@@ -504,7 +504,7 @@ def refresh_token(request):
     body = JSONParser().parse(request)
     post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'], 'grant_type': 'refresh_token',
                  'refresh_token': body['refresh_token']}
-    response = requests.post('http://localhost:8000/auth/token', data=json.dumps(
+    response = requests.post('http://localhost:8001/auth/token', data=json.dumps(
         post_data), headers={'content-type': 'application/json'})
     json_res = json.loads(response.text)
     if 'error' in json_res:
