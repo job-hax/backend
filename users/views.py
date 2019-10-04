@@ -57,7 +57,7 @@ def register(request):
         linkedin_auth_code = body['linkedin_auth_code']
     if 'google_access_token' in body:
         google_access_token = body['google_access_token']
-    user_type = UserType.objects.get_or_create(name__iexact='Employer')    
+    user_type, new = UserType.objects.get_or_create(name__iexact='Employer')    
     username = body['username']
     email = body['email']
     password = body['password']
@@ -375,7 +375,7 @@ def update_profile(request):
         if EmploymentStatus.objects.filter(pk=body['emp_status_id']).count() > 0:
             user.emp_status = EmploymentStatus.objects.get(
                 pk=body['emp_status_id'])
-    user_type = UserType.objects.get_or_create(name__iexact='Employer')     
+    user_type, new = UserType.objects.get_or_create(name__iexact='Employer')     
     
     if 'college_id' in body:
         if College.objects.filter(pk=body['college_id']).count() > 0:
@@ -488,7 +488,7 @@ def auth_social_user(request):
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=json_res['access_token']).user
         if user.user_type is None:
-            user.user_type = UserType.objects.get_or_create(name__iexact='Employer')
+            user.user_type, new = UserType.objects.get_or_create(name__iexact='Employer')
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
         user.approved = True
