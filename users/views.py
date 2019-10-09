@@ -34,7 +34,7 @@ from event.models import Event, EventAttendee
 from poll.models import Vote
 from review.models import Review
 from utils.utils import send_notification_email_to_admins, get_boolean_from_request
-from .models import EmploymentStatus, UserType
+from .models import EmploymentStatus, UserType, LoginLog
 from .models import Feedback
 from .serializers import EmploymentStatusSerializer, UserTypeSerializer
 from .serializers import ProfileSerializer, UserSerializer
@@ -309,6 +309,10 @@ def login(request):
         code = ResponseCodes.success
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
+        user = AccessToken.objects.get(token=json_res['access_token']).user
+        user.last_login = datetime.now()
+        user.save()
+        LoginLog.objects.create(user=user)
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
@@ -521,6 +525,8 @@ def auth_social_user(request):
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
         user.approved = True
+        user.last_login = datetime.now()
+        LoginLog.objects.create(user=user)
         user.save()
         if provider == 'google-oauth2':
             user.is_gmail_read_ok = True

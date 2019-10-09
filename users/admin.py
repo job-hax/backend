@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from utils.export_csv import ExportCsv
-from .models import User, EmploymentStatus, Feedback, UserType
+from .models import User, EmploymentStatus, Feedback, UserType, LoginLog
 
 
 @admin.register(User)
@@ -28,3 +28,8 @@ class EmploymentStatusAdmin(admin.ModelAdmin, ExportCsv):
 @admin.register(UserType)
 class UserTypeAdmin(admin.ModelAdmin):
     list_display = ("id", "name")
+
+
+@admin.register(LoginLog)
+class LoginLogAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "date")
