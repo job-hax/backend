@@ -402,8 +402,13 @@ def update_profile(request):
         user.user_type = UserType.objects.get(name__iexact='Undefined')
     if 'college_id' in body:
         if College.objects.filter(pk=body['college_id']).count() > 0:
-            user.college = College.objects.get(
-                pk=body['college_id'])
+            college = College.objects.get(pk=body['college_id'])
+            if college.supported and any(x in user.email for x in college.domains):
+                user.college = college
+            else:
+                return JsonResponse(
+                    create_response(data=None, success=False, error_code=ResponseCodes.not_college_email),
+                    safe=False)
     if 'major' in body:
         user.major = insert_or_update_major(body['major'])
     if 'grad_year' in body:

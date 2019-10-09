@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
@@ -15,7 +16,9 @@ def colleges(request):
     if q is None:
         colleges = College.objects.all()
     else:
-        colleges = College.objects.filter(name__icontains=q)
+        colleges = College.objects.filter(short_name__icontains=q)
+        if colleges.count() == 0:
+            colleges = College.objects.filter(Q(name__icontains=q) | Q(short_name__icontains=q))
     paginator = pagination.CustomPagination()
     colleges = paginator.paginate_queryset(colleges, request)
     serialized_colleges = CollegeSerializer(

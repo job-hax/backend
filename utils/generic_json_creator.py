@@ -60,6 +60,8 @@ def get_error_message(error_code):
         return 'Account already linked...'
     elif error_code == ResponseCodes.not_supported_user:
         return 'User not supported for this action...'
+    elif error_code == ResponseCodes.not_college_email:
+        return 'You must use your college email to proceed.'
     elif error_code == ResponseCodes.verify_recaptcha_failed:
         return 'You didn\'t pass reCAPTCHA challenge! You\'ll need to sigin again!'
     return 'Unknown error'
