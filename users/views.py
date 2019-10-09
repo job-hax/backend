@@ -34,7 +34,7 @@ from event.models import Event, EventAttendee
 from poll.models import Vote
 from review.models import Review
 from utils.utils import send_notification_email_to_admins, get_boolean_from_request
-from .models import EmploymentStatus, UserType
+from .models import EmploymentStatus, UserType, LoginLog
 from .models import Feedback
 from .serializers import EmploymentStatusSerializer, UserTypeSerializer
 from .serializers import ProfileSerializer, UserSerializer
@@ -309,6 +309,10 @@ def login(request):
         code = ResponseCodes.success
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
+        user = AccessToken.objects.get(token=json_res['access_token']).user
+        user.last_login = datetime.now()
+        user.save()
+        LoginLog.objects.create(user=user)
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
 
 
@@ -398,8 +402,13 @@ def update_profile(request):
         user.user_type = UserType.objects.get(name__iexact='Undefined')
     if 'college_id' in body:
         if College.objects.filter(pk=body['college_id']).count() > 0:
-            user.college = College.objects.get(
-                pk=body['college_id'])
+            college = College.objects.get(pk=body['college_id'])
+            if college.supported and any(x in user.email for x in college.domains):
+                user.college = college
+            else:
+                return JsonResponse(
+                    create_response(data=None, success=False, error_code=ResponseCodes.not_college_email),
+                    safe=False)
     if 'major' in body:
         user.major = insert_or_update_major(body['major'])
     if 'grad_year' in body:
@@ -521,6 +530,8 @@ def auth_social_user(request):
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
         user.approved = True
+        user.last_login = datetime.now()
+        LoginLog.objects.create(user=user)
         user.save()
         if provider == 'google-oauth2':
             user.is_gmail_read_ok = True

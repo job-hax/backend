@@ -20,6 +20,7 @@ class ResponseCodes(Enum):
     activation_key_expired = 15
     account_already_linked = 16
     not_supported_user = 17
+    not_college_email = 18
     verify_recaptcha_failed = 99
     poll_couldnt_found = 101
     missing_item_id_parameter = 102

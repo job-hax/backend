@@ -91,6 +91,15 @@ class User(AbstractUser):
         swappable = 'AUTH_USER_MODEL'
 
 
+class LoginLog(models.Model):
+    User = get_user_model()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.user) + ': ' + str(self.date)
+
+
 class Feedback(models.Model):
     User = get_user_model()
     user = models.ForeignKey(
