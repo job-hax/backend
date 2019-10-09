@@ -25,7 +25,7 @@ def events(request):
         if not attended:
             user_profile = request.user
             queryset = Event.objects.filter(Q(is_approved=True) | Q(host_user=request.user),
-                                            Q(user_types__in=[user_profile.user_type]) | Q(host_user__is_staff=True))
+                                            Q(user_types__in=[user_profile.user_type]) | Q(host_user__is_superuser=True))
         else:
             attended_events = EventAttendee.objects.filter(user=request.user)
             queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])

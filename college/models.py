@@ -17,3 +17,17 @@ class College(models.Model):
 
     def __str__(self):
         return self.name if self.name is not None else ''
+
+
+class CollegeCoach(models.Model):
+    college = models.ForeignKey(College, on_delete=models.CASCADE, null=False, blank=False)
+    first_name = models.CharField(max_length=50, null=False, blank=False)
+    last_name = models.CharField(max_length=150, null=False, blank=False)
+    profile_photo = models.FileField(blank=False, null=False)
+    title = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    content = models.TextField(null=False, blank=False)
+    calendar_link = models.CharField(max_length=150, null=False, blank=False)
+    online_conference_link = models.CharField(max_length=150, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_publish = models.BooleanField(default=False)
