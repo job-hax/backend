@@ -36,7 +36,7 @@ def blogs(request):
         mine = get_boolean_from_request(request, 'mine')
         if not mine:
             queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
-                                           Q(user_types__in=[user_profile.user_type]) | Q(publisher_profile__is_staff=True))
+                                           Q(user_types__in=[user_profile.user_type]) | Q(publisher_profile__is_superuser=True))
         else:
             queryset = Blog.objects.filter(publisher_profile=request.user)
         queryset = queryset.filter(publisher_profile__isnull=False)

@@ -69,4 +69,4 @@ You will need to grant following permissions:
 
 
 ## Documentation
-* [JobHax REST API Docs](https://documenter.getpostman.com/view/3396184/SVmvRyKp)
+* [JobHax REST API Docs](https://documenter.getpostman.com/view/3396184/SVtTzUiz)

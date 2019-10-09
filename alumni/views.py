@@ -12,6 +12,8 @@ from company.serializers import CompanyBasicsSerializer
 from college.models import College
 from utils.error_codes import ResponseCodes
 from position.serializers import JobPositionSerializer
+from .models import AlumniHomePage
+from .serializers import AlumniHomePageSerializer
 
 User = get_user_model()
 
@@ -109,3 +111,16 @@ def positions(request):
     serialized_positions = JobPositionSerializer(
         instance=data, many=True, ).data
     return JsonResponse(create_response(data=serialized_positions), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def alumni_home_page(request):
+    user_profile = request.user
+    if not user_profile.user_type.name == 'Alumni':
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                            safe=False)
+    home_page = AlumniHomePage.objects.get(college=user_profile.college)
+    serialized_home_page = AlumniHomePageSerializer(
+        instance=home_page, many=False, ).data
+    return JsonResponse(create_response(data=serialized_home_page), safe=False)

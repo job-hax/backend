@@ -6,6 +6,7 @@ from company.serializers import CompanyBasicsSerializer
 from major.serializers import MajorSerializer
 from position.serializers import JobPositionSerializer
 from utils.serializers import CountrySerializer, StateSerializer
+from .models import AlumniHomePage
 
 
 class AlumniSerializer(serializers.ModelSerializer):
@@ -28,3 +29,13 @@ class AlumniSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'first_name', 'last_name', 'email', 'college', 'major', 'company', 'country', 'state', 'job_position',
             'profile_photo', 'grad_year')
+
+
+class AlumniHomePageSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        return AlumniHomePage.objects.create(**validated_data)
+
+    class Meta:
+        model = AlumniHomePage
+        fields = '__all__'

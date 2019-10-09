@@ -21,6 +21,7 @@ class EmploymentStatus(models.Model):
 class UserType(models.Model):
     name = models.CharField(max_length=20)
     alumni_listing_enabled = models.BooleanField(default=False, null=False)
+    coach_listing_enabled = models.BooleanField(default=False, null=False)
     blog_creation_enabled = models.BooleanField(default=False, null=False)
     event_creation_enabled = models.BooleanField(default=False, null=False)
     college_specific_metrics_enabled = models.BooleanField(default=False, null=False)

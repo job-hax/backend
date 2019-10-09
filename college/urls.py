@@ -5,5 +5,7 @@ from college import views
 
 urlpatterns = [
     path('', views.colleges),
+    path('coaches/',
+         views.coaches),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
