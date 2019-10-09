@@ -7,7 +7,7 @@ from college.models import College
 
 class AlumniHomePage(models.Model):
     college = models.ForeignKey(College, on_delete=models.CASCADE, null=False, blank=False)
-    banners = ArrayField(JSONField(null=True, blank=True), blank=True, null=True)
-    secondary_banners = ArrayField(JSONField(null=True, blank=True), blank=True, null=True)
-    social_accounts = ArrayField(JSONField(null=True, blank=True), blank=True, null=True)
+    header_banners = JSONField(null=True, blank=True)
+    additional_banners = JSONField(null=True, blank=True)
+    social_media_accounts = JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
