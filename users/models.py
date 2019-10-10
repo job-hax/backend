@@ -78,13 +78,6 @@ class User(AbstractUser):
     state = models.ForeignKey(
         State, on_delete=models.SET_NULL, null=True, blank=True)
 
-    class UserTypes(IntEnum):
-        none = 0
-        public = 1
-        student = 2
-        alumni = 3
-        career_service = 4
-
     class Meta:
         verbose_name = ('user')
         verbose_name_plural = ('users')
