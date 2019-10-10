@@ -13,7 +13,7 @@ from poll.models import Vote
 from review.models import Review
 from utils.generic_json_creator import create_response
 from users.serializers import UserTypeSerializer
-from .models import *
+from users.models import UserType
 from .serializers import *
 import requests
 from utils.error_codes import ResponseCodes
@@ -32,28 +32,16 @@ def agreements(request):
     return JsonResponse(create_response(data=response), safe=False)
 
 
-@require_POST
-@csrf_exempt
-def demo(request):
-    body = JSONParser().parse(request)
-    demo_user = User.objects.get(username='demo')
-
-    demo_count = User.objects.filter(username__startswith='demo').count()
-    if demo_count > 49:
-        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user), safe=False)
-
-    username = 'demo' + str(random.randint(10000,99999))
-    if User.objects.filter(username=username).count() > 0:
-        username = 'demo' + str(random.randint(10000, 99999))
-    email = username + '@jobhax.com'
-    demo_user.username = username
+def duplicate_user(demo_user, new_username):
+    email = new_username + '@jobhax.com'
+    demo_user.username = new_username
     demo_user.email = email
     demo_user.pk = None
     demo_user.set_password('123456')
     demo_user.save()
 
-    user = User.objects.get(username=username)
-    demo_user = User.objects.get(username='demo')
+    user = User.objects.get(username=new_username)
+    demo_user = User.objects.get(username=demo_user.username)
 
     blogs = Blog.objects.filter(publisher_profile=demo_user)
     for blog in blogs:
@@ -76,6 +64,35 @@ def demo(request):
         review.user = user
         review.save()
 
+
+@require_POST
+@csrf_exempt
+def demo(request):
+    body = JSONParser().parse(request)
+
+    demo_count = User.objects.filter(username__startswith='demo').count()
+    if demo_count > 51:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user), safe=False)
+
+    if 'user_type_id' in body:
+        main_account_username = 'demo_' + UserType.objects.get(pk=body['user_type_id']).name.lower()
+        if User.objects.filter(username=main_account_username).count() == 0:
+            demo_user = User.objects.get(username='demo')
+            duplicate_user(demo_user, main_account_username)
+            user = User.objects.get(username=main_account_username)
+            user.user_type = UserType.objects.get(pk=body['user_type_id'])
+            user.save()
+    else:
+        main_account_username = 'demo'
+
+    demo_user = User.objects.get(username=main_account_username)
+
+    username = main_account_username + str(random.randint(10000,99999))
+    if User.objects.filter(username=username).count() > 0:
+        username = main_account_username + str(random.randint(10000, 99999))
+
+    duplicate_user(demo_user, username)
+
     post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'],
                  'grant_type': 'password',
                  'username': username, 'password': '123456'}
@@ -89,6 +106,7 @@ def demo(request):
     else:
         success = True
         code = ResponseCodes.success
+        user = User.objects.get(username=username)
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
         schedule_delete_demo_account(user.id)
