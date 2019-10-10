@@ -32,7 +32,7 @@ def agreements(request):
     return JsonResponse(create_response(data=response), safe=False)
 
 
-def duplicate_user(demo_user, new_username):
+def duplicate_user(demo_user, username, new_username):
     email = new_username + '@jobhax.com'
     demo_user.username = new_username
     demo_user.email = email
@@ -41,7 +41,7 @@ def duplicate_user(demo_user, new_username):
     demo_user.save()
 
     user = User.objects.get(username=new_username)
-    demo_user = User.objects.get(username=demo_user.username)
+    demo_user = User.objects.get(username=username)
 
     blogs = Blog.objects.filter(publisher_profile=demo_user)
     for blog in blogs:
@@ -78,7 +78,7 @@ def demo(request):
         main_account_username = 'demo_' + UserType.objects.get(pk=body['user_type_id']).name.lower()
         if User.objects.filter(username=main_account_username).count() == 0:
             demo_user = User.objects.get(username='demo')
-            duplicate_user(demo_user, main_account_username)
+            duplicate_user(demo_user, 'demo', main_account_username)
             user = User.objects.get(username=main_account_username)
             user.user_type = UserType.objects.get(pk=body['user_type_id'])
             user.save()
@@ -91,7 +91,7 @@ def demo(request):
     if User.objects.filter(username=username).count() > 0:
         username = main_account_username + str(random.randint(10000, 99999))
 
-    duplicate_user(demo_user, username)
+    duplicate_user(demo_user, main_account_username, username)
 
     post_data = {'client_id': body['client_id'], 'client_secret': body['client_secret'],
                  'grant_type': 'password',
