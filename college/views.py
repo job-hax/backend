@@ -153,7 +153,8 @@ def home_page(request):
     user_profile = request.user
     if user_profile.user_type.name == 'Alumni' or user_profile.user_type.name == 'Career Service':
         body = request.data
-        type = body['type']
+        if 'type' in body:
+            type = body['type']
         if request.method == "GET":
             if HomePage.objects.filter(college=user_profile.college).exists():
                 home_page = HomePage.objects.get(college=user_profile.college)
