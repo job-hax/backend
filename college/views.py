@@ -197,7 +197,7 @@ def home_page(request):
                 filename = "%s.%s" % (uuid.uuid4(), ext)
                 save_path = os.path.join(settings.MEDIA_ROOT, filename)
                 path = default_storage.save(save_path, file)
-                header_banner['image'] = default_storage.path(path)
+                header_banner['image'] = settings.MEDIA_URL + filename
 
                 header_banners = home_page.header_banners
                 header_banners.append(header_banner)
@@ -215,7 +215,7 @@ def home_page(request):
                 filename = "%s.%s" % (uuid.uuid4(), ext)
                 save_path = os.path.join(settings.MEDIA_ROOT, filename)
                 path = default_storage.save(save_path, file)
-                additional_banner['image'] = default_storage.path(path)
+                additional_banner['image'] = settings.MEDIA_URL + filename
 
                 additional_banners = home_page.additional_banners
                 additional_banners.append(additional_banner)
@@ -229,7 +229,7 @@ def home_page(request):
                 filename = "%s.%s" % (uuid.uuid4(), ext)
                 save_path = os.path.join(settings.MEDIA_ROOT, filename)
                 path = default_storage.save(save_path, file)
-                social_media_account['icon'] = default_storage.path(path)
+                social_media_account['icon'] = settings.MEDIA_URL + filename
 
                 social_media_accounts = home_page.social_media_accounts
                 social_media_accounts.append(social_media_account)
@@ -253,7 +253,7 @@ def home_page(request):
                     filename = "%s.%s" % (uuid.uuid4(), ext)
                     save_path = os.path.join(settings.MEDIA_ROOT, filename)
                     path = default_storage.save(save_path, file)
-                    header_banner['image'] = default_storage.path(path)
+                    header_banner['image'] = settings.MEDIA_URL + filename
 
                 header_banners = home_page.header_banners
                 header_banners[int(body['order'])] = header_banner
@@ -272,7 +272,7 @@ def home_page(request):
                     filename = "%s.%s" % (uuid.uuid4(), ext)
                     save_path = os.path.join(settings.MEDIA_ROOT, filename)
                     path = default_storage.save(save_path, file)
-                    additional_banner['image'] = default_storage.path(path)
+                    additional_banner['image'] = settings.MEDIA_URL + filename
 
                 additional_banners = home_page.additional_banners
                 additional_banners[int(body['order'])] = additional_banner
@@ -287,7 +287,7 @@ def home_page(request):
                     filename = "%s.%s" % (uuid.uuid4(), ext)
                     save_path = os.path.join(settings.MEDIA_ROOT, filename)
                     path = default_storage.save(save_path, file)
-                    social_media_account['icon'] = default_storage.path(path)
+                    social_media_account['icon'] = settings.MEDIA_URL + filename
 
                 social_media_accounts = home_page.social_media_accounts
                 social_media_accounts[int(body['order'])] = social_media_account
