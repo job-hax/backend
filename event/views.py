@@ -11,6 +11,7 @@ from JH_RestAPI import pagination
 from event.models import Event, EventType, EventAttendee
 from event.serializers import EventSerializer, EventSimpleSerializer, EventTypeSerializer
 from utils.error_codes import ResponseCodes
+from users.models import UserType
 from utils.generic_json_creator import create_response
 from utils.utils import get_boolean_from_request, send_notification_email_to_admins
 
@@ -27,9 +28,17 @@ def events(request):
             attended = get_boolean_from_request(request, 'attended')
             if not attended:
                 user_profile = request.user
-                queryset = Event.objects.filter(Q(is_approved=True) | Q(host_user=request.user),
-                                                Q(user_types__in=[user_profile.user_type]) | Q(host_user__is_superuser=True)
-                                                , college=user_profile.college)
+                if user_profile.user_type.name == 'Career Service':
+                    student = get_boolean_from_request(request, 'student')
+                    if student:
+                        user_type = UserType.objects.get(name='Student')
+                    else:
+                        user_type = UserType.objects.get(name='Alumni')
+                    queryset = Event.objects.filter(is_approved=True, college=user_profile.college, user_types__in=[user_type])
+                else:
+                    queryset = Event.objects.filter(Q(is_approved=True) | Q(host_user=request.user),
+                                                    Q(user_types__in=[user_profile.user_type], college=user_profile.college)
+                                                    | Q(host_user__is_superuser=True))
             else:
                 attended_events = EventAttendee.objects.filter(user=request.user)
                 queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
@@ -65,11 +74,23 @@ def events(request):
         body = request.data
         if request.method == "POST":
             event = Event()
-            event.user_types.add(request.user.user_type)
+            if request.user.user_type.name != 'Career Service':
+                event.user_types.add(request.user.user_type)
+            else:
+                user_types = body['user_types']
+                for type in user_types:
+                    user_type = UserType.objects.get(pk=type)
+                    event.user_types.add(user_type)
             event.college = request.user.college
         else:
             event = Event.objects.get(pk=body['event_id'])
             event.updated_at = datetime.now()
+            if request.user.user_type.name == 'Career Service':
+                event.user_types.clear()
+                user_types = body['user_types']
+                for type in user_types:
+                    user_type = UserType.objects.get(pk=type)
+                    event.user_types.add(user_type)
 
         event.host_user = request.user
         if 'title' in body:

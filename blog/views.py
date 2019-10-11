@@ -11,6 +11,7 @@ from rest_framework.decorators import api_view
 from JH_RestAPI import pagination
 from blog.models import Blog
 from blog.models import Vote
+from users.models import UserType
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
@@ -38,9 +39,17 @@ def blogs(request):
         else:
             mine = get_boolean_from_request(request, 'mine')
             if not mine:
-                queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
-                                               Q(user_types__in=[user_profile.user_type]) | Q(publisher_profile__is_superuser=True)
-                                               ,college=user_profile.college)
+                if user_profile.user_type.name == 'Career Service':
+                    student = get_boolean_from_request(request, 'student')
+                    if student:
+                        user_type = UserType.objects.get(name='Student')
+                    else:
+                        user_type = UserType.objects.get(name='Alumni')
+                    queryset = Blog.objects.filter(is_approved=True, college=user_profile.college, user_types__in=[user_type])
+                else:
+                    queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
+                                                   Q(user_types__in=[user_profile.user_type],college=user_profile.college)
+                                                   | Q(publisher_profile__is_superuser=True))
             else:
                 queryset = Blog.objects.filter(publisher_profile=request.user)
         queryset = queryset.filter(publisher_profile__isnull=False)
@@ -74,14 +83,18 @@ def blogs(request):
                 is_publish = get_boolean_from_request(request, 'is_publish')
                 blog.is_publish = is_publish
             if request.user.user_type.name == 'Career Service':
+                user_types = body['user_types']
+                for type in user_types:
+                    user_type = UserType.objects.get(pk=type)
+                    blog.user_types.add(user_type)
                 blog.is_approved = True
             else:
+                blog.user_types.add(request.user.user_type)
                 if blog.is_publish:
                     send_notification_email_to_admins(blog)
                 blog.is_approved = False
             blog.college = request.user.college
             blog.publisher_profile = request.user
-            blog.user_types.add(request.user.user_type)
 
             blog.save()
             return JsonResponse(create_response(data={"id": blog.id}), safe=False)
@@ -101,6 +114,11 @@ def blogs(request):
             if 'is_publish' in body:
                 blog.is_publish = get_boolean_from_request(request, 'is_publish')
             if request.user.user_type.name == 'Career Service':
+                user_types = body['user_types']
+                blog.user_types.clear()
+                for type in user_types:
+                    user_type = UserType.objects.get(pk=type)
+                    blog.user_types.add(user_type)
                 blog.is_approved = True
             else:
                 if blog.is_publish:
