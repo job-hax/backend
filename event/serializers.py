@@ -2,7 +2,7 @@ import pytz
 from rest_framework import serializers
 from .models import EventType, Event, EventAttendee
 from django.contrib.auth import get_user_model
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, UserTypeSerializer
 User = get_user_model()
 
 
@@ -34,6 +34,17 @@ class EventSerializer(serializers.ModelSerializer):
     attendee_list = serializers.SerializerMethodField()
     event_type = serializers.SerializerMethodField()
     mine = serializers.SerializerMethodField()
+    user_types = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super(EventSerializer, self).__init__(*args, **kwargs)
+        user = self.context.get('user')
+        if user.user_type.name != 'Career Service':
+            del self.fields['user_types']
+
+    def get_user_types(self, obj):
+        if self.context.get('user').user_type.name == 'Career Service':
+            return UserTypeSerializer(instance=obj.user_types, many=True).data
 
     def get_mine(self, obj):
         return obj.host_user == self.context.get('user')
@@ -68,7 +79,7 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        exclude = ['user_types']
+        fields = '__all__'
 
 
 class EventSimpleSerializer(serializers.ModelSerializer):
