@@ -11,6 +11,10 @@ from django.contrib.auth import get_user_model
 from django.core.mail import EmailMessage
 from django.db.models import Q
 from django.utils.crypto import get_random_string
+from blog.models import Blog
+from event.models import Event
+from users.models import Feedback
+from review.models import Review
 
 from utils.error_codes import ResponseCodes
 from utils.logger import log
@@ -48,11 +52,24 @@ def generate_activation_key(username):
 
 
 @background(schedule=1)
-def send_notification_email_to_admins(type):
-    profiles = User.objects.filter(is_staff=True)
+def send_notification_email_to_admins(object):
+    if isinstance(object, Blog):
+        type = 'blog'
+        college = object.college
+    elif isinstance(object, Event):
+        type = 'event'
+        college = object.college
+    elif isinstance(object, Review):
+        type = 'review'
+        college = object.user.college
+    elif isinstance(object, Feedback):
+        type = 'feedback'
+        college = object.user.college
+
+    profiles = User.objects.filter(Q(college=college, user_type__name='Career Service') | Q(is_superuser=True))
     subject = '[JobHax Platform] New ' + type + ' notification'
     body = '''<html>
-                Hello JobHax editor!<br>
+                Hello JobHax editor/administrator!<br>
                 <br>
                 A new ''' + type + ''' has been sent to JobHax platform.<br>
                 <br>

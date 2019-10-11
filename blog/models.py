@@ -1,12 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from users.models import UserType
+from college.models import College
 
 
 class Blog(models.Model):
     publisher_profile = models.ForeignKey(
         get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=50, null=True, blank=True)
+    college = models.ForeignKey(College, on_delete=models.CASCADE, null=True, blank=True)
     user_types = models.ManyToManyField(UserType)
     snippet = models.CharField(null=True, blank=True, max_length=400)
     header_image = models.FileField(blank=True, null=True)
@@ -16,6 +18,7 @@ class Blog(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_publish = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_at']
