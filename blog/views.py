@@ -47,9 +47,14 @@ def blogs(request):
                         user_type = UserType.objects.get(name='Alumni')
                     queryset = Blog.objects.filter(is_approved=True, college=user_profile.college, user_types__in=[user_type])
                 else:
-                    queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
-                                                   Q(user_types__in=[user_profile.user_type],college=user_profile.college)
-                                                   | Q(publisher_profile__is_superuser=True))
+                    if user_profile.user_type.name == 'Public':
+                        queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
+                                                       Q(user_types__in=[user_profile.user_type])
+                                                       | Q(publisher_profile__is_superuser=True))
+                    else:
+                        queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
+                                                       Q(user_types__in=[user_profile.user_type],college=user_profile.college)
+                                                       | Q(publisher_profile__is_superuser=True))
             else:
                 queryset = Blog.objects.filter(publisher_profile=request.user)
         queryset = queryset.filter(publisher_profile__isnull=False)
