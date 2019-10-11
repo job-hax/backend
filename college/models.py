@@ -41,3 +41,11 @@ class HomePage(models.Model):
     additional_banners = JSONField(null=True, blank=True)
     social_media_accounts = JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class HomePageVideo(models.Model):
+    college = models.ForeignKey(College, on_delete=models.CASCADE, null=True, blank=True)
+    embed_code = models.CharField(max_length=300, null=False, blank=False)
+    title = models.CharField(max_length=50, null=True, blank=True)
+    description = models.CharField(max_length=50, null=True, blank=True)
+    is_publish = models.BooleanField(default=False)
