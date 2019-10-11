@@ -2,7 +2,7 @@ import pytz
 from rest_framework import serializers
 from bs4 import BeautifulSoup as bs
 
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, UserTypeSerializer
 from . import models
 
 
@@ -13,6 +13,17 @@ class BlogSerializer(serializers.ModelSerializer):
     voted = serializers.SerializerMethodField()
     word_count = serializers.SerializerMethodField()
     mine = serializers.SerializerMethodField()
+    user_types = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super(BlogSerializer, self).__init__(*args, **kwargs)
+        user = self.context.get('user')
+        if user.user_type.name != 'Career Service':
+            del self.fields['user_types']
+
+    def get_user_types(self, obj):
+        if self.context.get('user').user_type.name == 'Career Service':
+            return UserTypeSerializer(instance=obj.user_types, many=True).data
 
     def get_mine(self, obj):
         return obj.publisher_profile == self.context.get('user')
@@ -48,7 +59,7 @@ class BlogSerializer(serializers.ModelSerializer):
         return voted
 
     class Meta:
-        fields = ('id', 'publisher_profile', 'mine', 'title', 'content', 'header_image', 'snippet',
+        fields = ('id', 'publisher_profile', 'mine', 'title', 'content', 'header_image', 'snippet', 'user_types',
                   'created_at', 'updated_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted', 'is_publish',
                   'is_approved')
         model = models.Blog
