@@ -6,8 +6,8 @@ from utils.error_codes import ResponseCodes
 
 from JH_RestAPI import pagination
 from utils.generic_json_creator import create_response
-from .models import College, CollegeCoach, HomePage
-from .serializers import CollegeSerializer, CollegeCoachSerializer, HomePageSerializer
+from .models import College, CollegeCoach, HomePage, HomePageVideo
+from .serializers import CollegeSerializer, CollegeCoachSerializer, HomePageSerializer, HomePageVideoSerializer
 
 
 @csrf_exempt
@@ -39,6 +39,17 @@ def coaches(request):
     serialized_college_coaches = CollegeCoachSerializer(
         instance=college_coaches, many=True).data
     return JsonResponse(create_response(data=serialized_college_coaches, paginator=paginator), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def home_page_videos(request):
+    homepage_videos = HomePageVideo.objects.filter(college=request.user.college, is_publish=True)
+    paginator = pagination.CustomPagination()
+    homepage_videos = paginator.paginate_queryset(homepage_videos, request)
+    serialized_homepage_videos = HomePageVideoSerializer(
+        instance=homepage_videos, many=True).data
+    return JsonResponse(create_response(data=serialized_homepage_videos, paginator=paginator), safe=False)
 
 
 @csrf_exempt

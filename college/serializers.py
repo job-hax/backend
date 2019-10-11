@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import College, CollegeCoach
-from .models import HomePage
+from .models import HomePage, HomePageVideo
 
 
 class CollegeSerializer(serializers.ModelSerializer):
@@ -26,6 +26,7 @@ class CollegeCoachSerializer(serializers.ModelSerializer):
 
 class HomePageSerializer(serializers.ModelSerializer):
     additional_banners = serializers.SerializerMethodField()
+    videos = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         return HomePage.objects.create(**validated_data)
@@ -34,6 +35,20 @@ class HomePageSerializer(serializers.ModelSerializer):
         college_coaches = CollegeCoach.objects.filter(college=obj.college, is_publish=True)
         return CollegeCoachSerializer(instance=college_coaches, many=True).data
 
+    def get_videos(self, obj):
+        homepage_videos = HomePageVideo.objects.filter(college=obj.college, is_publish=True)
+        return HomePageVideoSerializer(instance=homepage_videos, many=True).data
+
     class Meta:
         model = HomePage
+        fields = '__all__'
+
+
+class HomePageVideoSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        return HomePageVideo.objects.create(**validated_data)
+
+    class Meta:
+        model = HomePageVideo
         fields = '__all__'

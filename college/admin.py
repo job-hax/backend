@@ -2,13 +2,19 @@ from django.contrib import admin
 
 # Register your models here.
 from college.models import College, CollegeCoach
-from .models import HomePage
+from .models import HomePage, HomePageVideo
 
 
 @admin.register(HomePage)
-class CollegeCoachAdmin(admin.ModelAdmin):
+class HomePageAdmin(admin.ModelAdmin):
     list_display = ("college", "id")
     list_filter = ("college", "id")
+
+
+@admin.register(HomePageVideo)
+class HomePageVideoAdmin(admin.ModelAdmin):
+    list_display = ("college", "id", 'title')
+    list_filter = ("college", "id", 'title')
 
 
 @admin.register(College)
