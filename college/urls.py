@@ -7,5 +7,6 @@ urlpatterns = [
     path('', views.colleges),
     path('coaches/',
          views.coaches),
+    path('homePage/', views.home_page),
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

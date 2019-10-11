@@ -19,7 +19,7 @@ from .serializers import ReviewSerializer, EmploymentAuthSerializer
 
 
 @csrf_exempt
-@api_view(["GET", "POST", "PUT"])
+@api_view(["GET", "POST", "PUT", "PATCH"])
 def reviews(request):
     body = request.data
     user = request.user
@@ -27,8 +27,23 @@ def reviews(request):
                                                             'review') == ResponseCodes.verify_recaptcha_failed:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.verify_recaptcha_failed),
                             safe=False)
-
-    if request.method == "GET":
+    if request.method == "GET" and user.user_type.name == 'Career Service':
+        reviews_list = Review.objects.filter(is_published=False, is_rejected=False, user__college=user.college)
+        return JsonResponse(create_response(data=ReviewSerializer(instance=reviews_list, many=True).data), safe=False)
+    elif request.method == "PATCH":
+        if request.user.user_type.name == 'Career Service':
+            body = request.data
+            review = Review.objects.get(pk=body['review_id'])
+            approved = body['approved']
+            review.is_published = approved
+            review.is_rejected = not approved
+            review.save()
+            return JsonResponse(create_response(data=None), safe=False)
+        else:
+            return JsonResponse(
+                create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                safe=False)
+    elif request.method == "GET":
         company_id = request.GET.get('company_id')
         position_id = request.GET.get('position_id')
         all_reviews = get_boolean_from_request(request, 'all_reviews')
@@ -120,7 +135,7 @@ def reviews(request):
             review.is_published = True
         else:
             review.is_published = False
-            send_notification_email_to_admins('review')
+            send_notification_email_to_admins(review)
 
         review.save()
         response = {'review': ReviewSerializer(instance=review, many=False).data,

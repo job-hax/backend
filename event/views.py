@@ -18,17 +18,21 @@ User = get_user_model()
 
 
 @csrf_exempt
-@api_view(["GET", "POST", "PUT", "DELETE"])
+@api_view(["GET", "POST", "PUT", "PATCH", "DELETE"])
 def events(request):
     if request.method == "GET":
-        attended = get_boolean_from_request(request, 'attended')
-        if not attended:
-            user_profile = request.user
-            queryset = Event.objects.filter(Q(is_approved=True) | Q(host_user=request.user),
-                                            Q(user_types__in=[user_profile.user_type]) | Q(host_user__is_superuser=True))
+        if request.user.user_type.name == 'Career Service' and get_boolean_from_request(request, 'waiting'):
+            queryset = Event.objects.filter(is_approved=False, is_publish=True, is_rejected=False, college=request.user.college)
         else:
-            attended_events = EventAttendee.objects.filter(user=request.user)
-            queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
+            attended = get_boolean_from_request(request, 'attended')
+            if not attended:
+                user_profile = request.user
+                queryset = Event.objects.filter(Q(is_approved=True) | Q(host_user=request.user),
+                                                Q(user_types__in=[user_profile.user_type]) | Q(host_user__is_superuser=True)
+                                                , college=user_profile.college)
+            else:
+                attended_events = EventAttendee.objects.filter(user=request.user)
+                queryset = Event.objects.all().filter(id__in=[e.event.id for e in attended_events])
         queryset = queryset.filter(host_user__isnull=False)
         paginator = pagination.CustomPagination()
         event_list = paginator.paginate_queryset(queryset, request)
@@ -40,6 +44,19 @@ def events(request):
         event = Event.objects.get(pk=body['event_id'], host_user=request.user)
         event.delete()
         return JsonResponse(create_response(data=None), safe=False)
+    elif request.method == "PATCH":
+        if request.user.user_type.name == 'Career Service':
+            body = request.data
+            event = Event.objects.get(pk=body['event_id'])
+            approved = body['approved']
+            event.is_approved = approved
+            event.is_rejected = not approved
+            event.save()
+            return JsonResponse(create_response(data=None), safe=False)
+        else:
+            return JsonResponse(
+                create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                safe=False)
     else:
         user_profile = request.user
         if not user_profile.user_type.event_creation_enabled:
@@ -49,6 +66,7 @@ def events(request):
         if request.method == "POST":
             event = Event()
             event.user_types.add(request.user.user_type)
+            event.college = request.user.college
         else:
             event = Event.objects.get(pk=body['event_id'])
             event.updated_at = datetime.now()
@@ -81,9 +99,13 @@ def events(request):
             event.header_image.save(filename, file, save=True)
         if 'is_publish' in body:
             event.is_publish = get_boolean_from_request(request, 'is_publish')
-        event.is_approved = False
+        if request.user.user_type.name == 'Career Service':
+            event.is_approved = True
+        else:
+            if event.is_publish:
+                send_notification_email_to_admins('event')
+            event.is_approved = False
         event.save()
-        send_notification_email_to_admins('event')
         return JsonResponse(create_response(data={"id": event.id}), safe=False)
 
 

@@ -6,8 +6,8 @@ from utils.error_codes import ResponseCodes
 
 from JH_RestAPI import pagination
 from utils.generic_json_creator import create_response
-from .models import College, CollegeCoach
-from .serializers import CollegeSerializer, CollegeCoachSerializer
+from .models import College, CollegeCoach, HomePage
+from .serializers import CollegeSerializer, CollegeCoachSerializer, HomePageSerializer
 
 
 @csrf_exempt
@@ -37,5 +37,25 @@ def coaches(request):
     paginator = pagination.CustomPagination()
     college_coaches = paginator.paginate_queryset(college_coaches, request)
     serialized_college_coaches = CollegeCoachSerializer(
-        instance=college_coaches, many=True, ).data
+        instance=college_coaches, many=True).data
     return JsonResponse(create_response(data=serialized_college_coaches, paginator=paginator), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def home_page(request):
+    user_profile = request.user
+    if user_profile.user_type.name == 'Alumni' or user_profile.user_type.name == 'Career Service':
+        if HomePage.objects.filter(college=user_profile.college).exists():
+            home_page = HomePage.objects.get(college=user_profile.college)
+        elif HomePage.objects.filter(college=None).exists():
+            home_page = HomePage.objects.get(college=None)
+        else:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                                safe=False)
+        serialized_home_page = HomePageSerializer(
+            instance=home_page, many=False, ).data
+        return JsonResponse(create_response(data=serialized_home_page), safe=False)
+    else:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                            safe=False)

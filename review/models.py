@@ -44,7 +44,7 @@ class Review(models.Model):
     created_date = models.DateTimeField(default=datetime.now, blank=True)
     update_date = models.DateTimeField(default=datetime.now, null=True, blank=True)
     is_published = models.BooleanField(default=False)
-    is_deleted = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_date']

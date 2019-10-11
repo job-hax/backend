@@ -336,6 +336,7 @@ def agg_detailed(request):
     User = get_user_model()
     filter_by_college = False
     public = get_boolean_from_request(request, 'public')
+    student = get_boolean_from_request(request, 'student')
     if user_profile.user_type.name == 'Student' and not public:
         college_users = User.objects.filter(
             id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Student', is_demo=False)])
@@ -343,6 +344,20 @@ def agg_detailed(request):
     elif user_profile.user_type.name == 'Alumni' and not public:
         college_users = User.objects.filter(
             id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Alumni', is_demo=False)])
+        filter_by_college = True
+    elif user_profile.user_type.name == 'Career Service' and public:
+        college_users = User.objects.filter(
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, is_demo=False)])
+        filter_by_college = True
+    elif user_profile.user_type.name == 'Career Service' and student:
+        college_users = User.objects.filter(
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Student',
+                                                      is_demo=False)])
+        filter_by_college = True
+    elif user_profile.user_type.name == 'Career Service' and not student:
+        college_users = User.objects.filter(
+            id__in=[p.id for p in
+                    User.objects.filter(college=user_profile.college, user_type__name__iexact='Alumni', is_demo=False)])
         filter_by_college = True
 
     if not user_profile.user_type.college_specific_metrics_enabled and not public:
@@ -607,6 +622,7 @@ def agg_generic(request):
     User = get_user_model()
     filter_by_college = False
     public = get_boolean_from_request(request, 'public')
+    student = get_boolean_from_request(request, 'student')
     if user_profile.user_type.name == 'Student' and not public:
         college_users = get_user_model().objects.filter(
             id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Student', is_demo=False)])
@@ -617,6 +633,26 @@ def agg_generic(request):
             id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Alumni', is_demo=False)])
         filter_by_college = True
         total_jobs_applied = JobApplication.objects.filter(user__in=college_users, user__is_demo=False, is_deleted=False)
+    elif user_profile.user_type.name == 'Career Service' and public:
+        college_users = get_user_model().objects.filter(
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, is_demo=False)])
+        filter_by_college = True
+        total_jobs_applied = JobApplication.objects.filter(user__in=college_users, user__is_demo=False,
+                                                           is_deleted=False)
+    elif user_profile.user_type.name == 'Career Service' and student:
+        college_users = get_user_model().objects.filter(
+            id__in=[p.id for p in User.objects.filter(college=user_profile.college, user_type__name__iexact='Student',
+                                                      is_demo=False)])
+        filter_by_college = True
+        total_jobs_applied = JobApplication.objects.filter(user__in=college_users, user__is_demo=False,
+                                                           is_deleted=False)
+    elif user_profile.user_type.name == 'Career Service' and not student:
+        college_users = get_user_model().objects.filter(
+            id__in=[p.id for p in
+                    User.objects.filter(college=user_profile.college, user_type__name__iexact='Alumni', is_demo=False)])
+        filter_by_college = True
+        total_jobs_applied = JobApplication.objects.filter(user__in=college_users, user__is_demo=False,
+                                                           is_deleted=False)
     else:
         if not user_profile.user_type.college_specific_metrics_enabled and not public:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user), safe=False)

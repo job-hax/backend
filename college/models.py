@@ -1,5 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 
 
 class College(models.Model):
@@ -24,6 +25,7 @@ class CollegeCoach(models.Model):
     first_name = models.CharField(max_length=50, null=False, blank=False)
     last_name = models.CharField(max_length=150, null=False, blank=False)
     profile_photo = models.FileField(blank=False, null=False)
+    summary_photo = models.FileField(blank=False, null=True)
     title = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     content = models.TextField(null=False, blank=False)
@@ -31,3 +33,11 @@ class CollegeCoach(models.Model):
     online_conference_link = models.CharField(max_length=150, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_publish = models.BooleanField(default=False)
+
+
+class HomePage(models.Model):
+    college = models.ForeignKey(College, on_delete=models.CASCADE, null=True, blank=True)
+    header_banners = JSONField(null=True, blank=True)
+    additional_banners = JSONField(null=True, blank=True)
+    social_media_accounts = JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)

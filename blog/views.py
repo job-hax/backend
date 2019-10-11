@@ -29,16 +29,20 @@ class ActionType(Enum):
 
 
 @csrf_exempt
-@api_view(["GET", "PUT", "POST", "DELETE"])
+@api_view(["GET", "PUT", "POST", "PATCH", "DELETE"])
 def blogs(request):
     user_profile = request.user
     if request.method == "GET":
-        mine = get_boolean_from_request(request, 'mine')
-        if not mine:
-            queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
-                                           Q(user_types__in=[user_profile.user_type]) | Q(publisher_profile__is_superuser=True))
+        if user_profile.user_type.name == 'Career Service' and get_boolean_from_request(request, 'waiting'):
+            queryset = Blog.objects.filter(is_approved=False, is_publish=True, is_rejected=False, college=user_profile.college)
         else:
-            queryset = Blog.objects.filter(publisher_profile=request.user)
+            mine = get_boolean_from_request(request, 'mine')
+            if not mine:
+                queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
+                                               Q(user_types__in=[user_profile.user_type]) | Q(publisher_profile__is_superuser=True)
+                                               ,college=user_profile.college)
+            else:
+                queryset = Blog.objects.filter(publisher_profile=request.user)
         queryset = queryset.filter(publisher_profile__isnull=False)
         paginator = pagination.CustomPagination()
         blogs = paginator.paginate_queryset(queryset, request)
@@ -69,7 +73,13 @@ def blogs(request):
             if 'is_publish' in body:
                 is_publish = get_boolean_from_request(request, 'is_publish')
                 blog.is_publish = is_publish
-                send_notification_email_to_admins('blog')
+            if request.user.user_type.name == 'Career Service':
+                blog.is_approved = True
+            else:
+                if blog.is_publish:
+                    send_notification_email_to_admins(blog)
+                blog.is_approved = False
+            blog.college = request.user.college
             blog.publisher_profile = request.user
             blog.user_types.add(request.user.user_type)
 
@@ -90,11 +100,29 @@ def blogs(request):
                 blog.header_image.save(filename, file, save=True)
             if 'is_publish' in body:
                 blog.is_publish = get_boolean_from_request(request, 'is_publish')
-            blog.is_approved = False
+            if request.user.user_type.name == 'Career Service':
+                blog.is_approved = True
+            else:
+                if blog.is_publish:
+                    send_notification_email_to_admins(blog)
+                blog.is_approved = False
             blog.updated_at = datetime.now()
             blog.save()
-            send_notification_email_to_admins('blog')
+
             return JsonResponse(create_response(data={"id": blog.id}), safe=False)
+        elif request.method == "PATCH":
+            if request.user.user_type.name == 'Career Service':
+                body = request.data
+                blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
+                approved = body['approved']
+                blog.is_approved = approved
+                blog.is_rejected = not approved
+                blog.save()
+                return JsonResponse(create_response(data=None), safe=False)
+            else:
+                return JsonResponse(
+                    create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                    safe=False)
         elif request.method == "DELETE":
             body = request.data
             blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
