@@ -71,6 +71,17 @@ class BlogSnippetSerializer(serializers.ModelSerializer):
     downvote = serializers.SerializerMethodField()
     voted = serializers.SerializerMethodField()
     word_count = serializers.SerializerMethodField()
+    user_types = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super(BlogSerializer, self).__init__(*args, **kwargs)
+        user = self.context.get('user')
+        if user.user_type.name != 'Career Service':
+            del self.fields['user_types']
+
+    def get_user_types(self, obj):
+        if self.context.get('user').user_type.name == 'Career Service':
+            return UserTypeSerializer(instance=obj.user_types, many=True).data
 
     def get_word_count(self, obj):
         if obj.content:
@@ -103,7 +114,7 @@ class BlogSnippetSerializer(serializers.ModelSerializer):
         return voted
 
     class Meta:
-        fields = ('id', 'publisher_profile', 'title', 'snippet',
+        fields = ('id', 'publisher_profile', 'title', 'snippet', 'user_types',
                   'header_image', 'created_at', 'updated_at', 'view_count', 'upvote', 'downvote', 'word_count', 'voted',
                   'is_publish', 'is_approved')
         model = models.Blog
