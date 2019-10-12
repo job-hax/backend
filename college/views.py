@@ -47,7 +47,9 @@ def coaches(request):
         return JsonResponse(create_response(data=serialized_college_coaches, paginator=paginator), safe=False)
     elif user_profile.user_type.name == 'Career Service':
         if request.method == "DELETE":
-            pass
+            coach = HomePageVideo.objects.get(pk=body['coach_id'])
+            coach.delete()
+            return JsonResponse(create_response(data=None), safe=False)
         elif request.method == "POST" and user_profile.user_type.name == 'Career Service':
             coach = CollegeCoach()
             coach.first_name = body['first_name']
@@ -68,7 +70,7 @@ def coaches(request):
             ext = file.name.split('.')[-1]
             filename = "%s.%s" % (uuid.uuid4(), ext)
             coach.summary_photo.save(filename, file, save=True)
-
+            coach.is_publish = True
             coach.save()
             return JsonResponse(create_response(data=CollegeCoachSerializer(
                 instance=coach, many=False).data), safe=False)
@@ -98,6 +100,8 @@ def coaches(request):
                 ext = file.name.split('.')[-1]
                 filename = "%s.%s" % (uuid.uuid4(), ext)
                 coach.summary_photo.save(filename, file, save=True)
+            if 'is_publish' in body:
+                coach.is_publish = body['is_publish']
             coach.save()
             return JsonResponse(create_response(data=CollegeCoachSerializer(
                 instance=coach, many=False).data), safe=False)
@@ -124,6 +128,7 @@ def home_page_videos(request):
             return JsonResponse(create_response(data=None), safe=False)
         elif request.method == "POST" and user_profile.user_type.name == 'Career Service':
             home_page_video = HomePageVideo()
+            home_page_video.is_publish = True
             home_page_video.embed_code = body['embed_code']
             if 'title' in body:
                 home_page_video.title = body['title']
@@ -141,6 +146,8 @@ def home_page_videos(request):
                 home_page_video.title = body['title']
             if 'description' in body:
                 home_page_video.description = body['description']
+            if 'is_publish' in body:
+                home_page_video.is_publish = body['is_publish']
             home_page_video.save()
             return JsonResponse(create_response(data=HomePageVideoSerializer(
                 instance=home_page_video, many=False).data), safe=False)
