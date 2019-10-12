@@ -88,6 +88,17 @@ class EventSimpleSerializer(serializers.ModelSerializer):
     attendee_count = serializers.SerializerMethodField()
     attended = serializers.SerializerMethodField()
     event_type = serializers.SerializerMethodField()
+    user_types = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super(EventSerializer, self).__init__(*args, **kwargs)
+        user = self.context.get('user')
+        if user.user_type.name != 'Career Service':
+            del self.fields['user_types']
+
+    def get_user_types(self, obj):
+        if self.context.get('user').user_type.name == 'Career Service':
+            return UserTypeSerializer(instance=obj.user_types, many=True).data
 
     def get_created_at(self, obj):
         if obj.date is None:
@@ -114,4 +125,4 @@ class EventSimpleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        exclude = ['details', 'user_types']
+        exclude = ['details']
