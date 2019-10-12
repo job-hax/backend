@@ -39,7 +39,7 @@ def coaches(request):
         if not request.user.user_type.coach_listing_enabled:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                                 safe=False)
-        college_coaches = CollegeCoach.objects.filter(college=request.user.college, is_publish=True)
+        college_coaches = CollegeCoach.objects.filter(college=request.user.college)
         paginator = pagination.CustomPagination()
         college_coaches = paginator.paginate_queryset(college_coaches, request)
         serialized_college_coaches = CollegeCoachSerializer(
@@ -116,7 +116,7 @@ def home_page_videos(request):
     if user_profile.user_type.name == 'Alumni' or user_profile.user_type.name == 'Career Service':
         body = request.data
         if request.method == "GET":
-            homepage_videos = HomePageVideo.objects.filter(college=request.user.college, is_publish=True)
+            homepage_videos = HomePageVideo.objects.filter(college=request.user.college)
             paginator = pagination.CustomPagination()
             homepage_videos = paginator.paginate_queryset(homepage_videos, request)
             serialized_homepage_videos = HomePageVideoSerializer(
