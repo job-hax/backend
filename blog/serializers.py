@@ -74,7 +74,7 @@ class BlogSnippetSerializer(serializers.ModelSerializer):
     user_types = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        super(BlogSerializer, self).__init__(*args, **kwargs)
+        super(BlogSnippetSerializer, self).__init__(*args, **kwargs)
         user = self.context.get('user')
         if user.user_type.name != 'Career Service':
             del self.fields['user_types']

@@ -61,6 +61,11 @@ def coaches(request):
             coach.online_conference_link = body['online_conference_link']
             coach.college = user_profile.college
 
+            if 'is_publish' in body:
+                coach.is_publish = body['is_publish']
+            else:
+                coach.is_publish = True
+
             file = body['profile_photo']
             ext = file.name.split('.')[-1]
             filename = "%s.%s" % (uuid.uuid4(), ext)
@@ -70,7 +75,7 @@ def coaches(request):
             ext = file.name.split('.')[-1]
             filename = "%s.%s" % (uuid.uuid4(), ext)
             coach.summary_photo.save(filename, file, save=True)
-            coach.is_publish = True
+
             coach.save()
             return JsonResponse(create_response(data=CollegeCoachSerializer(
                 instance=coach, many=False).data), safe=False)
@@ -128,7 +133,10 @@ def home_page_videos(request):
             return JsonResponse(create_response(data=None), safe=False)
         elif request.method == "POST" and user_profile.user_type.name == 'Career Service':
             home_page_video = HomePageVideo()
-            home_page_video.is_publish = True
+            if 'is_publish' in body:
+                home_page_video.is_publish = body['is_publish']
+            else:
+                home_page_video.is_publish = True
             home_page_video.embed_code = body['embed_code']
             if 'title' in body:
                 home_page_video.title = body['title']
