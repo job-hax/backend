@@ -136,7 +136,7 @@ def blogs(request):
         elif request.method == "PATCH":
             if request.user.user_type.name == 'Career Service':
                 body = request.data
-                blog = Blog.objects.get(pk=body['blog_id'], publisher_profile=request.user)
+                blog = Blog.objects.get(pk=body['blog_id'])
                 approved = body['approved']
                 blog.is_approved = approved
                 blog.is_rejected = not approved
