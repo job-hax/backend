@@ -91,7 +91,7 @@ class EventSimpleSerializer(serializers.ModelSerializer):
     user_types = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        super(EventSerializer, self).__init__(*args, **kwargs)
+        super(EventSimpleSerializer, self).__init__(*args, **kwargs)
         user = self.context.get('user')
         if user.user_type.name != 'Career Service':
             del self.fields['user_types']
