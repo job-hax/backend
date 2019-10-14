@@ -24,6 +24,8 @@ def events(request):
     if request.method == "GET":
         if request.user.user_type.name == 'Career Service' and get_boolean_from_request(request, 'waiting'):
             queryset = Event.objects.filter(is_approved=False, is_publish=True, is_rejected=False, college=request.user.college)
+        elif request.user.user_type.name == 'Career Service' and request.GET.get('type', '') != '':
+            queryset = Event.objects.filter(host_user__user_type__id=int(request.GET.get('type')), is_approved=True, is_publish=True)
         else:
             attended = get_boolean_from_request(request, 'attended')
             if not attended:
@@ -79,10 +81,12 @@ def events(request):
         body = request.data
         if request.method == "POST":
             event = Event()
+
             if request.user.user_type.name != 'Career Service':
                 event.user_types.add(request.user.user_type)
             else:
-                user_types = body['user_types']
+                event.save()
+                user_types = body['user_types'].split(',')
                 for type in user_types:
                     user_type = UserType.objects.get(pk=type)
                     event.user_types.add(user_type)
@@ -92,7 +96,7 @@ def events(request):
             event.updated_at = datetime.now()
             if request.user.user_type.name == 'Career Service':
                 event.user_types.clear()
-                user_types = body['user_types']
+                user_types = body['user_types'].split(',')
                 for type in user_types:
                     user_type = UserType.objects.get(pk=type)
                     event.user_types.add(user_type)

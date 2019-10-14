@@ -36,27 +36,25 @@ def blogs(request):
     if request.method == "GET":
         if user_profile.user_type.name == 'Career Service' and get_boolean_from_request(request, 'waiting'):
             queryset = Blog.objects.filter(is_approved=False, is_publish=True, is_rejected=False, college=user_profile.college)
+        elif request.user.user_type.name == 'Career Service' and request.GET.get('type', '') != '':
+            queryset = Blog.objects.filter(publisher_profile__user_type__id=int(request.GET.get('type')), is_approved=True, is_publish=True)
         else:
-            mine = get_boolean_from_request(request, 'mine')
-            if not mine:
-                if user_profile.user_type.name == 'Career Service':
-                    student = get_boolean_from_request(request, 'student')
-                    if student:
-                        user_type = UserType.objects.get(name='Student')
-                    else:
-                        user_type = UserType.objects.get(name='Alumni')
-                    queryset = Blog.objects.filter(is_approved=True, college=user_profile.college, user_types__in=[user_type])
+            if user_profile.user_type.name == 'Career Service':
+                student = get_boolean_from_request(request, 'student')
+                if student:
+                    user_type = UserType.objects.get(name='Student')
                 else:
-                    if user_profile.user_type.name == 'Public':
-                        queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
-                                                       Q(user_types__in=[user_profile.user_type])
-                                                       | Q(publisher_profile__is_superuser=True))
-                    else:
-                        queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
-                                                       Q(user_types__in=[user_profile.user_type],college=user_profile.college)
-                                                       | Q(publisher_profile__is_superuser=True))
+                    user_type = UserType.objects.get(name='Alumni')
+                queryset = Blog.objects.filter(is_approved=True, college=user_profile.college, user_types__in=[user_type])
             else:
-                queryset = Blog.objects.filter(publisher_profile=request.user)
+                if user_profile.user_type.name == 'Public':
+                    queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
+                                                   Q(user_types__in=[user_profile.user_type])
+                                                   | Q(publisher_profile__is_superuser=True))
+                else:
+                    queryset = Blog.objects.filter(Q(is_approved=True) | Q(publisher_profile=request.user),
+                                                   Q(user_types__in=[user_profile.user_type],college=user_profile.college)
+                                                   | Q(publisher_profile__is_superuser=True))
         queryset = queryset.filter(publisher_profile__isnull=False)
         paginator = pagination.CustomPagination()
         blogs = paginator.paginate_queryset(queryset, request)
@@ -88,9 +86,10 @@ def blogs(request):
                 is_publish = get_boolean_from_request(request, 'is_publish')
                 blog.is_publish = is_publish
             if request.user.user_type.name == 'Career Service':
-                user_types = body['user_types']
+                user_types = body['user_types'].split(',')
+                blog.save()
                 for type in user_types:
-                    user_type = UserType.objects.get(pk=type)
+                    user_type = UserType.objects.get(pk=int(type))
                     blog.user_types.add(user_type)
                 blog.is_approved = True
             else:
@@ -119,10 +118,10 @@ def blogs(request):
             if 'is_publish' in body:
                 blog.is_publish = get_boolean_from_request(request, 'is_publish')
             if request.user.user_type.name == 'Career Service':
-                user_types = body['user_types']
+                user_types = body['user_types'].split(',')
                 blog.user_types.clear()
                 for type in user_types:
-                    user_type = UserType.objects.get(pk=type)
+                    user_type = UserType.objects.get(pk=int(type))
                     blog.user_types.add(user_type)
                 blog.is_approved = True
             else:
