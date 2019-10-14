@@ -37,7 +37,7 @@ class Event(models.Model):
     is_rejected = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-updated_at']
 
 
 class EventAttendee(models.Model):

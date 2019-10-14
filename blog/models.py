@@ -21,7 +21,7 @@ class Blog(models.Model):
     is_rejected = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-updated_at']
 
 
 class Vote(models.Model):
