@@ -1,9 +1,10 @@
 import uuid
-from datetime import datetime
+import datetime
 from enum import Enum
-
+from django.db.models import Sum
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
@@ -12,6 +13,7 @@ from JH_RestAPI import pagination
 from blog.models import Blog
 from blog.models import Vote
 from users.models import UserType
+from users.serializers import UserTypeSerializer
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
@@ -37,7 +39,8 @@ def blogs(request):
         if user_profile.user_type.name == 'Career Service' and get_boolean_from_request(request, 'waiting'):
             queryset = Blog.objects.filter(is_approved=False, is_publish=True, is_rejected=False, college=user_profile.college)
         elif request.user.user_type.name == 'Career Service' and request.GET.get('type', '') != '':
-            queryset = Blog.objects.filter(publisher_profile__user_type__id=int(request.GET.get('type')), is_approved=True, is_publish=True)
+            queryset = Blog.objects.filter(Q(is_publish=True, is_rejected=False, is_approved=True) | Q(publisher_profile=request.user),
+                publisher_profile__user_type__id=int(request.GET.get('type')), college=request.user.college)
         else:
             if user_profile.user_type.name == 'Career Service':
                 student = get_boolean_from_request(request, 'student')
@@ -128,7 +131,7 @@ def blogs(request):
                 if blog.is_publish:
                     send_notification_email_to_admins(blog)
                 blog.is_approved = False
-            blog.updated_at = datetime.now()
+            blog.updated_at = datetime.datetime.now()
             blog.save()
 
             return JsonResponse(create_response(data={"id": blog.id}), safe=False)
@@ -195,3 +198,29 @@ def vote(request, blog_pk):
 @api_view(["POST"])
 def view(request, blog_pk):
     return do_action(request, blog_pk, ActionType.view)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def stats(request):
+    if request.user.user_type.name == 'Career Service':
+        days = request.GET.get('days', '30')
+        response = []
+        user_types = UserType.objects.filter(Q(name='Career Service') | Q(name='Student') | Q(name='Alumni')).order_by(
+            'id')
+        for user_type in user_types:
+            item = {}
+            last_x_days_created = Blog.objects.filter(Q(is_publish=True, is_rejected=False, is_approved=True) | Q(publisher_profile=request.user),
+                publisher_profile__user_type__id=int(user_type.id), college=request.user.college,
+                                                             created_at__lte=datetime.datetime.today(),
+                                       created_at__gt=datetime.datetime.today() - datetime.timedelta(days=int(days)))
+            item['user_type'] = UserTypeSerializer(instance=user_type, context={'basic': True}, many=False).data
+            item['last_x_days_created'] = last_x_days_created.count()
+            item['last_x_days_view'] = last_x_days_created.aggregate(count=Coalesce(Sum('view_count'), 0))['count']
+            item['last_x_days_upvote'] = Vote.objects.filter(blog__in=last_x_days_created, vote_type=True).count()
+            item['last_x_days_downvote'] = Vote.objects.filter(blog__in=last_x_days_created, vote_type=False).count()
+            response.append(item)
+        return JsonResponse(create_response(data=response), safe=False)
+    return JsonResponse(
+        create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+        safe=False)

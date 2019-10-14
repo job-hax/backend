@@ -13,6 +13,15 @@ User = get_user_model()
 
 class UserTypeSerializer(serializers.ModelSerializer):
 
+    def __init__(self, *args, **kwargs):
+        super(UserTypeSerializer, self).__init__(*args, **kwargs)
+        if 'basic' in self.context:
+            del self.fields['alumni_listing_enabled']
+            del self.fields['coach_listing_enabled']
+            del self.fields['blog_creation_enabled']
+            del self.fields['event_creation_enabled']
+            del self.fields['college_specific_metrics_enabled']
+
     def create(self, validated_data):
         return UserType.objects.create(**validated_data)
 
