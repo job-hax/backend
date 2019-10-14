@@ -183,7 +183,7 @@ def types(request):
 def stats(request):
     if request.user.user_type.name == 'Career Service':
         days = request.GET.get('days', '30')
-        response = []
+        response = {}
         user_types = UserType.objects.filter(Q(name='Career Service') | Q(name='Student') | Q(name='Alumni')).order_by('id')
         for user_type in user_types:
             item = {}
@@ -196,10 +196,9 @@ def stats(request):
                                                          event_date_start__gte=datetime.datetime.today(),
                                                              created_at__lt=datetime.datetime.today() + datetime.timedelta(
                                                                  days=int(days))).count()
-            item['user_type'] = UserTypeSerializer(instance=user_type, context={'basic': True}, many=False).data
             item['last_x_days_created'] = last_x_days_created_count
             item['upcoming_x_days'] = upcoming_x_days_count
-            response.append(item)
+            response[user_type.name] = item
         return JsonResponse(create_response(data=response), safe=False)
     return JsonResponse(
         create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
