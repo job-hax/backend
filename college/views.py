@@ -55,10 +55,12 @@ def coaches(request):
             coach.first_name = body['first_name']
             coach.last_name = body['last_name']
             coach.title = body['title']
-            coach.email = body['email']
+            if 'email' in body:
+                coach.email = body['email']
             coach.content = body['content']
             coach.calendar_link = body['calendar_link']
-            coach.online_conference_link = body['online_conference_link']
+            if 'online_conference_link' in body:
+                coach.online_conference_link = body['online_conference_link']
             coach.college = user_profile.college
 
             if 'is_publish' in body:
