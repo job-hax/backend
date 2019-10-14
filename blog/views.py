@@ -216,9 +216,11 @@ def stats(request):
                                        created_at__gt=datetime.datetime.today() - datetime.timedelta(days=int(days)))
             item['user_type'] = UserTypeSerializer(instance=user_type, context={'basic': True}, many=False).data
             item['last_x_days_created'] = last_x_days_created.count()
-            item['last_x_days_view'] = last_x_days_created.aggregate(count=Coalesce(Sum('view_count'), 0))['count']
-            item['last_x_days_upvote'] = Vote.objects.filter(blog__in=last_x_days_created, vote_type=True).count()
-            item['last_x_days_downvote'] = Vote.objects.filter(blog__in=last_x_days_created, vote_type=False).count()
+            blogs = Blog.objects.filter(Q(is_publish=True, is_rejected=False, is_approved=True) | Q(publisher_profile=request.user),
+                publisher_profile__user_type__id=int(user_type.id), college=request.user.college)
+            item['view_count'] = blogs.aggregate(count=Coalesce(Sum('view_count'), 0))['count']
+            item['upvote_count'] = Vote.objects.filter(blog__in=blogs, vote_type=True).count()
+            item['downvote_count'] = Vote.objects.filter(blog__in=blogs, vote_type=False).count()
             response.append(item)
         return JsonResponse(create_response(data=response), safe=False)
     return JsonResponse(
