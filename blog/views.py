@@ -205,7 +205,7 @@ def view(request, blog_pk):
 def stats(request):
     if request.user.user_type.name == 'Career Service':
         days = request.GET.get('days', '30')
-        response = []
+        response = {}
         user_types = UserType.objects.filter(Q(name='Career Service') | Q(name='Student') | Q(name='Alumni')).order_by(
             'id')
         for user_type in user_types:
@@ -214,14 +214,13 @@ def stats(request):
                 publisher_profile__user_type__id=int(user_type.id), college=request.user.college,
                                                              created_at__lte=datetime.datetime.today(),
                                        created_at__gt=datetime.datetime.today() - datetime.timedelta(days=int(days)))
-            item['user_type'] = UserTypeSerializer(instance=user_type, context={'basic': True}, many=False).data
             item['last_x_days_created'] = last_x_days_created.count()
             blogs = Blog.objects.filter(Q(is_publish=True, is_rejected=False, is_approved=True) | Q(publisher_profile=request.user),
                 publisher_profile__user_type__id=int(user_type.id), college=request.user.college)
             item['view_count'] = blogs.aggregate(count=Coalesce(Sum('view_count'), 0))['count']
             item['upvote_count'] = Vote.objects.filter(blog__in=blogs, vote_type=True).count()
             item['downvote_count'] = Vote.objects.filter(blog__in=blogs, vote_type=False).count()
-            response.append(item)
+            response[user_type.name] = item
         return JsonResponse(create_response(data=response), safe=False)
     return JsonResponse(
         create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
