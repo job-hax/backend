@@ -5,6 +5,7 @@ from event import views
 
 urlpatterns = [
     path('', views.events),
+    path('stats/', views.stats),
     path('types/', views.types),
     path('<int:event_pk>/',
          views.event),

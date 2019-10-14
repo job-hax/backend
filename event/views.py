@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+import datetime
 
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
@@ -10,6 +10,7 @@ from django.db.models import Q
 from JH_RestAPI import pagination
 from event.models import Event, EventType, EventAttendee
 from event.serializers import EventSerializer, EventSimpleSerializer, EventTypeSerializer
+from users.serializers import UserTypeSerializer
 from utils.error_codes import ResponseCodes
 from users.models import UserType
 from utils.generic_json_creator import create_response
@@ -25,7 +26,8 @@ def events(request):
         if request.user.user_type.name == 'Career Service' and get_boolean_from_request(request, 'waiting'):
             queryset = Event.objects.filter(is_approved=False, is_publish=True, is_rejected=False, college=request.user.college)
         elif request.user.user_type.name == 'Career Service' and request.GET.get('type', '') != '':
-            queryset = Event.objects.filter(host_user__user_type__id=int(request.GET.get('type')), is_approved=True, is_publish=True)
+            queryset = Event.objects.filter(Q(is_publish=True, is_rejected=False, is_approved=True) | Q(host_user=request.user),
+                                            host_user__user_type__id=int(request.GET.get('type')), college=request.user.college)
         else:
             attended = get_boolean_from_request(request, 'attended')
             if not attended:
@@ -93,7 +95,7 @@ def events(request):
             event.college = request.user.college
         else:
             event = Event.objects.get(pk=body['event_id'])
-            event.updated_at = datetime.now()
+            event.updated_at = datetime.datetime.now()
             if request.user.user_type.name == 'Career Service':
                 event.user_types.clear()
                 user_types = body['user_types'].split(',')
@@ -174,3 +176,31 @@ def leave(request, event_pk):
 def types(request):
     event_types = EventType.objects.all()
     return JsonResponse(create_response(data=EventTypeSerializer(instance=event_types, many=True).data), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def stats(request):
+    if request.user.user_type.name == 'Career Service':
+        days = request.GET.get('days', '30')
+        response = []
+        user_types = UserType.objects.filter(Q(name='Career Service') | Q(name='Student') | Q(name='Alumni')).order_by('id')
+        for user_type in user_types:
+            item = {}
+            last_x_days_created_count = Event.objects.filter(Q(is_publish=True, is_rejected=False, is_approved=True) | Q(host_user=request.user),
+                                                host_user__user_type__id=int(user_type.id), college=request.user.college,
+                                                             created_at__lte=datetime.datetime.today(),
+                                       created_at__gt=datetime.datetime.today() - datetime.timedelta(days=int(days))).count()
+            upcoming_x_days_count = Event.objects.filter(Q(is_publish=True, is_rejected=False, is_approved=True) | Q(host_user=request.user),
+                                                host_user__user_type__id=int(user_type.id), college=request.user.college,
+                                                         event_date_start__gte=datetime.datetime.today(),
+                                                             created_at__lt=datetime.datetime.today() + datetime.timedelta(
+                                                                 days=int(days))).count()
+            item['user_type'] = UserTypeSerializer(instance=user_type, context={'basic': True}, many=False).data
+            item['last_x_days_created'] = last_x_days_created_count
+            item['upcoming_x_days'] = upcoming_x_days_count
+            response.append(item)
+        return JsonResponse(create_response(data=response), safe=False)
+    return JsonResponse(
+        create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+        safe=False)

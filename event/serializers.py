@@ -44,7 +44,7 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_user_types(self, obj):
         if self.context.get('user').user_type.name == 'Career Service':
-            return UserTypeSerializer(instance=obj.user_types, many=True).data
+            return UserTypeSerializer(instance=obj.user_types, context={'basic': True}, many=True).data
 
     def get_mine(self, obj):
         return obj.host_user == self.context.get('user')
@@ -98,7 +98,7 @@ class EventSimpleSerializer(serializers.ModelSerializer):
 
     def get_user_types(self, obj):
         if self.context.get('user').user_type.name == 'Career Service':
-            return UserTypeSerializer(instance=obj.user_types, many=True).data
+            return UserTypeSerializer(instance=obj.user_types, context={'basic': True}, many=True).data
 
     def get_created_at(self, obj):
         if obj.date is None:

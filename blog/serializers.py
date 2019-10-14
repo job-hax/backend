@@ -23,7 +23,7 @@ class BlogSerializer(serializers.ModelSerializer):
 
     def get_user_types(self, obj):
         if self.context.get('user').user_type.name == 'Career Service':
-            return UserTypeSerializer(instance=obj.user_types, many=True).data
+            return UserTypeSerializer(instance=obj.user_types, context={'basic': True}, many=True).data
 
     def get_mine(self, obj):
         return obj.publisher_profile == self.context.get('user')
@@ -81,7 +81,7 @@ class BlogSnippetSerializer(serializers.ModelSerializer):
 
     def get_user_types(self, obj):
         if self.context.get('user').user_type.name == 'Career Service':
-            return UserTypeSerializer(instance=obj.user_types, many=True).data
+            return UserTypeSerializer(instance=obj.user_types, context={'basic': True}, many=True).data
 
     def get_word_count(self, obj):
         if obj.content:
