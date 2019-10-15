@@ -61,7 +61,7 @@ class User(AbstractUser):
         message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     phone_number = models.CharField(
         validators=[phone_regex], max_length=17, blank=True)  # validators should be a list
-    profile_photo = models.FileField(blank=True, null=True)
+    profile_photo = models.FileField(blank=True, null=True, default='981fa136-adc0-4b26-89bf-c1c4bb56af6f.png')
     emp_status = models.ForeignKey(
         EmploymentStatus, on_delete=models.SET_NULL, null=True, blank=True)
     college = models.ForeignKey(
