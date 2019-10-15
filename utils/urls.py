@@ -5,6 +5,7 @@ from utils import views
 
 urlpatterns = [
     path('agreements/', views.agreements),
+    path('customizations/', views.customizations),
     path('demo/', views.demo),
     path('countries/', views.countries),
     path('countries/<int:country_pk>/states/',

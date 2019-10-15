@@ -4,8 +4,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
+from utils.logger import log
 import random
-
+from college.serializers import CollegeSerializer
+from college.models import College
 from blog.models import Blog
 from event.models import Event
 from jobapps.models import JobApplication
@@ -177,3 +179,16 @@ def answer_feedback(request, feedback_pk):
     )
 
     return JsonResponse(create_response(data=None), safe=False)
+
+
+@require_GET
+@csrf_exempt
+def customizations(request):
+    host = request.get_host()
+    log(host, 'e')
+    if host.startswith('localhost'):
+        return JsonResponse(create_response(data=CollegeSerializer(instance=College.objects.get(name='JobHax'), many=False).data), safe=False)
+    else:
+        return JsonResponse(
+            create_response(data=CollegeSerializer(instance=College.objects.get(jobhax_domain=host), many=False).data),
+            safe=False)
