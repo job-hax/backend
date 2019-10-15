@@ -8,13 +8,27 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-
+from company.serializers import CompanyBasicsSerializer
+from company.models import Company
 from jobapps.models import ApplicationStatus
 from jobapps.models import JobApplication
 from jobapps.models import Source
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from utils.utils import get_boolean_from_request
+
+
+@csrf_exempt
+@api_view(["GET"])
+def company_locations(request):
+    jobapps = JobApplication.objects.filter(user=request.user, is_deleted=False)
+    companies = []
+    for jobapp in jobapps:
+        companies.append(jobapp.company_object)
+    return JsonResponse(
+        create_response(
+            data=CompanyBasicsSerializer(instance=companies, many=True, context={'user': request.user}).data),
+        safe=False)
 
 
 @csrf_exempt
