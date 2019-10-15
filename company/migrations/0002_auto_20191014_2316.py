@@ -16,9 +16,7 @@ class Migration(migrations.Migration):
         url = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
         api_key = ''
         if api_key is not '':
-            print("total count " + str(companies.count()))
             for company in companies:
-                print(company)
                 query = company.company
                 if query is None:
                     query = company.cb_name
@@ -28,8 +26,6 @@ class Migration(migrations.Migration):
                     x = r.json()
                     y = x['results']
                     for i in range(len(y)):
-                        # Print value corresponding to the
-                        # 'name' key at the ith index of y
                         place = y[i]
                         if 'establishment' in place['types']:
                             lat = place['geometry']['location']['lat']
@@ -38,7 +34,6 @@ class Migration(migrations.Migration):
                             company.location_lat = lat
                             company.location_lon = lng
                             company.location_address = formatted_address
-                            print()
                             company.save()
                             break
 

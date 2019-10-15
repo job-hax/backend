@@ -123,9 +123,9 @@ def events(request):
         if 'event_date_end' in body:
             event.event_date_end = body['event_date_end']
         if 'event_type_id' in body:
-            event.event_type = EventType.objects.get(pk=body['event_type_id'])
+            event.event_type = EventType.objects.get(pk=int(body['event_type_id']))
         if 'spot_count' in body:
-            event.spot_count = body['spot_count']
+            event.spot_count = int(body['spot_count'])
         if 'header_image' in body:
             file = body['header_image']
             ext = file.name.split('.')[-1]
