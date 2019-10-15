@@ -25,7 +25,7 @@ def get_or_create_company(name):
     else:
         jc = jc[0]
     if jc.location_address is None:
-        fetch_company_location(company_title)
+        fetch_company_location(name)
     return jc
 
 
@@ -46,6 +46,7 @@ def fetch_company_location(query):
                     lat = place['geometry']['location']['lat']
                     lng = place['geometry']['location']['lng']
                     formatted_address = place['formatted_address']
+                    company = Company.objects.get(name=query)
                     company.location_lat = lat
                     company.location_lon = lng
                     company.location_address = formatted_address
