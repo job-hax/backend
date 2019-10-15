@@ -7,6 +7,9 @@ class Company(models.Model):
     cb_name = models.CharField(max_length=200, null=True)
     cb_company_logo = models.CharField(max_length=200, null=True, blank=True)
     cb_domain = models.CharField(max_length=50, null=True)
+    location_lat = models.FloatField(blank=True, null=True)
+    location_lon = models.FloatField(blank=True, null=True)
+    location_address = models.CharField(max_length=250, blank=True, null=True)
 
     class Meta:
         ordering = ['company']
