@@ -25,19 +25,16 @@ def get_or_create_company(name):
     else:
         jc = jc[0]
     if jc.location_address is None:
-        fetch_company_location(jc)
+        fetch_company_location(company_title)
     return jc
 
 
 @background(schedule=3)
-def fetch_company_location(company):
+def fetch_company_location(query):
     url = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
     api_key = os.environ.get('JOBHAX_BACKEND_MAPS_API_KEY', '')
     if api_key is not '':
-        query = company.company
         log('Looking location of ' + query, 'e')
-        if query is None:
-            query = company.cb_name
         if query is not None:
             r = requests.get(url + 'query=' + query +
                              '&key=' + api_key)
