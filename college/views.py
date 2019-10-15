@@ -121,7 +121,7 @@ def coaches(request):
 @api_view(["GET", "POST", "PUT", "DELETE"])
 def home_page_videos(request):
     user_profile = request.user
-    if user_profile.user_type.name == 'Alumni' or user_profile.user_type.name == 'Career Service':
+    if user_profile.user_type.name == 'Career Service':
         body = request.data
         if request.method == "GET":
             homepage_videos = HomePageVideo.objects.filter(college=request.user.college)

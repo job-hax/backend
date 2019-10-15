@@ -24,7 +24,8 @@ def company_locations(request):
     jobapps = JobApplication.objects.filter(user=request.user, is_deleted=False)
     companies = []
     for jobapp in jobapps:
-        companies.append(jobapp.company_object)
+        if jobapp.company_object.location_address is not None:
+            companies.append(jobapp.company_object)
     return JsonResponse(
         create_response(
             data=CompanyBasicsSerializer(instance=companies, many=True, context={'user': request.user}).data),

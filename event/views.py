@@ -1,6 +1,6 @@
 import uuid
 import datetime
-
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -95,7 +95,7 @@ def events(request):
             event.college = request.user.college
         else:
             event = Event.objects.get(pk=body['event_id'])
-            event.updated_at = datetime.datetime.now()
+            event.updated_at = timezone.now()
             if request.user.user_type.name == 'Career Service':
                 event.user_types.clear()
                 user_types = body['user_types'].split(',')

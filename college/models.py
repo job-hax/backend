@@ -50,7 +50,11 @@ class HomePageVideo(models.Model):
     embed_code = models.CharField(max_length=300, null=False, blank=False)
     title = models.CharField(max_length=50, null=True, blank=True)
     description = models.CharField(max_length=50, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     is_publish = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
 
 
 class LandingPage(models.Model):
