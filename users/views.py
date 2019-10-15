@@ -532,7 +532,7 @@ def auth_social_user(request):
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
         user.approved = True
-        user.last_login = datetime.now()
+        user.last_login = timezone.now()
         LoginLog.objects.create(user=user)
         user.save()
         if provider == 'google-oauth2':

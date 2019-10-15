@@ -2,6 +2,7 @@
 
 from django.db import migrations, models
 import requests, json
+import os
 
 
 class Migration(migrations.Migration):
@@ -14,7 +15,7 @@ class Migration(migrations.Migration):
         Company = apps.get_model('company', 'Company')
         companies = Company.objects.all()
         url = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
-        api_key = ''
+        api_key = os.environ.get('JOBHAX_BACKEND_MAPS_API_KEY', '')
         if api_key is not '':
             for company in companies:
                 query = company.company

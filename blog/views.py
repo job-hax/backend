@@ -1,5 +1,6 @@
 import uuid
 import datetime
+from django.utils import timezone
 from enum import Enum
 from django.db.models import Sum
 from django.contrib.auth import get_user_model
@@ -131,7 +132,7 @@ def blogs(request):
                 if blog.is_publish:
                     send_notification_email_to_admins(blog)
                 blog.is_approved = False
-            blog.updated_at = datetime.datetime.now()
+            blog.updated_at = timezone.now()
             blog.save()
 
             return JsonResponse(create_response(data={"id": blog.id}), safe=False)
