@@ -114,6 +114,8 @@ def events(request):
             event.location_lat = body['location_lat']
         if 'location_lon' in body:
             event.location_lon = body['location_lon']
+        if 'location_title' in body:
+            event.location_title = body['location_title']
         if 'location_address' in body:
             event.location_address = body['location_address']
         if 'event_date_start' in body:
