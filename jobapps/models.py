@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
@@ -56,7 +56,7 @@ class JobApplication(models.Model):
         Source, on_delete=models.SET_NULL, null=True, related_name='%(class)s_source')
     rejected_date = models.DateTimeField(null=True, blank=True)
     deleted_date = models.DateTimeField(null=True, blank=True)
-    created = models.DateTimeField(default=datetime.now, null=True, blank=True)
+    created = models.DateTimeField(default=timezone.now, null=True, blank=True)
     updated_date = models.DateTimeField(null=True, blank=True)
     is_rejected = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
@@ -67,7 +67,7 @@ class StatusHistory(models.Model):
         JobApplication, on_delete=models.CASCADE, null=True, blank=True)
     application_status = models.ForeignKey(
         ApplicationStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_application_status')
-    update_date = models.DateTimeField(default=datetime.now, blank=True)
+    update_date = models.DateTimeField(default=timezone.now, blank=True)
 
 
 class GoogleMail(models.Model):
@@ -86,9 +86,9 @@ class JobApplicationNote(models.Model):
     job_post = models.ForeignKey(
         JobApplication, on_delete=models.CASCADE, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-    created_date = models.DateTimeField(default=datetime.now, blank=True)
+    created_date = models.DateTimeField(default=timezone.now, blank=True)
     update_date = models.DateTimeField(
-        default=datetime.now, null=True, blank=True)
+        default=timezone.now, null=True, blank=True)
 
 
 class SourceType(models.Model):
@@ -115,6 +115,6 @@ class Contact(models.Model):
     company = models.ForeignKey(
         Company, on_delete=models.SET_NULL, null=True, related_name='%(class)s_company')
     description = models.TextField(null=True, blank=True)
-    created_date = models.DateTimeField(default=datetime.now, blank=True)
+    created_date = models.DateTimeField(default=timezone.now, blank=True)
     update_date = models.DateTimeField(
-        default=datetime.now, null=True, blank=True)
+        default=timezone.now, null=True, blank=True)

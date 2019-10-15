@@ -1,8 +1,6 @@
 import json
 import traceback
 import uuid
-from datetime import datetime
-
 import requests
 from background_task import background
 from django.contrib.auth import authenticate
@@ -10,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
+from datetime import datetime as dt
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from oauth2_provider.models import AccessToken
@@ -310,7 +309,7 @@ def login(request):
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
         user = AccessToken.objects.get(token=json_res['access_token']).user
-        user.last_login = datetime.now()
+        user.last_login = timezone.now()
         user.save()
         LoginLog.objects.create(user=user)
     return JsonResponse(create_response(data=json_res, success=success, error_code=code), safe=False)
@@ -385,7 +384,7 @@ def update_profile(request):
     if 'gender' in body:
         user.gender = body['gender']
     if 'dob' in body:
-        user.dob = datetime.strptime(body['dob'], "%Y-%m-%d").date()
+        user.dob = dt.strptime(body['dob'], "%Y-%m-%d").date()
     if 'student_email' in body:
         user.student_email = body['student_email']
     if 'is_email_public' in body:

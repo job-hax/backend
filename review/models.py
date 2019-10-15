@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -41,8 +41,8 @@ class Review(models.Model):
         MinValueValidator(0)
     ], null=True, blank=True)
     anonymous = models.BooleanField(default=False, null=False, blank=False)
-    created_date = models.DateTimeField(default=datetime.now, blank=True)
-    update_date = models.DateTimeField(default=datetime.now, null=True, blank=True)
+    created_date = models.DateTimeField(default=timezone.now, blank=True)
+    update_date = models.DateTimeField(default=timezone.now, null=True, blank=True)
     is_published = models.BooleanField(default=False)
     is_rejected = models.BooleanField(default=False)
 

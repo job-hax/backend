@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime as dt
+from django.utils import timezone
 
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
@@ -38,7 +39,7 @@ def job_applications(request):
             if timestamp is None:
                 return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters))
             profile = request.user
-            time = datetime.fromtimestamp(int(timestamp))
+            time = dt.fromtimestamp(int(timestamp))
             user_job_apps = JobApplication.objects.filter(created__gte=time)
             job_application_list = JobApplicationSerializer(instance=user_job_apps, many=True, context={
                 'user': request.user}).data
@@ -115,8 +116,8 @@ def job_applications(request):
                                     job_post=user_job_app, application_status=new_status[0])
                                 status_history.save()
                         if rejected is not None:
-                            user_job_app.rejected_date = datetime.now()
-                        user_job_app.updated_date = datetime.now()
+                            user_job_app.rejected_date = timezone.now()
+                        user_job_app.updated_date = timezone.now()
                         user_job_app.save()
                 return JsonResponse(create_response(data=None), safe=False)
     elif request.method == "PATCH":
@@ -150,7 +151,7 @@ def job_applications(request):
             else:
                 source = Source.objects.get(value__iexact=source)
             user_job_app.app_source = source
-        user_job_app.updated_date = datetime.now()
+        user_job_app.updated_date = timezone.now()
         user_job_app.save()
         return JsonResponse(create_response(
             data=JobApplicationSerializer(instance=user_job_app, many=False, context={'user': request.user}).data),
@@ -167,7 +168,7 @@ def job_applications(request):
             user_job_apps = JobApplication.objects.filter(pk__in=job_application_ids)
             for user_job_app in user_job_apps:
                 if user_job_app.user == request.user:
-                    user_job_app.deleted_date = datetime.now()
+                    user_job_app.deleted_date = timezone.now()
                     user_job_app.is_deleted = True
                     user_job_app.save()
             return JsonResponse(create_response(data=None), safe=False)
@@ -291,7 +292,7 @@ def contacts(request, job_app_pk):
             if company is not None:
                 contact.company = get_or_create_company(company)
 
-            contact.update_date = datetime.now()
+            contact.update_date = timezone.now()
             contact.save()
             data = ContactSerializer(
                 instance=contact, many=False).data
@@ -368,7 +369,7 @@ def notes(request, job_app_pk):
             note = JobApplicationNote.objects.get(pk=jobapp_note_id)
             if note.job_post.user == request.user:
                 note.description = description
-                note.update_date = datetime.now()
+                note.update_date = timezone.now()
                 note.save()
                 data = JobApplicationNoteSerializer(
                     instance=note, many=False).data

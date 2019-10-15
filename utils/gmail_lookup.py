@@ -3,7 +3,7 @@ from __future__ import print_function
 import base64
 import string
 import traceback
-from datetime import datetime
+from django.utils import timezone
 
 import requests
 from bs4 import BeautifulSoup as bs
@@ -370,7 +370,7 @@ def fetch_job_applications(user):
                 get_email_detail(GMAIL, 'me', mail['id'], user, s)
 
                 # updates user last update time after all this
-    now = datetime.utcnow().timestamp()
+    now = timezone.now().timestamp()
     user.gmail_last_update_time = now
     user.is_gmail_read_ok = True
     user.synching = False
