@@ -4,10 +4,11 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from utils.error_codes import ResponseCodes
 import uuid
+import json
 from JH_RestAPI import pagination
 from utils.generic_json_creator import create_response
-from .models import College, CollegeCoach, HomePage, HomePageVideo
-from .serializers import CollegeSerializer, CollegeCoachSerializer, HomePageSerializer, HomePageVideoSerializer
+from .models import College, CollegeCoach, HomePage, HomePageVideo, LandingPage
+from .serializers import CollegeSerializer, CollegeCoachSerializer, HomePageSerializer, HomePageVideoSerializer, LandingPageSerializer
 import os
 from django.core.files.storage import default_storage
 from django.conf import settings
@@ -312,5 +313,56 @@ def home_page(request):
             home_page.save()
             return JsonResponse(create_response(data=HomePageSerializer(
                 instance=home_page, many=False).data), safe=False)
+    return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
+                        safe=False)
+
+
+@csrf_exempt
+@api_view(["POST", "PUT", "DELETE"])
+def landing_page(request):
+    user_profile = request.user
+    body = request.data
+    landing_page, new = LandingPage.objects.get_or_create(college=user_profile.college)
+    if request.method == "DELETE" and user_profile.user_type.name == 'Career Service':
+        fields = landing_page.fields
+        del fields[int(body['order'])]
+        landing_page.fields = fields
+        landing_page.save()
+    elif user_profile.user_type.name == 'Career Service':
+        if request.method == "POST":
+            field = {}
+        else:
+            field = landing_page.fields[int(body['order'])]
+
+        if 'button1' in body:
+            button1 = body['button1']
+            field['button1'] = button1
+        else:
+            field['button1'] = None
+        if 'button2' in body:
+            button2 = body['button2']
+            field['button2'] = button2
+        else:
+            field['button2'] = None
+        if 'title' in body:
+            field['title'] = body['title']
+        if 'description' in body:
+            field['description'] = body['description']
+        if 'image' in body:
+            file = body['image']
+            ext = file.name.split('.')[-1]
+            filename = "%s.%s" % (uuid.uuid4(), ext)
+            save_path = os.path.join(settings.MEDIA_ROOT, filename)
+            path = default_storage.save(save_path, file)
+            field['image'] = settings.MEDIA_URL + filename
+
+        fields = landing_page.fields
+        if fields is None:
+            fields = []
+        fields.append(field)
+        landing_page.fields = fields
+        landing_page.save()
+        return JsonResponse(create_response(data=LandingPageSerializer(
+            instance=landing_page, many=False).data), safe=False)
     return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.not_supported_user),
                         safe=False)

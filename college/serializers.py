@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import College, CollegeCoach
+from .models import College, CollegeCoach, LandingPage
 from .models import HomePage, HomePageVideo
 
 
@@ -51,4 +51,14 @@ class HomePageVideoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HomePageVideo
+        fields = '__all__'
+
+
+class LandingPageSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):
+        return LandingPage.objects.create(**validated_data)
+
+    class Meta:
+        model = LandingPage
         fields = '__all__'
