@@ -12,6 +12,8 @@ class College(models.Model):
     state_province = models.CharField(max_length=30, null=True, blank=True)
     country = models.CharField(max_length=50, blank=True)
     supported = models.BooleanField(default=False)
+    jobhax_domain = models.CharField(max_length=30, blank=True, null=True)
+    jobhax_subdomain = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         ordering = ['name']

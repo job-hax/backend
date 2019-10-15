@@ -35,6 +35,8 @@ class Migration(migrations.Migration):
                                                  alpha_two_code=alpha_two_code, state_province=state_province,
                                                  country=country)
                 college.save()
+            jobhax = College.objects.create(web_pages=['https://jobhax.com'], domains=['jobhax.com'], name='JobHax', supported=True, state_province='CA')
+            jobhax.save()
 
     operations = [
         migrations.CreateModel(
