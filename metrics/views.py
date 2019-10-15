@@ -21,7 +21,13 @@ from utils.utils import get_boolean_from_request
 @csrf_exempt
 @api_view(["GET"])
 def company_locations(request):
-    jobapps = JobApplication.objects.filter(user=request.user, is_deleted=False)
+    if request.user.user_type.name == 'Career Service':
+        User = get_user_model()
+        college_users = User.objects.filter(
+            id__in=[p.id for p in User.objects.filter(college=request.user.college, is_demo=False)])
+        jobapps = JobApplication.objects.filter(user__in=college_users, is_deleted=False)
+    else:
+        jobapps = JobApplication.objects.filter(user=request.user, is_deleted=False)
     companies = []
     for jobapp in jobapps:
         if jobapp.company_object.location_address is not None:

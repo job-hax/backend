@@ -4,7 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from metrics import views
 
 urlpatterns = [
-    path('personal/companyLocations/', views.company_locations),
+    path('companyLocations/', views.company_locations),
     path('personal/generic/', views.generic),
     path('personal/detailed/', views.detailed),
     path('aggregated/generic/', views.agg_generic),
