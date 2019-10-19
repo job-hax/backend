@@ -4,10 +4,9 @@ from rest_framework import serializers
 from company.serializers import CompanySerializer
 from position.serializers import JobPositionSerializer
 from .models import ApplicationStatus
-from .models import GoogleMail
-from .models import JobApplication
-from .models import JobApplicationNote, SourceType
-from .models import Source, Contact
+from .models import PositionApplication
+from .models import PositionApplicationNote
+from .models import Contact
 from .models import StatusHistory
 
 
@@ -20,38 +19,10 @@ class ApplicationStatusSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 
-class SourceTypeSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        return SourceType.objects.create(**validated_data)
-
-    class Meta:
-        model = SourceType
-        fields = ('__all__')
-
-
-class GoogleMailSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        return GoogleMail.objects.create(**validated_data)
-
-    class Meta:
-        model = GoogleMail
-        fields = ('subject', 'body', 'date')
-
-
-class SourceSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        return Source.objects.create(**validated_data)
-
-    class Meta:
-        model = Source
-        fields = ('id', 'value', 'image')
-
-
-class JobApplicationSerializer(serializers.ModelSerializer):
+class PositionApplicationSerializer(serializers.ModelSerializer):
     application_status = ApplicationStatusSerializer(read_only=True)
     position = JobPositionSerializer(read_only=True)
     company_object = serializers.SerializerMethodField()
-    app_source = SourceSerializer(read_only=True)
     editable = serializers.SerializerMethodField()
 
     def get_editable(self, obj):
@@ -65,34 +36,34 @@ class JobApplicationSerializer(serializers.ModelSerializer):
         return CompanySerializer(instance=obj.company_object, many=False, context=context).data
 
     def create(self, validated_data):
-        return JobApplication.objects.create(**validated_data)
+        return PositionApplication.objects.create(**validated_data)
 
     class Meta:
-        model = JobApplication
+        model = PositionApplication
         fields = (
-            'id', 'editable', 'application_status', 'position', 'company_object', 'apply_date', 'app_source', 'is_rejected')
+            'id', 'first_name', 'last_name', 'editable', 'application_status', 'position', 'company_object', 'apply_date', 'is_rejected')
 
 
-class JobApplicationNoteSerializer(serializers.ModelSerializer):
+class PositionApplicationNoteSerializer(serializers.ModelSerializer):
     created_date = serializers.SerializerMethodField()
-    update_date = serializers.SerializerMethodField()
+    updated_date = serializers.SerializerMethodField()
 
     def get_created_date(self, obj):
         if obj.created_date is None:
             return None
         return obj.created_date.astimezone(pytz.timezone('US/Pacific'))
 
-    def get_update_date(self, obj):
-        if obj.update_date is None:
+    def get_updated_date(self, obj):
+        if obj.updated_date is None:
             return None
-        return obj.update_date.astimezone(pytz.timezone('US/Pacific'))
+        return obj.updated_date.astimezone(pytz.timezone('US/Pacific'))
 
     def create(self, validated_data):
-        return JobApplicationNote.objects.create(**validated_data)
+        return PositionApplication.objects.create(**validated_data)
 
     class Meta:
-        model = JobApplicationNote
-        fields = ('id', 'description', 'created_date', 'update_date')
+        model = PositionApplication
+        fields = ('id', 'description', 'created_date', 'updated_date')
 
 
 class StatusHistorySerializer(serializers.ModelSerializer):
@@ -103,7 +74,7 @@ class StatusHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StatusHistory
-        fields = ('application_status', 'update_date')
+        fields = ('application_status', 'updated_date')
 
 
 class ContactSerializer(serializers.ModelSerializer):
@@ -126,5 +97,5 @@ class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
         fields = (
-            'id', 'first_name', 'last_name', 'phone_number', 'linkedin_url', 'description', 'created_date', 'update_date', 'position',
+            'id', 'phone_number', 'linkedin_url', 'description', 'created_date', 'updated_date', 'position',
             'company', 'email')

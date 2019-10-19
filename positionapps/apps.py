@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class JobappsConfig(AppConfig):
-    name = 'jobapps'
+    name = 'positionapps'

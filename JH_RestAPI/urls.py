@@ -23,7 +23,7 @@ from django.urls import re_path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
-    path('api/jobapps/', include('jobapps.urls')),
+    path('api/positionapps/', include('positionapps.urls')),
     path('api/faqs/', include('faq.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/companies/', include('company.urls')),

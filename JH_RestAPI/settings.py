@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'users',
     'major',
     'college',
-    'jobapps',
+    'positionapps',
     'company',
     'position',
     'notifications',

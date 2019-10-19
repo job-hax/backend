@@ -11,13 +11,11 @@ from position.utils import get_or_insert_position
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
-from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
-from .models import JobApplicationNote
-from .models import Source
+from .models import PositionApplication, Contact, ApplicationStatus, StatusHistory
+from .models import PositionApplicationNote
 from .serializers import ApplicationStatusSerializer
-from .serializers import JobApplicationNoteSerializer
-from .serializers import JobApplicationSerializer, ContactSerializer
-from .serializers import SourceSerializer
+from .serializers import PositionApplicationNoteSerializer
+from .serializers import PositionApplicationSerializer, ContactSerializer
 from .serializers import StatusHistorySerializer
 
 User = get_user_model()
@@ -25,7 +23,7 @@ User = get_user_model()
 
 @csrf_exempt
 @api_view(["GET", "POST", "PUT", "PATCH", "DELETE"])
-def job_applications(request):
+def position_applications(request):
     body = request.data
     if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'],
                                                             'add_job') == ResponseCodes.verify_recaptcha_failed:
@@ -39,20 +37,21 @@ def job_applications(request):
                 return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters))
             profile = request.user
             time = dt.fromtimestamp(int(timestamp))
-            user_job_apps = JobApplication.objects.filter(created__gte=time)
-            job_application_list = JobApplicationSerializer(instance=user_job_apps, many=True, context={
+            user_job_apps = PositionApplication.objects.filter(
+                created__gte=time)
+            job_application_list = PositionApplicationSerializer(instance=user_job_apps, many=True, context={
                 'user': request.user}).data
             response = {'data': job_application_list,
                         'synching': profile.synching}
             return JsonResponse(create_response(data=response), safe=False)
         status_id = request.GET.get('status_id')
         if status_id is not None:
-            user_job_apps = JobApplication.objects.filter(
+            user_job_apps = PositionApplication.objects.filter(
                 application_status__id=status_id, user__id=request.user.id, is_deleted=False).order_by('-apply_date')
         else:
-            user_job_apps = JobApplication.objects.filter(
+            user_job_apps = PositionApplication.objects.filter(
                 user_id=request.user.id, is_deleted=False).order_by('-apply_date')
-        job_applications_list = JobApplicationSerializer(instance=user_job_apps, many=True, context={
+        job_applications_list = PositionApplicationSerializer(instance=user_job_apps, many=True, context={
             'user': request.user}).data
         return JsonResponse(create_response(data=job_applications_list), safe=False)
     elif request.method == "POST":
@@ -61,6 +60,8 @@ def job_applications(request):
         application_date = body['application_date']
         status = int(body['status_id'])
         source = body['source']
+        first_name = body['first_name']
+        last_name = body['last_name']
 
         jt = get_or_insert_position(job_title)
         jc = get_or_create_company(company)
@@ -70,14 +71,14 @@ def job_applications(request):
         else:
             source = Source.objects.get(value__iexact=source)
 
-        job_application = JobApplication(position=jt, company_object=jc, apply_date=application_date,
-                                         msg_id='', app_source=source, user=request.user)
+        job_application = PositionApplication(
+            position=jt, company_object=jc, first_name=first_name, last_name=last_name, apply_date=application_date, user=request.user)
         job_application.application_status = ApplicationStatus.objects.get(
             pk=status)
         job_application.save()
         return JsonResponse(
             create_response(
-                data=JobApplicationSerializer(instance=job_application, many=False, context={'user': request.user}).data),
+                data=PositionApplicationSerializer(instance=job_application, many=False, context={'user': request.user}).data),
             safe=False)
     elif request.method == "PUT":
         status_id = body.get('status_id')
@@ -92,7 +93,7 @@ def job_applications(request):
         elif rejected is None and status_id is None:
             return JsonResponse(create_response(success=False, error_code=ResponseCodes.record_not_found), safe=False)
         else:
-            user_job_apps = JobApplication.objects.filter(
+            user_job_apps = PositionApplication.objects.filter(
                 pk__in=job_application_ids)
             if user_job_apps.count() == 0:
                 return JsonResponse(create_response(success=False, error_code=ResponseCodes.record_not_found), safe=False)
@@ -128,7 +129,7 @@ def job_applications(request):
         if job_app_id is None:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
                                 safe=False)
-        user_job_app = JobApplication.objects.get(pk=job_app_id)
+        user_job_app = PositionApplication.objects.get(pk=job_app_id)
 
         if user_job_app.user != request.user:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
@@ -148,16 +149,10 @@ def job_applications(request):
             user_job_app.position = get_or_insert_position(job_title)
         if company is not None:
             user_job_app.company_object = get_or_create_company(company)
-        if source is not None:
-            if Source.objects.filter(value__iexact=source).count() == 0:
-                source = Source.objects.create(value=source)
-            else:
-                source = Source.objects.get(value__iexact=source)
-            user_job_app.app_source = source
         user_job_app.updated_date = timezone.now()
         user_job_app.save()
         return JsonResponse(create_response(
-            data=JobApplicationSerializer(instance=user_job_app, many=False, context={'user': request.user}).data),
+            data=PositionApplicationSerializer(instance=user_job_app, many=False, context={'user': request.user}).data),
             safe=False)
     elif request.method == "DELETE":
         job_application_ids = []
@@ -165,10 +160,10 @@ def job_applications(request):
             job_application_ids = body['jobapp_ids']
         if 'jobapp_id' in body:
             job_application_ids.append(body['jobapp_id'])
-        if len(job_application_ids) == 0 or JobApplication.objects.filter(pk__in=job_application_ids).count() == 0:
+        if len(job_application_ids) == 0 or PositionApplication.objects.filter(pk__in=job_application_ids).count() == 0:
             return JsonResponse(create_response(success=False, error_code=ResponseCodes.record_not_found), safe=False)
         else:
-            user_job_apps = JobApplication.objects.filter(
+            user_job_apps = PositionApplication.objects.filter(
                 pk__in=job_application_ids)
             for user_job_app in user_job_apps:
                 if user_job_app.user == request.user:
@@ -185,14 +180,6 @@ def statuses(request):
     statuses_list = ApplicationStatusSerializer(
         instance=statuses_list, many=True).data
     return JsonResponse(create_response(data=statuses_list), safe=False)
-
-
-@csrf_exempt
-@api_view(["GET"])
-def sources(request):
-    source_list = SourceSerializer(
-        instance=Source.objects.all(), many=True).data
-    return JsonResponse(create_response(data=source_list), safe=False)
 
 
 @csrf_exempt
@@ -223,7 +210,7 @@ def contacts(request, job_app_pk):
             data['contacts'] = contacts_list
 
             user_profile = request.user
-            jobapp = JobApplication.objects.get(pk=job_app_pk)
+            jobapp = PositionApplication.objects.get(pk=job_app_pk)
 
         return JsonResponse(create_response(data=data, success=True, error_code=ResponseCodes.success), safe=False)
     elif request.method == "POST":
@@ -232,7 +219,7 @@ def contacts(request, job_app_pk):
         if job_app_pk is None or first_name is None or last_name is None:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                                 safe=False)
-        user_job_app = JobApplication.objects.get(pk=job_app_pk)
+        user_job_app = PositionApplication.objects.get(pk=job_app_pk)
         if user_job_app.user == request.user:
             phone_number = body.get('phone_number')
             linkedin_url = body.get('linkedin_url')
@@ -269,12 +256,6 @@ def contacts(request, job_app_pk):
                                 safe=False)
         contact = Contact.objects.get(pk=contact_id)
         if contact.job_post.user == request.user:
-            first_name = body.get('first_name')
-            if first_name is not None:
-                contact.first_name = first_name
-            last_name = body.get('last_name')
-            if last_name is not None:
-                contact.last_name = last_name
             email = body.get('email')
             if email is not None:
                 contact.email = email
@@ -339,9 +320,9 @@ def notes(request, job_app_pk):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                                 safe=False)
         else:
-            notes_list = JobApplicationNote.objects.filter(
+            notes_list = PositionApplicationNote.objects.filter(
                 job_post__pk=job_app_pk).order_by('-update_date', '-created_date')
-            notes_list = JobApplicationNoteSerializer(
+            notes_list = PositionApplicationNoteSerializer(
                 instance=notes_list, many=True).data
             return JsonResponse(create_response(data=notes_list, success=True, error_code=ResponseCodes.success),
                                 safe=False)
@@ -351,12 +332,12 @@ def notes(request, job_app_pk):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                                 safe=False)
         else:
-            user_job_app = JobApplication.objects.get(pk=job_app_pk)
+            user_job_app = PositionApplication.objects.get(pk=job_app_pk)
             if user_job_app.user == request.user:
-                note = JobApplicationNote(
+                note = PositionApplicationNote(
                     job_post=user_job_app, description=description)
                 note.save()
-                data = JobApplicationNoteSerializer(
+                data = PositionApplicationNoteSerializer(
                     instance=note, many=False).data
                 return JsonResponse(create_response(data=data, success=True, error_code=ResponseCodes.success),
                                     safe=False)
@@ -370,12 +351,12 @@ def notes(request, job_app_pk):
             return JsonResponse(
                 create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
         else:
-            note = JobApplicationNote.objects.get(pk=jobapp_note_id)
+            note = PositionApplicationNote.objects.get(pk=jobapp_note_id)
             if note.job_post.user == request.user:
                 note.description = description
                 note.update_date = timezone.now()
                 note.save()
-                data = JobApplicationNoteSerializer(
+                data = PositionApplicationNoteSerializer(
                     instance=note, many=False).data
                 return JsonResponse(create_response(data=data, success=True, error_code=ResponseCodes.success),
                                     safe=False)
@@ -388,7 +369,7 @@ def notes(request, job_app_pk):
             return JsonResponse(
                 create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
         else:
-            user_job_app_note = JobApplicationNote.objects.get(
+            user_job_app_note = PositionApplicationNote.objects.get(
                 pk=jobapp_note_id)
             if user_job_app_note.job_post.user == request.user:
                 user_job_app_note.delete()
