@@ -25,13 +25,14 @@ def company_locations(request):
         User = get_user_model()
         college_users = User.objects.filter(
             id__in=[p.id for p in User.objects.filter(college=request.user.college, is_demo=False)])
-        jobapps = JobApplication.objects.filter(user__in=college_users, is_deleted=False)
+        jobapps = JobApplication.objects.filter(~Q(company_object__location_address=None),
+                                                user__in=college_users, is_deleted=False).distinct('company_object')
     else:
-        jobapps = JobApplication.objects.filter(user=request.user, is_deleted=False)
+        jobapps = JobApplication.objects.filter(~Q(company_object__location_address=None), user=request.user,
+                                                is_deleted=False).distinct('company_object')
     companies = []
     for jobapp in jobapps:
-        if jobapp.company_object.location_address is not None:
-            companies.append(jobapp.company_object)
+        companies.append(jobapp.company_object)
     return JsonResponse(
         create_response(
             data=CompanyBasicsSerializer(instance=companies, many=True, context={'user': request.user}).data),
