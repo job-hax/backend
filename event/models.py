@@ -31,7 +31,7 @@ class Event(models.Model):
     event_type = models.ForeignKey(EventType, on_delete=models.SET_NULL, null=True)
     spot_count = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
     is_publish = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
     is_rejected = models.BooleanField(default=False)
