@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from django.conf import settings
 from college.serializers import CollegeSerializer
 from company.serializers import CompanyBasicsSerializer
 from major.serializers import MajorSerializer

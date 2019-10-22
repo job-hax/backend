@@ -12,7 +12,7 @@ class CompanyBasicsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = '__all__'
+        fields = 'id, company, logo, location_lat, location_lon, location_address'
 
 
 class CompanySerializer(serializers.ModelSerializer):

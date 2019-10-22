@@ -4,6 +4,10 @@ import os
 from background_task import background
 import requests, json
 from utils.logger import log
+import uuid
+from django.core.files import File
+from urllib.request import urlretrieve
+from urllib.error import HTTPError
 
 
 def get_or_create_company(name):
@@ -12,15 +16,26 @@ def get_or_create_company(name):
         company_title = name
     else:
         company_title = cd['name']
-    jc = Company.objects.all().filter(cb_name__iexact=company_title)
+    jc = Company.objects.all().filter(company__iexact=company_title)
     if jc.count() == 0:
         # if company doesnt exist save it
         if cd is None:
-            jc = Company(company=name, company_logo=None,
-                         cb_name=name, cb_company_logo=None, cb_domain=None)
+            jc = Company(company=name, domain=None)
         else:
-            jc = Company(company=name, company_logo=None,
-                         cb_name=cd['name'], cb_company_logo=cd['logo'], cb_domain=cd['domain'])
+            jc = Company(company=cd['name'], domain=cd['domain'])
+            jc.save()
+            if 'logo' in cd and cd['logo'] is not None and cd['logo'] is not '':
+                try:
+                    urlretrieve(cd['logo'], filename=cd['logo'].split('/')[-1])
+                    file = open(cd['logo'].split('/')[-1], 'rb')
+                    filename = "%s.%s" % (uuid.uuid4(), 'jpg')
+                    jc.logo.save(filename, File(file), save=True)
+                    jc.save()
+                    os.remove(cd['logo'].split('/')[-1])
+                except FileNotFoundError as err:
+                    pass  # something wrong with local path
+                except HTTPError as err:
+                    pass  # something wrong with url
         jc.save()
     else:
         jc = jc[0]
