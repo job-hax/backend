@@ -24,10 +24,10 @@ User = get_user_model()
 def events(request):
     if request.method == "GET":
         if request.user.user_type.name == 'Career Service' and get_boolean_from_request(request, 'waiting'):
-            queryset = Event.objects.filter(is_approved=False, is_publish=True, is_rejected=False, college=request.user.college)
+            queryset = Event.objects.filter(is_approved=False, is_publish=True, is_rejected=False, college=request.user.college).order_by('-updated_at')
         elif request.user.user_type.name == 'Career Service' and request.GET.get('type', '') != '':
             queryset = Event.objects.filter(Q(is_publish=True, is_rejected=False, is_approved=True) | Q(host_user=request.user),
-                                            host_user__user_type__id=int(request.GET.get('type')), college=request.user.college)
+                                            host_user__user_type__id=int(request.GET.get('type')), college=request.user.college).order_by('-updated_at')
         else:
             attended = get_boolean_from_request(request, 'attended')
             if not attended:
