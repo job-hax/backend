@@ -72,6 +72,8 @@ def blogs(request):
         if request.method == "POST":
             body = request.data
             blog = Blog()
+            blog.college = request.user.college
+            blog.publisher_profile = request.user
             if 'header_image' in body:
                 file = body['header_image']
                 ext = file.name.split('.')[-1]
@@ -87,7 +89,7 @@ def blogs(request):
                 snippet = body['snippet'][:130] + '...'
                 blog.snippet = snippet
             if 'is_publish' in body:
-                is_publish = get_boolean_from_request(request, 'is_publish')
+                is_publish = get_boolean_from_request(request, 'is_publish', 'POST')
                 blog.is_publish = is_publish
             if request.user.user_type.name == 'Career Service':
                 user_types = body['user_types'].split(',')
@@ -99,10 +101,8 @@ def blogs(request):
             else:
                 blog.user_types.add(request.user.user_type)
                 if blog.is_publish:
-                    send_notification_email_to_admins(blog)
+                    send_notification_email_to_admins('blog', blog.college.id)
                 blog.is_approved = False
-            blog.college = request.user.college
-            blog.publisher_profile = request.user
 
             blog.save()
             return JsonResponse(create_response(data={"id": blog.id}), safe=False)
@@ -130,7 +130,7 @@ def blogs(request):
                 blog.is_approved = True
             else:
                 if blog.is_publish:
-                    send_notification_email_to_admins(blog)
+                    send_notification_email_to_admins('blog', blog.college.id)
                 blog.is_approved = False
             blog.updated_at = timezone.now()
             blog.save()

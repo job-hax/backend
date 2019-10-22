@@ -7,6 +7,7 @@ import uuid
 import json
 from JH_RestAPI import pagination
 from utils.generic_json_creator import create_response
+from utils.utils import get_boolean_from_request
 from .models import College, CollegeCoach, HomePage, HomePageVideo, LandingPage
 from .serializers import CollegeSerializer, CollegeCoachSerializer, HomePageSerializer, HomePageVideoSerializer, LandingPageSerializer
 import os
@@ -65,7 +66,7 @@ def coaches(request):
             coach.college = user_profile.college
 
             if 'is_publish' in body:
-                coach.is_publish = body['is_publish']
+                coach.is_publish = get_boolean_from_request(request, 'is_publish', 'POST')
             else:
                 coach.is_publish = True
 
@@ -109,7 +110,7 @@ def coaches(request):
                 filename = "%s.%s" % (uuid.uuid4(), ext)
                 coach.summary_photo.save(filename, file, save=True)
             if 'is_publish' in body:
-                coach.is_publish = body['is_publish']
+                coach.is_publish = get_boolean_from_request(request, 'is_publish', 'POST')
             coach.save()
             return JsonResponse(create_response(data=CollegeCoachSerializer(
                 instance=coach, many=False).data), safe=False)

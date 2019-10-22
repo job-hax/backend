@@ -55,21 +55,8 @@ def generate_activation_key(username):
 
 
 @background(schedule=1)
-def send_notification_email_to_admins(object):
-    if isinstance(object, Blog):
-        type = 'blog'
-        college = object.college
-    elif isinstance(object, Event):
-        type = 'event'
-        college = object.college
-    elif isinstance(object, Review):
-        type = 'review'
-        college = object.user.college
-    elif isinstance(object, Feedback):
-        type = 'feedback'
-        college = object.user.college
-
-    profiles = User.objects.filter(Q(college=college, user_type__name='Career Service') | Q(is_superuser=True))
+def send_notification_email_to_admins(type, college_id):
+    profiles = User.objects.filter(Q(college__id=college_id, user_type__name='Career Service') | Q(is_superuser=True))
     subject = '[JobHax Platform] New ' + type + ' notification'
     body = '''<html>
                 Hello JobHax editor/administrator!<br>

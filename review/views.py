@@ -135,7 +135,7 @@ def reviews(request):
             review.is_published = True
         else:
             review.is_published = False
-            send_notification_email_to_admins(review)
+            send_notification_email_to_admins('review', review.user.college.id)
 
         review.save()
         response = {'review': ReviewSerializer(instance=review, many=False).data,

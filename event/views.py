@@ -137,7 +137,7 @@ def events(request):
             event.is_approved = True
         else:
             if event.is_publish:
-                send_notification_email_to_admins('event')
+                send_notification_email_to_admins('event', event.college.id)
             event.is_approved = False
         event.save()
         return JsonResponse(create_response(data={"id": event.id}), safe=False)

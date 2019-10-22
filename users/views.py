@@ -650,7 +650,7 @@ def feedback(request):
     else:
         from_demo_account = False
     Feedback.objects.create(user=user, text=text, star=star, from_demo_account=from_demo_account)
-    send_notification_email_to_admins(feedback)
+    send_notification_email_to_admins('feedback', feedback.user.college.id)
     return JsonResponse(create_response(data=None), safe=False)
 
 
