@@ -15,7 +15,7 @@ class Blog(models.Model):
     view_count = models.IntegerField(default=0)
     content = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
     is_publish = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
     is_rejected = models.BooleanField(default=False)
