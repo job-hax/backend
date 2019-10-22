@@ -132,7 +132,7 @@ def events(request):
             filename = "%s.%s" % (uuid.uuid4(), ext)
             event.header_image.save(filename, file, save=True)
         if 'is_publish' in body:
-            event.is_publish = body['is_publish']
+            event.is_publish = get_boolean_from_request(request, 'is_publish', 'POST')
         if request.user.user_type.name == 'Career Service':
             event.is_approved = True
         else:

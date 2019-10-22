@@ -120,7 +120,7 @@ def blogs(request):
                 filename = "%s.%s" % (uuid.uuid4(), ext)
                 blog.header_image.save(filename, file, save=True)
             if 'is_publish' in body:
-                blog.is_publish = body['is_publish']
+                blog.is_publish = get_boolean_from_request(request, 'is_publish', 'POST')
             if request.user.user_type.name == 'Career Service':
                 user_types = body['user_types'].split(',')
                 blog.user_types.clear()
