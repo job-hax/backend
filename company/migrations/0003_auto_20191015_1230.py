@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='company',
             name='logo',
-            field=models.FileField(default='settings.MEDIA_ROOT/8af3c0b7-6f12-4d54-8d64-5c49f40f28fb.png', upload_to=''),
+            field=models.FileField(default='8af3c0b7-6f12-4d54-8d64-5c49f40f28fb.png', upload_to=''),
         ),
         migrations.RunPython(migrate_data, reverse_code=migrations.RunPython.noop),
     ]
