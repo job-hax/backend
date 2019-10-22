@@ -26,8 +26,11 @@ from urllib.error import HTTPError
 User = get_user_model()
 
 
-def get_boolean_from_request(request, key):
-    value = request.GET.get(key, 'False')
+def get_boolean_from_request(request, key, method='GET'):
+    if method == 'GET':
+        value = request.GET.get(key, 'False')
+    else:
+        value = request.POST.get(key, 'False')
     if value == 'False' or value == 'false' or value == '0' or value == 0:
         value = False
     elif value:
