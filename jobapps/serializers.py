@@ -6,7 +6,7 @@ from position.serializers import JobPositionSerializer
 from .models import ApplicationStatus
 from .models import GoogleMail
 from .models import JobApplication
-from .models import JobApplicationNote, SourceType
+from .models import JobApplicationNote, JobApplicationFile, SourceType
 from .models import Source, Contact
 from .models import StatusHistory
 
@@ -93,6 +93,28 @@ class JobApplicationNoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobApplicationNote
         fields = ('id', 'description', 'created_date', 'update_date')
+
+
+class JobApplicationFileSerializer(serializers.ModelSerializer):
+    created_date = serializers.SerializerMethodField()
+    update_date = serializers.SerializerMethodField()
+
+    def get_created_date(self, obj):
+        if obj.created_date is None:
+            return None
+        return obj.created_date.astimezone(pytz.timezone('US/Pacific'))
+
+    def get_update_date(self, obj):
+        if obj.update_date is None:
+            return None
+        return obj.update_date.astimezone(pytz.timezone('US/Pacific'))
+
+    def create(self, validated_data):
+        return JobApplicationFile.objects.create(**validated_data)
+
+    class Meta:
+        model = JobApplicationFile
+        fields = ('id', 'file', 'name', 'created_date', 'update_date')
 
 
 class StatusHistorySerializer(serializers.ModelSerializer):

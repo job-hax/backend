@@ -91,6 +91,16 @@ class JobApplicationNote(models.Model):
         default=timezone.now, null=True, blank=True)
 
 
+class JobApplicationFile(models.Model):
+    job_post = models.ForeignKey(
+        JobApplication, on_delete=models.CASCADE, null=True, blank=True)
+    file = models.FileField(blank=False, null=True)
+    name = models.CharField(max_length=200)
+    created_date = models.DateTimeField(default=timezone.now, blank=True)
+    update_date = models.DateTimeField(
+        default=timezone.now, null=True, blank=True)
+
+
 class SourceType(models.Model):
     value = models.CharField(max_length=20, null=False)
 
