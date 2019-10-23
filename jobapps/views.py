@@ -1,6 +1,6 @@
 from datetime import datetime as dt
 from django.utils import timezone
-
+import uuid
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -12,11 +12,11 @@ from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
 from .models import JobApplication, Contact, ApplicationStatus, StatusHistory
-from .models import JobApplicationNote
+from .models import JobApplicationNote, JobApplicationFile
 from .models import Source
 from alumni.serializers import AlumniSerializer
 from .serializers import ApplicationStatusSerializer
-from .serializers import JobApplicationNoteSerializer
+from .serializers import JobApplicationNoteSerializer, JobApplicationFileSerializer
 from .serializers import JobApplicationSerializer, ContactSerializer
 from .serializers import SourceSerializer
 from .serializers import StatusHistorySerializer
@@ -388,6 +388,62 @@ def notes(request, job_app_pk):
                 pk=jobapp_note_id)
             if user_job_app_note.job_post.user == request.user:
                 user_job_app_note.delete()
+                return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
+            else:
+                return JsonResponse(
+                    create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
+                    safe=False)
+
+
+@csrf_exempt
+@api_view(["GET", "POST", "PUT", "DELETE"])
+def files(request, job_app_pk):
+    body = request.data
+    if request.method == "GET":
+        if job_app_pk is None:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                                safe=False)
+        else:
+            files_list = JobApplicationFile.objects.filter(
+                job_post__pk=job_app_pk).order_by('-update_date', '-created_date')
+            files_list = JobApplicationFileSerializer(
+                instance=files_list, many=True).data
+            return JsonResponse(create_response(data=files_list, success=True, error_code=ResponseCodes.success),
+                                safe=False)
+    elif request.method == "POST":
+        file = body['file']
+        if job_app_pk is None or file is None:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                                safe=False)
+        else:
+            ext = file.name.split('.')[-1]
+            filename = "%s.%s" % (uuid.uuid4(), ext)
+            name = file.name.replace(('.' + ext), '')
+            filename = name + '_' + filename
+
+            user_job_app = JobApplication.objects.get(pk=job_app_pk)
+            if user_job_app.user == request.user:
+                jobapp_file = JobApplicationFile(
+                    job_post=user_job_app, name=name)
+                jobapp_file.save()
+                jobapp_file.file.save(filename, file, save=True)
+                data = JobApplicationFileSerializer(
+                    instance=jobapp_file, many=False).data
+                return JsonResponse(create_response(data=data, success=True, error_code=ResponseCodes.success),
+                                    safe=False)
+            else:
+                return JsonResponse(
+                    create_response(data=None, success=False, error_code=ResponseCodes.record_not_found), safe=False)
+    elif request.method == "DELETE":
+        jobapp_file_id = body['jobapp_file_id']
+        if jobapp_file_id is None:
+            return JsonResponse(
+                create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+        else:
+            user_job_app_file = JobApplicationFile.objects.get(
+                pk=jobapp_file_id)
+            if user_job_app_file.job_post.user == request.user:
+                user_job_app_file.delete()
                 return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
             else:
                 return JsonResponse(

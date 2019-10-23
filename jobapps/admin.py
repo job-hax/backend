@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from utils.export_csv import ExportCsv
-from .models import JobApplication, ApplicationStatus, Source, GoogleMail, SourceType, Contact
+from .models import JobApplication, ApplicationStatus, Source, GoogleMail, SourceType, Contact, JobApplicationFile
 
 
 # Register your models here.
@@ -28,6 +28,11 @@ class ApplicationStatusAdmin(admin.ModelAdmin):
 @admin.register(Source)
 class SourceAdmin(admin.ModelAdmin):
     list_display = ("value", "system")
+
+
+@admin.register(JobApplicationFile)
+class JobAppFileAdmin(admin.ModelAdmin):
+    list_display = ("name", "id")
 
 
 @admin.register(SourceType)
