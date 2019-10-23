@@ -396,7 +396,7 @@ def notes(request, job_app_pk):
 
 
 @csrf_exempt
-@api_view(["GET", "POST", "PUT", "DELETE"])
+@api_view(["GET", "POST", "DELETE"])
 def files(request, job_app_pk):
     body = request.data
     if request.method == "GET":
