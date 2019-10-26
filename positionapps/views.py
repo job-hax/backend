@@ -38,7 +38,7 @@ def position_applications(request):
             profile = request.user
             time = dt.fromtimestamp(int(timestamp))
             user_job_apps = PositionApplication.objects.filter(
-                created__gte=time)
+                created_date__gte=time)
             job_application_list = PositionApplicationSerializer(instance=user_job_apps, many=True, context={
                 'user': request.user}).data
             response = {'data': job_application_list,
@@ -59,17 +59,11 @@ def position_applications(request):
         company = body['company']
         application_date = body['application_date']
         status = int(body['status_id'])
-        source = body['source']
         first_name = body['first_name']
         last_name = body['last_name']
 
         jt = get_or_insert_position(job_title)
         jc = get_or_create_company(company)
-
-        if Source.objects.filter(value__iexact=source).count() == 0:
-            source = Source.objects.create(value=source)
-        else:
-            source = Source.objects.get(value__iexact=source)
 
         job_application = PositionApplication(
             position=jt, company_object=jc, first_name=first_name, last_name=last_name, apply_date=application_date, user=request.user)
@@ -117,7 +111,7 @@ def position_applications(request):
                                     user_job_app.application_status = new_status[0]
                                     user_job_app.is_rejected = rejected
                                 status_history = StatusHistory(
-                                    job_post=user_job_app, application_status=new_status[0])
+                                    pos_app=user_job_app, application_status=new_status[0])
                                 status_history.save()
                         if rejected is not None:
                             user_job_app.rejected_date = timezone.now()
@@ -132,9 +126,6 @@ def position_applications(request):
         user_job_app = PositionApplication.objects.get(pk=job_app_id)
 
         if user_job_app.user != request.user:
-            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
-                                safe=False)
-        if user_job_app.msg_id is not None and user_job_app.msg_id != '':
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
                                 safe=False)
 

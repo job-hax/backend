@@ -23,12 +23,6 @@ class PositionApplicationSerializer(serializers.ModelSerializer):
     application_status = ApplicationStatusSerializer(read_only=True)
     position = JobPositionSerializer(read_only=True)
     company_object = serializers.SerializerMethodField()
-    editable = serializers.SerializerMethodField()
-
-    def get_editable(self, obj):
-        if obj.msg_id is not None and obj.msg_id != '':
-            return False
-        return True
 
     def get_company_object(self, obj):
         context = self.context
@@ -41,7 +35,7 @@ class PositionApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = PositionApplication
         fields = (
-            'id', 'first_name', 'last_name', 'editable', 'application_status', 'position', 'company_object', 'apply_date', 'is_rejected')
+            'id', 'first_name', 'last_name', 'application_status', 'position', 'company_object', 'apply_date', 'is_rejected')
 
 
 class PositionApplicationNoteSerializer(serializers.ModelSerializer):
