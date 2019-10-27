@@ -183,7 +183,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'jobhaxdb',
         'USER': 'jobhaxdbuser',
-        'PASSWORD': '123456',
+        'PASSWORD': 'Proddb1234#',
         'HOST': 'localhost'
     }
 }
