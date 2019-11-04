@@ -90,6 +90,7 @@ def register(request):
                 # Looks good
                 user = User.objects.create_user(username=username, password=password, email=email,
                                                 first_name=first_name, user_type=user_type,
+                                                signup_flow_completed=True,
                                                 last_name=last_name, approved=False, activation_key=None,
                                                 key_expires=None)
                 user.save()
@@ -525,10 +526,17 @@ def auth_social_user(request):
         success = True
         code = ResponseCodes.success
         user = AccessToken.objects.get(token=json_res['access_token']).user
+        if 'first_name' in body:
+            user.first_name = body['first_name']
+        if 'last_name' in body:
+            user.first_name = body['last_name']
+        if 'photo_url' in body:
+            utils.save_image_file_to_user(body['photo_url'], user)
         if 'user_type' in body:
             user.user_type = UserType.objects.get(pk=body['user_type'])
         elif user.user_type is None:
             user.user_type = UserType.objects.get(name__iexact='Undefined')
+        user.signup_flow_completed = True
         json_res['user_type'] = UserTypeSerializer(instance=user.user_type, many=False).data
         json_res['signup_flow_completed'] = user.signup_flow_completed
         user.approved = True
