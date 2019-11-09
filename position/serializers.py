@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import JobPosition
+from .models import JobPosition, PositionDetail
 
 
 class JobPositionSerializer(serializers.ModelSerializer):
@@ -9,4 +9,13 @@ class JobPositionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JobPosition
+        fields = ('__all__')
+
+
+class PositionDetailSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        return PositionDetail.objects.create(**validated_data)
+
+    class Meta:
+        model = PositionDetail
         fields = ('__all__')
