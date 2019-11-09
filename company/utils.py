@@ -1,5 +1,6 @@
 from company.models import Company
 from utils.clearbit_company_checker import get_company_detail
+import os
 import uuid
 from django.core.files import File
 from urllib.request import urlretrieve
