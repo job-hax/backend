@@ -8,6 +8,7 @@ from .serializers import JobPositionSerializer, PositionDetailSerializer
 from utils.models import Country, State
 from company.utils import get_or_create_company
 from company.models import Company
+from JH_RestAPI import pagination
 
 
 @csrf_exempt
@@ -36,12 +37,11 @@ def company_positions(request):
         company_id = request.GET.get('id')
         positions = PositionDetail.objects.filter(
             company_id=company_id, is_deleted=False)
-        if request.GET.get('count') is not None:
-            cnt = int(request.GET.get('count'))
-            positions = positions[:cnt]
+        paginator = pagination.CustomPagination()
+        positions = paginator.paginate_queryset(positions, request)
         serialized_positions = PositionDetailSerializer(
             instance=positions, many=True).data
-        return JsonResponse(create_response(data=serialized_positions, paginator=None), safe=False)
+        return JsonResponse(create_response(data=serialized_positions, paginator=paginator), safe=False)
     elif request.method == "POST":
         job_title = body["job_title"]
         responsibilities = body["responsibilities"]
