@@ -5,5 +5,6 @@ from position import views
 
 urlpatterns = [
     path('', views.positions),
+    path('company', views.company_positions)
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)

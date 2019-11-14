@@ -8,10 +8,11 @@ from .serializers import JobPositionSerializer, PositionDetailSerializer
 from utils.models import Country, State
 from company.utils import get_or_create_company
 from company.models import Company
+from JH_RestAPI import pagination
 
 
 @csrf_exempt
-@api_view(["GET", "POST", "PUT", "PATCH", "DELETE"])
+@api_view(["GET"])
 def positions(request):
     body = request.data
     if request.method == "GET":
@@ -26,6 +27,21 @@ def positions(request):
         serialized_positions = JobPositionSerializer(
             instance=positions, many=True).data
         return JsonResponse(create_response(data=serialized_positions, paginator=None), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET", "POST", "PATCH", "DELETE"])
+def company_positions(request):
+    body = request.data
+    if request.method == "GET":
+        company_id = request.GET.get('id')
+        positions = PositionDetail.objects.filter(
+            company_id=company_id, is_deleted=False)
+        paginator = pagination.CustomPagination()
+        positions = paginator.paginate_queryset(positions, request)
+        serialized_positions = PositionDetailSerializer(
+            instance=positions, many=True).data
+        return JsonResponse(create_response(data=serialized_positions, paginator=paginator), safe=False)
     elif request.method == "POST":
         job_title = body["job_title"]
         responsibilities = body["responsibilities"]
@@ -52,3 +68,31 @@ def positions(request):
         position.is_deleted = True
         position.save()
         return JsonResponse(create_response(data=None), safe=False)
+    elif request.method == "PATCH":
+        position_id = body["position_id"]
+        position = PositionDetail.objects.get(pk=position_id)
+        responsibilities = body.get('responsibilities')
+        requirements = body.get('requirements')
+        department = body.get('department')
+        job_type = body.get('job_type')
+        city = body.get('city')
+        state_id = body.get('state_id')
+        country_id = body.get('country_id')
+
+        if responsibilities is not None:
+            position.responsibilities = responsibilities
+        if requirements is not None:
+            position.requirements = requirements
+        if department is not None:
+            position.department = department
+        if job_type is not None:
+            position.job_type = job_type
+        if city is not None:
+            position.city = city
+        if state_id is not None:
+            position.state_id = state_id
+        if country_id is not None:
+            position.country_id = country_id
+
+        position.save()
+        return JsonResponse(create_response(data=PositionDetailSerializer(instance=position, many=False, context={'user': request.user}).data), safe=False)
