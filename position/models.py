@@ -32,4 +32,8 @@ class PositionDetail(models.Model):
     is_deleted = models.BooleanField(default=False)
     created_date = models.DateTimeField(
         default=timezone.now, null=True, blank=False)
-    updated_date = models.DateTimeField(null=True, blank=False)
+    updated_date = models.DateTimeField(
+        default=timezone.now, null=True, blank=False)
+
+    class Meta:
+        ordering = ['updated_date']
