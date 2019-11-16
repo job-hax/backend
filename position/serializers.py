@@ -13,6 +13,8 @@ class JobPositionSerializer(serializers.ModelSerializer):
 
 
 class PositionDetailSerializer(serializers.ModelSerializer):
+    job = JobPositionSerializer(many=False, read_only=True)
+
     def create(self, validated_data):
         return PositionDetail.objects.create(**validated_data)
 
