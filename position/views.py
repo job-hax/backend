@@ -35,8 +35,14 @@ def company_positions(request):
     body = request.data
     if request.method == "GET":
         company_id = request.GET.get('id')
-        positions = PositionDetail.objects.filter(
-            company_id=company_id, is_deleted=False)
+        q = request.GET.get('q')
+        if q is not None:
+            jobs = JobPosition.objects.filter(job_title__icontains=q)
+            positions = positions = PositionDetail.objects.filter(
+                company_id=company_id, is_deleted=False, job__in=jobs)
+        else:
+            positions = PositionDetail.objects.filter(
+                company_id=company_id, is_deleted=False)
         paginator = pagination.CustomPagination()
         positions = paginator.paginate_queryset(positions, request)
         serialized_positions = PositionDetailSerializer(
