@@ -2,7 +2,7 @@ import pytz
 from rest_framework import serializers
 
 from company.serializers import CompanySerializer
-from position.serializers import JobPositionSerializer
+from position.serializers import PositionDetailSerializer
 from .models import ApplicationStatus
 from .models import PositionApplication
 from .models import PositionApplicationNote
@@ -21,7 +21,7 @@ class ApplicationStatusSerializer(serializers.ModelSerializer):
 
 class PositionApplicationSerializer(serializers.ModelSerializer):
     application_status = ApplicationStatusSerializer(read_only=True)
-    position = JobPositionSerializer(read_only=True)
+    position = PositionDetailSerializer(read_only=True)
     company_object = serializers.SerializerMethodField()
 
     def get_company_object(self, obj):

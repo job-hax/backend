@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view
 
 from company.utils import get_or_create_company
 from position.utils import get_or_insert_position
+from position.models import PositionDetail
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
@@ -55,14 +56,14 @@ def position_applications(request):
             'user': request.user}).data
         return JsonResponse(create_response(data=job_applications_list), safe=False)
     elif request.method == "POST":
-        job_title = body['job_title']
+        position_id = body['position_id']
         company = body['company']
         application_date = body['application_date']
         status = int(body['status_id'])
         first_name = body['first_name']
         last_name = body['last_name']
 
-        jt = get_or_insert_position(job_title)
+        jt = PositionDetail.objects.get(pk=position_id)
         jc = get_or_create_company(company)
 
         job_application = PositionApplication(
