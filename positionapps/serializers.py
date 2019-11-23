@@ -56,7 +56,7 @@ class PositionApplicationNoteSerializer(serializers.ModelSerializer):
         return PositionApplication.objects.create(**validated_data)
 
     class Meta:
-        model = PositionApplication
+        model = PositionApplicationNote
         fields = ('id', 'description', 'created_date', 'updated_date')
 
 
