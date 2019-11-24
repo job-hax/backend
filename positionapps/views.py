@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view
 
 from company.utils import get_or_create_company
 from position.utils import get_or_insert_position
+from position.models import PositionDetail
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
@@ -55,14 +56,14 @@ def position_applications(request):
             'user': request.user}).data
         return JsonResponse(create_response(data=job_applications_list), safe=False)
     elif request.method == "POST":
-        job_title = body['job_title']
+        position_id = body['position_id']
         company = body['company']
         application_date = body['application_date']
         status = int(body['status_id'])
         first_name = body['first_name']
         last_name = body['last_name']
 
-        jt = get_or_insert_position(job_title)
+        jt = PositionDetail.objects.get(pk=position_id)
         jc = get_or_create_company(company)
 
         job_application = PositionApplication(
@@ -175,11 +176,11 @@ def statuses(request):
 
 @csrf_exempt
 @api_view(["GET"])
-def status_history(request, job_app_pk):
-    if job_app_pk is None:
+def status_history(request, pos_app_pk):
+    if pos_app_pk is None:
         return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
     else:
-        statuses_list = StatusHistory.objects.filter(job_post__pk=job_app_pk)
+        statuses_list = StatusHistory.objects.filter(pos_app__pk=pos_app_pk)
         statuses_list = StatusHistorySerializer(
             instance=statuses_list, many=True).data
         return JsonResponse(create_response(data=statuses_list), safe=False)
@@ -187,30 +188,30 @@ def status_history(request, job_app_pk):
 
 @csrf_exempt
 @api_view(["GET", "POST", "PUT", "DELETE"])
-def contacts(request, job_app_pk):
+def contacts(request, pos_app_pk):
     body = request.data
     if request.method == "GET":
         data = {}
-        if job_app_pk is None:
+        if pos_app_pk is None:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
         else:
-            contacts_list = Contact.objects.filter(job_post__pk=job_app_pk)
+            contacts_list = Contact.objects.filter(pos_app_pk=pos_app_pk)
             contacts_list = ContactSerializer(
                 instance=contacts_list, many=True).data
 
             data['contacts'] = contacts_list
 
             user_profile = request.user
-            jobapp = PositionApplication.objects.get(pk=job_app_pk)
+            jobapp = PositionApplication.objects.get(pk=pos_app_pk)
 
         return JsonResponse(create_response(data=data, success=True, error_code=ResponseCodes.success), safe=False)
     elif request.method == "POST":
         first_name = body.get('first_name')
         last_name = body.get('last_name')
-        if job_app_pk is None or first_name is None or last_name is None:
+        if pos_app_pk is None or first_name is None or last_name is None:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                                 safe=False)
-        user_job_app = PositionApplication.objects.get(pk=job_app_pk)
+        user_job_app = PositionApplication.objects.get(pk=pos_app_pk)
         if user_job_app.user == request.user:
             phone_number = body.get('phone_number')
             linkedin_url = body.get('linkedin_url')
@@ -227,7 +228,7 @@ def contacts(request, job_app_pk):
                 jc = get_or_create_company(company)
 
             contact = Contact(
-                job_post=user_job_app, first_name=first_name, last_name=last_name, phone_number=phone_number,
+                pos_app=user_job_app, first_name=first_name, last_name=last_name, phone_number=phone_number,
                 linkedin_url=linkedin_url,
                 description=description, email=email,
                 position=jt, company=jc)
@@ -246,7 +247,7 @@ def contacts(request, job_app_pk):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                                 safe=False)
         contact = Contact.objects.get(pk=contact_id)
-        if contact.job_post.user == request.user:
+        if contact.pos_app.user == request.user:
             email = body.get('email')
             if email is not None:
                 contact.email = email
@@ -266,7 +267,7 @@ def contacts(request, job_app_pk):
             if company is not None:
                 contact.company = get_or_create_company(company)
 
-            contact.update_date = timezone.now()
+            contact.updated_date = timezone.now()
             contact.save()
             data = ContactSerializer(
                 instance=contact, many=False).data
@@ -288,7 +289,7 @@ def contacts(request, job_app_pk):
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.record_not_found),
                                 safe=False)
         user_job_app_contact = user_job_app_contact[0]
-        if user_job_app_contact.job_post.user == request.user:
+        if user_job_app_contact.pos_app.user == request.user:
             user_job_app_contact.delete()
             return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
         else:
@@ -298,7 +299,7 @@ def contacts(request, job_app_pk):
 
 @csrf_exempt
 @api_view(["GET", "POST", "PUT", "DELETE"])
-def notes(request, job_app_pk):
+def notes(request, pos_app_pk):
     body = request.data
     if 'recaptcha_token' in body and utils.verify_recaptcha(None, body['recaptcha_token'],
                                                             'jobapp_note') == ResponseCodes.verify_recaptcha_failed:
@@ -307,26 +308,26 @@ def notes(request, job_app_pk):
                             error_code=ResponseCodes.verify_recaptcha_failed),
             safe=False)
     if request.method == "GET":
-        if job_app_pk is None:
+        if pos_app_pk is None:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                                 safe=False)
         else:
             notes_list = PositionApplicationNote.objects.filter(
-                job_post__pk=job_app_pk).order_by('-update_date', '-created_date')
+                pos_app__pk=pos_app_pk).order_by('-updated_date', '-created_date')
             notes_list = PositionApplicationNoteSerializer(
                 instance=notes_list, many=True).data
             return JsonResponse(create_response(data=notes_list, success=True, error_code=ResponseCodes.success),
                                 safe=False)
     elif request.method == "POST":
         description = body['description']
-        if job_app_pk is None or description is None:
+        if pos_app_pk is None or description is None:
             return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
                                 safe=False)
         else:
-            user_job_app = PositionApplication.objects.get(pk=job_app_pk)
+            user_job_app = PositionApplication.objects.get(pk=pos_app_pk)
             if user_job_app.user == request.user:
                 note = PositionApplicationNote(
-                    job_post=user_job_app, description=description)
+                    pos_app=user_job_app, description=description)
                 note.save()
                 data = PositionApplicationNoteSerializer(
                     instance=note, many=False).data
@@ -343,9 +344,9 @@ def notes(request, job_app_pk):
                 create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
         else:
             note = PositionApplicationNote.objects.get(pk=jobapp_note_id)
-            if note.job_post.user == request.user:
+            if note.pos_app.user == request.user:
                 note.description = description
-                note.update_date = timezone.now()
+                note.updated_date = timezone.now()
                 note.save()
                 data = PositionApplicationNoteSerializer(
                     instance=note, many=False).data
@@ -362,7 +363,7 @@ def notes(request, job_app_pk):
         else:
             user_job_app_note = PositionApplicationNote.objects.get(
                 pk=jobapp_note_id)
-            if user_job_app_note.job_post.user == request.user:
+            if user_job_app_note.pos_app.user == request.user:
                 user_job_app_note.delete()
                 return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)
             else:
