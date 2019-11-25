@@ -6,7 +6,7 @@ from django.db import models
 from django.utils.translation import gettext as _
 
 from company.models import Company
-from position.models import JobPosition
+from position.models import PositionDetail
 
 User = get_user_model()
 
@@ -34,7 +34,7 @@ class PositionApplication(models.Model):
     application_status = models.ForeignKey(
         ApplicationStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='%(class)s_application_status')
     position = models.ForeignKey(
-        JobPosition, on_delete=models.SET_NULL, null=True, related_name='%(class)s_position')
+        PositionDetail, on_delete=models.SET_NULL, null=True, related_name='%(class)s_position')
     company_object = models.ForeignKey(
         Company, on_delete=models.SET_NULL, null=True, related_name='%(class)s_company')
     first_name = models.CharField(max_length=50, null=True, blank=True)
@@ -77,7 +77,7 @@ class Contact(models.Model):
         validators=[phone_regex], max_length=17, blank=True, null=True)  # validators should be a list
     linkedin_url = models.CharField(max_length=100, blank=True, null=True)
     position = models.ForeignKey(
-        JobPosition, on_delete=models.SET_NULL, null=True, related_name='%(class)s_position')
+        PositionDetail, on_delete=models.SET_NULL, null=True, related_name='%(class)s_position')
     company = models.ForeignKey(
         Company, on_delete=models.SET_NULL, null=True, related_name='%(class)s_company')
     description = models.TextField(null=True, blank=True)
