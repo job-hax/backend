@@ -8,6 +8,7 @@ from .models import PositionApplication
 from .models import PositionApplicationNote
 from .models import Contact
 from .models import StatusHistory
+from .models import Feedback
 
 
 class ApplicationStatusSerializer(serializers.ModelSerializer):
@@ -93,3 +94,12 @@ class ContactSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'phone_number', 'linkedin_url', 'description', 'created_date', 'updated_date', 'position',
             'company', 'email')
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        return Feedback.objects.create(**validated_data)
+
+    class Meta:
+        model = Feedback
+        fields = ('__all__')

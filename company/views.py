@@ -7,7 +7,8 @@ from position.serializers import JobPositionSerializer
 from utils.generic_json_creator import create_response
 from utils.utils import get_boolean_from_request
 from .models import Company
-from .serializers import CompanySerializer
+from .serializers import CompanyBasicsSerializer, CompanySerializer
+from utils.error_codes import ResponseCodes
 
 
 @csrf_exempt
@@ -22,3 +23,31 @@ def companies(request):
     serialized_companies = CompanySerializer(
         instance=companies, many=True, context={'user': request.user}).data
     return JsonResponse(create_response(data=serialized_companies, paginator=paginator), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET", "PATCH"])
+def company(request, company_pk):
+    body = request.data
+    if company_pk is None:
+        return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+    if request.method == "GET":
+        company = Company.objects.get(pk=company_pk)
+        serialized_company = CompanyBasicsSerializer(
+            instance=company, many=False, context={"user": request.user}).data
+        return JsonResponse(create_response(data=serialized_company), safe=False)
+    elif request.method == "PATCH":
+        company = Company.objects.get(pk=company_pk)
+        company_name = body.get("company")
+        domain = body.get("domain")
+        location_address = body.get("location_address")
+
+        if company_name is not None:
+            company.company = company_name
+        if domain is not None:
+            company.domain = domain
+        if location_address is not None:
+            company.location_address = location_address
+
+        company.save()
+        return JsonResponse(create_response(data=CompanyBasicsSerializer(instance=company, many=False, context={"user": request.user}).data), safe=False)
