@@ -84,3 +84,16 @@ class Contact(models.Model):
     created_date = models.DateTimeField(default=timezone.now, blank=True)
     updated_date = models.DateTimeField(
         default=timezone.now, null=True, blank=True)
+
+
+class Feedback(models.Model):
+    pos_app = models.ForeignKey(
+        PositionApplication, on_delete=models.CASCADE, null=True, blank=True)
+    interviewer = models.CharField(max_length=50, null=True, blank=True)
+    interview_round = models.CharField(max_length=50, null=True, blank=True)
+    rate = models.IntegerField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    interview_date = models.DateTimeField(null=True, blank=True)
+    created_date = models.DateTimeField(default=timezone.now, blank=True)
+    updated_date = models.DateTimeField(
+        default=timezone.now, null=True, blank=True)

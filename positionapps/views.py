@@ -12,12 +12,12 @@ from position.models import PositionDetail
 from utils import utils
 from utils.error_codes import ResponseCodes
 from utils.generic_json_creator import create_response
-from .models import PositionApplication, Contact, ApplicationStatus, StatusHistory
-from .models import PositionApplicationNote
+from .models import PositionApplication, Contact, ApplicationStatus, StatusHistory, Feedback, PositionApplicationNote
 from .serializers import ApplicationStatusSerializer
 from .serializers import PositionApplicationNoteSerializer
 from .serializers import PositionApplicationSerializer, ContactSerializer
 from .serializers import StatusHistorySerializer
+from .serializers import FeedbackSerializer
 
 User = get_user_model()
 
@@ -371,3 +371,74 @@ def notes(request, pos_app_pk):
                     create_response(data=None, success=False,
                                     error_code=ResponseCodes.record_not_found),
                     safe=False)
+
+
+@csrf_exempt
+@api_view(["GET", "POST", "PUT", "DELETE"])
+def feedbacks(request, pos_app_pk):
+    body = request.data
+    if request.method == "GET":
+        if pos_app_pk is None:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                                safe=False)
+        else:
+            feedbacks_list = Feedback.objects.filter(
+                pos_app__pk=pos_app_pk).order_by('-updated_date', '-created_date')
+            feedbacks_list = FeedbackSerializer(
+                instance=feedbacks_list, many=True).data
+            return JsonResponse(create_response(data=feedbacks_list, success=True, error_code=ResponseCodes.success),
+                                safe=False)
+    elif request.method == "POST":
+        if pos_app_pk is None:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                                safe=False)
+        else:
+            pos_app = PositionApplication.objects.get(pk=pos_app_pk)
+            interviewer = body.get('interviewer')
+            interview_round = body.get('interview_round')
+            rate = body.get('rate')
+            description = body.get('description')
+            interview_date = body.get('interview_date')
+            feedback = Feedback(pos_app=pos_app, interviewer=interviewer, interview_round=interview_round,
+                                rate=rate, description=description, interview_date=interview_date)
+            feedback.save()
+            data = FeedbackSerializer(instance=feedback, many=False).data
+            return JsonResponse(create_response(data=data, success=True, error_code=ResponseCodes.success), safe=False)
+    elif request.method == "PUT":
+        if pos_app_pk is None:
+            return JsonResponse(create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters),
+                                safe=False)
+        else:
+            feedback_id = body.get('feedback_id')
+            if feedback_id is None:
+                return JsonResponse(
+                    create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+            else:
+                interviewer = body.get('interviewer')
+                interview_round = body.get('interview_round')
+                rate = body.get('rate')
+                description = body.get('description')
+                interview_date = body.get('interview_date')
+                feedback = Feedback.objects.get(pk=feedback_id)
+                if interviewer is not None:
+                    feedback.interviewer = interviewer
+                if interview_round is not None:
+                    feedback.interview_round = interview_round
+                if rate is not None:
+                    feedback.rate = rate
+                if description is not None:
+                    feedback.description = description
+                if interview_date is not None:
+                    feedback.interview_date = interview_date
+                feedback.save()
+                data = FeedbackSerializer(instance=feedback, many=False).data
+                return JsonResponse(create_response(data=data, success=True, error_code=ResponseCodes.success), safe=False)
+    elif request.method == "DELETE":
+        feedback_id = body.get('feedback_id')
+        if feedback_id is None:
+            return JsonResponse(
+                create_response(data=None, success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+        else:
+            feedback = Feedback.objects.get(pk=feedback_id)
+            feedback.delete()
+            return JsonResponse(create_response(data=None, success=True, error_code=ResponseCodes.success), safe=False)

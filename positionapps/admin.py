@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from utils.export_csv import ExportCsv
-from .models import PositionApplication, ApplicationStatus, Contact
+from .models import PositionApplication, ApplicationStatus, Contact, Feedback
 
 
 # Register your models here.
@@ -22,3 +22,9 @@ class ApplicationStatusAdmin(admin.ModelAdmin):
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
     list_display = ("id", "created_date", "updated_date")
+
+
+@admin.register(Feedback)
+class FeedbackAdmin(admin.ModelAdmin):
+    list_display = ("id", "interviewer", "rate", "description",
+                    "interview_date", "created_date", "updated_date")
