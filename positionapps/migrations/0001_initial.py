@@ -12,7 +12,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('position', '0001_initial'),
-        ('company', '0001_initial'),
     ]
 
     operations = [

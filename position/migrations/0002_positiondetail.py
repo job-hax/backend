@@ -8,7 +8,6 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('company', '0001_initial'),
         ('utils', '0002_import_country_data_from_json'),
         ('position', '0001_initial'),
     ]

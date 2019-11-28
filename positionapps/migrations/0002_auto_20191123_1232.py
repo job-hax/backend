@@ -16,7 +16,11 @@ class Migration(migrations.Migration):
             name='position',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='contact_position', to='position.PositionDetail'),
         ),
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name='positionapplication',
+            name='position',
+        ),
+        migrations.AddField(
             model_name='positionapplication',
             name='position',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='positionapplication_position', to='position.PositionDetail'),

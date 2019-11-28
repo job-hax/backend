@@ -16,7 +16,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ('auth', '0011_update_proxy_permissions'),
         ('major', '0001_initial'),
-        ('company', '0001_initial'),
         ('position', '0001_initial'),
         ('college', '0001_initial'),
         ('utils', '0001_initial'),

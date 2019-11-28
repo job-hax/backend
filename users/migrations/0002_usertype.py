@@ -37,5 +37,5 @@ class Migration(migrations.Migration):
             user.save()
 
     operations = [
-        migrations.RunPython(create_user_types, reverse_code=migrations.RunPython.noop)
+        #migrations.RunPython(create_user_types, reverse_code=migrations.RunPython.noop)
     ]
