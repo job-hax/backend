@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'notifications',
     'faq',
     'utils',
+    'cvparser',
 ]
 
 MIDDLEWARE = [
