@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/colleges/', include('college.urls')),
     path('api/majors/', include('major.urls')),
     path('api/positions/', include('position.urls')),
+    path('api/parser/', include('cvparser.urls')),
     path('api/', include('utils.urls')),
     re_path(r'^auth/', include('rest_framework_social_oauth2.urls')),
 ]
