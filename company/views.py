@@ -41,6 +41,9 @@ def company(request, company_pk):
         company_name = body.get("company")
         domain = body.get("domain")
         location_address = body.get("location_address")
+        description = body.get("description")
+        employees_number = body.get("employees_number")
+        phone_number = body.get("phone_number")
 
         if company_name is not None:
             company.company = company_name
@@ -48,6 +51,12 @@ def company(request, company_pk):
             company.domain = domain
         if location_address is not None:
             company.location_address = location_address
+        if description is not None:
+            company.description = description
+        if employees_number is not None:
+            company.employees_number = employees_number
+        if phone_number is not None:
+            company.phone_number = phone_number
 
         company.save()
         return JsonResponse(create_response(data=CompanyBasicsSerializer(instance=company, many=False, context={"user": request.user}).data), safe=False)
