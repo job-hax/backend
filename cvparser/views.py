@@ -23,7 +23,7 @@ def resume_parser(request):
     if request.method == "GET":
         # query resume from db return json to the user
         user = request.user
-        resumes = Resume.objects.filter(user=user)
+        resumes = Resume.objects.filter(user=user).values()
         #all_resumes = Resume.objects.all()
         #apple_resumes = Resume.objects.filter(company='Apple').distinct('user')
         #resume_count = all_resumes.count()
@@ -33,11 +33,11 @@ def resume_parser(request):
     elif request.method == "POST":
         body = request.data
         if 'resume' in body:
-            post_data = request.data['resume']
-
-            response = requests.post('http://127.0.0.1:8002/api/parser',
-                                data=json.dumps(post_data), headers={'content-type': 'multipart/form-data'})
-                                
+            post_data = body['resume']
+            print('BEFORE CALL')
+            response = requests.post('http://127.0.0.1:8002/api/parser/',
+                                files=post_data, headers={'content-type': 'multipart/form-data'})
+            print('CAME')                    
             json_res = json.loads(response.text)
             #fill the model
             resume = Resume()
@@ -56,6 +56,7 @@ def resume_parser(request):
             resume.enddate = json_res['enddate']
             
             resume.save()
+            print(resume)
             resume = ResumeSerializer(instance=resume, many=False).data
             return JsonResponse(create_response(data=resume), safe=False)
 
