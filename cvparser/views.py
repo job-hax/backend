@@ -14,6 +14,7 @@ import json
 from utils.generic_json_creator import create_response
 from cvparser.models import Resume
 from cvparser.serializer import ResumeSerializer
+from positionapps.models import PositionApplication
 
 # Create your views here.
 
@@ -22,18 +23,22 @@ from cvparser.serializer import ResumeSerializer
 @api_view(["GET", "POST"])
 def resume_parser(request):
     if request.method == "GET":
-        # query resume from db return json to the user
-        user = request.user
-        resumes = Resume.objects.filter(user=user).values()
-        #all_resumes = Resume.objects.all()
-        #apple_resumes = Resume.objects.filter(company='Apple').distinct('user')
-        #resume_count = all_resumes.count()
-        #android_resumes = Resume.objects.filter(summary__contains='android')
-        resumes_list = ResumeSerializer(instance=resumes, many=True).data
-        return JsonResponse(create_response(data=resumes_list), safe=False)
+        pos_app_id = request.GET.get('id')
+        if pos_app_id is not None:
+            resume = Resume.objects.filter(pos_app__pk=pos_app_id)
+            resume = ResumeSerializer(instance=resume, many=True).data
+            return JsonResponse(create_response(data=resume), safe=False)
+        else:
+            user = request.user
+            resumes = Resume.objects.filter(user=user).values()
+            resumes_list = ResumeSerializer(instance=resumes, many=True).data
+            return JsonResponse(create_response(data=resumes_list), safe=False)
     elif request.method == "POST":
         body = request.data
-        if 'resume' in body:
+        if 'resume' in body and 'pos_app_id' in body:
+            pos_app = PositionApplication.objects.get(
+                pk=body['pos_app_id'])
+            pre_resumes = Resume.objects.filter(pos_app__pk=body['pos_app_id'])
             post_data = body['resume']
             files = {'resume': post_data}
             response = requests.post(
@@ -55,7 +60,10 @@ def resume_parser(request):
                 resume.position = json_res['position']
                 resume.startdate = json_res['startdate']
                 resume.enddate = json_res['enddate']
-
+                resume.pos_app = pos_app
+                if pre_resumes is not None:
+                    for pre_resume in pre_resumes:
+                        pre_resume.delete()
                 resume.save()
                 resume = ResumeSerializer(instance=resume, many=False).data
                 return JsonResponse(create_response(data=resume), safe=False)
