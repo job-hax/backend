@@ -14,19 +14,14 @@ class Resume(models.Model):
     certifications = ArrayField(models.TextField(null=True, blank=True))
     summary = ArrayField(models.TextField(null=True, blank=True))
     languages = ArrayField(models.TextField(null=True, blank=True))
-    school=models.CharField(max_length=200, blank=False)
-    degree=models.CharField(max_length=200, blank=False)
-    company=models.CharField(max_length=200, blank=False)
-    position=models.CharField(max_length=200, blank=False)
-    startdate=models.CharField(max_length=200, blank=False)
-    enddate=models.CharField(max_length=200, blank=False)
+    school = models.CharField(max_length=200, blank=False)
+    degree = models.CharField(max_length=200, blank=False)
+    company = models.CharField(max_length=200, blank=False)
+    position = models.CharField(max_length=200, blank=False)
+    startdate = models.CharField(max_length=200, blank=False)
+    enddate = models.CharField(max_length=200, blank=False)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True)
 
-   
-
     class Meta:
         ordering = ['linkedin']
-
-    def __str__(self):
-        return self.name if self.name is not None else ''

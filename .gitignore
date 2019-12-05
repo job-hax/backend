@@ -476,3 +476,7 @@ code.style.schemes.xml
 # Pyre type checker
 
 # End of https://www.gitignore.io/api/pycharm,python,django
+
+# virtualenv
+bin
+include
