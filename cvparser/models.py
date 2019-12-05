@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 
+from positionapps.models import PositionApplication
+
 User = get_user_model()
 
 
@@ -22,6 +24,8 @@ class Resume(models.Model):
     enddate = models.CharField(max_length=200, blank=False)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True)
+    pos_app = models.ForeignKey(
+        PositionApplication, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         ordering = ['linkedin']
