@@ -15,6 +15,7 @@ from utils.generic_json_creator import create_response
 from cvparser.models import Resume
 from cvparser.serializer import ResumeSerializer
 from positionapps.models import PositionApplication
+from cvparser.utils import common_attr, top_skills_in
 
 # Create your views here.
 
@@ -72,3 +73,27 @@ def resume_parser(request):
         return JsonResponse(create_response(success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
     else:
         return JsonResponse(create_response(success=False, error_code=ResponseCodes.invalid_parameters), safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def metrics(request):
+    if request.method == 'GET':
+        user = request.user
+        resumes = Resume.objects.filter(user=user).values()
+        resumes_list = ResumeSerializer(instance=resumes, many=True).data
+        attrs = ['skills', 'position', 'languages',
+                 'school', 'company', 'degree']
+        res = {i: {} for i in attrs}
+
+        top_number = 10
+        for attr in attrs:
+            for x, cnt in common_attr(attr, resumes_list, top_number):
+                res[attr][x] = cnt
+
+            # company = 'OpenGov Inc.'  # amazon, apple, facebook, google, salesforce
+            # for skill, cnt in top_skills_in(company, resumes_list, top_number):
+            #     res[attr].append(
+            #         "{}, {} people, {}".format(company, cnt, skill))
+
+        return JsonResponse(create_response(data=res), safe=False)

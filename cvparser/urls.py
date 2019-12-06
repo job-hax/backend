@@ -5,6 +5,7 @@ from cvparser import views
 
 urlpatterns = [
     path('', views.resume_parser),
+    path('metrics', views.metrics)
 
 ]
 urlpatterns = format_suffix_patterns(urlpatterns)
