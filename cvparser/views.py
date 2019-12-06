@@ -89,7 +89,10 @@ def metrics(request):
         top_number = 10
         for attr in attrs:
             for x, cnt in common_attr(attr, resumes_list, top_number):
-                res[attr][x] = cnt
+                res[attr][x] = {
+                    "count": cnt,
+                    "percentage": cnt / len(resumes_list)
+                }
 
             # company = 'OpenGov Inc.'  # amazon, apple, facebook, google, salesforce
             # for skill, cnt in top_skills_in(company, resumes_list, top_number):
