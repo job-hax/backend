@@ -83,7 +83,7 @@ def metrics(request):
         resumes = Resume.objects.filter(user=user).values()
         resumes_list = ResumeSerializer(instance=resumes, many=True).data
         attrs = ['skills', 'position', 'languages',
-                 'school', 'company', 'degree']
+                 'school', 'company', 'degree', 'certifications']
         res = {i: {} for i in attrs}
 
         top_number = 10
