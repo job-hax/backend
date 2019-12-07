@@ -1,4 +1,5 @@
 ### Quickstart
+![JobHax Website](https://img.shields.io/website?label=jobposting-be.jobhax.com/admin&up_message=Up%20and%20Running&url=https%3A%2F%2Fjobposting.jobhax.com)
 ![Alt text](https://img.shields.io/github/issues-raw/job-hax/backend.svg)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/job-hax/backend.svg?style=plastic)
 ![GitHub contributors](https://img.shields.io/github/contributors/job-hax/backend.svg)
